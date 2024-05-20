@@ -26,7 +26,7 @@ Quando un nodo slave si connette scrive sul topic /welcome per condividere la su
 	- Led rgb
 	- Sensore di fiamma?	
 
-	### Ventilazione intelligente:
+### Ventilazione intelligente:
 	- Temp/hum
 	- Ventola (simulazione)
 	- Ricevitore IR?
