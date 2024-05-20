@@ -19,7 +19,6 @@ WiFiClient networkClient;                  // handles the network connection to 
 
 // Set web server port number to 80
 WiFiServer server(80);
-boolean printInfo = false;
 
 // Variable to store the HTTP request
 String header;
@@ -79,12 +78,13 @@ void setup() {
   // if it does not connect it starts an access point with the specified name
   // here  "AutoConnectAP"
   // and goes into a blocking loop awaiting configuration
-  wifiManager.autoConnect("847361"); //Serve per creare un access point che broadcasterà il nome dell'SSID
+  wifiManager.autoConnect("AP Vigiloffice Master - **MAC**"); //Serve per creare un access point che broadcasterà il nome dell'SSID
   // or use this for auto generated name ESP + ChipID
   // wifiManager.autoConnect();
 
   // if you get here you have connected to the WiFi
-  Serial.println("Connected.");
+  Serial.println(F("Connected."));
+  Serial.println(WiFi.macAddress());
 
   server.begin();
 
