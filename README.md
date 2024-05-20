@@ -20,7 +20,7 @@ Quando un nodo slave si connette scrive sul topic /welcome per condividere la su
 
 ## Slaves:
 
-	### Lampadina:
+### Lampadina:
 	- Sensore di movimento
 	- Sensore di luce
 	- Led rgb
@@ -31,7 +31,7 @@ Quando un nodo slave si connette scrive sul topic /welcome per condividere la su
 	- Ventola (simulazione)
 	- Ricevitore IR?
 
-	### ??Parcheggio??
+### ??Parcheggio??
 	- Sensore di prossimità / avoidance
 	- Sensore di fiamma
 	- LED per occupazione del posteggio
