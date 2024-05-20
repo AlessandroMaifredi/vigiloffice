@@ -1,19 +1,72 @@
-# second-assignment-2024
-**CORE:**
+#VIGILOFFICE
 
-The idea is to build an adaptive sensor network which is aware of a new node coming into the network. Each new network must contain at least two MCUs, which can be a NodeMCU and/or MKR. Use the first assignment as a starting point. The idea is that one node of the network may act as the master node and the others as the slave node. The master node is already registered in the sensor network while the slave is to be dynamically added to the sensor network. The sensor network communications should be handled by using MQTT. The master node may act as the root user of the sensor network: it may collect the messages coming from all the nodes in the network (in this case one) and it may log these messages on a suitable database (MySQL or InfluxDB).
+Use-case: Ufficio con gestione dell'ambiente di lavoro + parcheggio
 
 
-**ADD-ONS**
+Tutti i nodi usano autoconnect per attaccarsi a internet 
+Quando un nodo slave si connette scrive sul topic /welcome per condividere la sua esistenza indicando quali funzionalità possiede.
 
-Set up a remote control of the monitoring system (start, stop, etc.) through a web page. All the sensed values and alerting events values must be shown. Sensors need to communicate alerts based on Web of Things technologies such as REST HTTP, JSON or MQTT. 
 
-**INGREDIENTS:**
+##Master:
+	- 1 lcd
+	- 1 rtc
+	- 1 buzzer
+	- (1 led)
+ - Espone il web server
+ - gestisce gli allarmi (accensione/spegnimento - scheduling) {EVENTUALLY: notifiche tramite medium da decidere (mail)}
+ - mostra i dati su LCD
+ - led per mostrare funzionamento??
+ 
 
-- Micros of your choice, suggested: NodeMCU and MKR1000
-- Sensors or actuators of your choice.
+##Slaves:
 
-**EXPECTED DELIVERABLES:**
+	###Lampadina:
+	- Sensore di movimento
+	- Sensore di luce
+	- Led rgb
+	- Sensore di fiamma?	
 
-- Github code upload at:
-- Powerpoint presentation of 10 mins (5 mins per person)
+	###Ventilazione intelligente:
+	- Temp/hum
+	- Ventola (simulazione)
+	- Ricevitore IR?
+
+	###??Parcheggio??
+	- Sensore di prossimità / avoidance
+	- Sensore di fiamma
+	- LED per occupazione del posteggio
+	- Sensore di allagamento
+	- Buzzer per allarme vicinanza
+
+
+##MQTT
+	Vigiloffice
+			/welcome - per messaggio di presentazione dei nodi slave {nome,funzioni,topic su cui scrivere/ascoltare,lwt}
+			/lampadina - per tutti i sensori di tipo lampadina
+				/"mac-address"
+					/status
+						/mvmt
+						/light
+						/led
+						/flame
+					/control
+						/mvmt
+						/light
+						/led
+						/flame
+				/Ventilazione - per tutti i sensori di tipo ventilazione
+				/"mac-address"
+					/status
+						/temp
+						/hum
+						/fan
+						/ir
+					/control
+						/temp
+						/hum
+						/fan
+						/ir
+
+##WEBSERVER
+	/api/sensors/lampadina/
+	/sensors/lampadina
