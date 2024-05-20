@@ -4,13 +4,18 @@
 #include <WiFiManager.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
-
-//L@b%I0T*Ui4!P@sS**0%Lessons!
+#include <MQTT.h>
+#include "secrets.h"
 
 #define DISPLAY_CHARS 16    // number of characters on a line
 #define DISPLAY_LINES 2     // number of display lines
 #define DISPLAY_ADDR 0x27   // display address on I2C bus
 LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);   // display object
+
+#define MQTT_BUFFER_SIZE 128               // the maximum size for packets being published and received
+MQTTClient mqttClient(MQTT_BUFFER_SIZE);   // handles the MQTT communication protocol
+WiFiClient networkClient;                  // handles the network connection to the MQTT broker
+#define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -29,6 +34,9 @@ const int output4 = D4;
 
 void setup() {
   Serial.begin(115200);
+
+  mqttClient.begin(MQTT_BROKERIP, 1883, networkClient);   // setup communication with MQTT broker
+  mqttClient.onMessage(mqttMessageReceived);              // callback on message received from MQTT broker
 
   // Initialize the output variables as outputs
   pinMode(output0, OUTPUT);
@@ -89,6 +97,8 @@ void setup() {
 
 void loop() {
   listenForClients();
+  connectToMQTTBroker();
+  mqttClient.loop();
 }
 
 void listenForClients() {
@@ -184,4 +194,19 @@ void listenForClients() {
     Serial.println("Client disconnected.");
     Serial.println("");
   }
+}
+
+void connectToMQTTBroker() {
+  if (!mqttClient.connected()) {   // not connected
+    Serial.print(F("\nConnecting to MQTT broker..."));
+    while (!mqttClient.connect(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD)) {
+      Serial.print(F("."));
+      delay(1000);
+    }
+    Serial.println(F("\nConnected!"));
+    mqttClient.publish(MQTT_TOPIC_WELCOME, "Welcome!", true, 2);
+  }
+}
+
+void mqttMessageReceived(String &topic, String &payload) {
 }
