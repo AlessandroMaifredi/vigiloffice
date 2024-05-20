@@ -37,7 +37,7 @@ void setup() {
   digitalWrite(output0, HIGH);
   digitalWrite(output4, HIGH);
 
-  Wire.begin();
+  /*Wire.begin();
   Wire.beginTransmission(DISPLAY_ADDR);
   byte error = Wire.endTransmission();
 
@@ -57,7 +57,7 @@ void setup() {
     Serial.println(F("Check connections and configuration. Reset to try again!"));
     while (true)
       delay(1);
-  }
+  }*/
 
   // WiFiManager
   // Local intialization. Once its business is done, there is no need to keep it around
@@ -77,13 +77,21 @@ void setup() {
 
   // if you get here you have connected to the WiFi
   Serial.println("Connected.");
-  printInfo = true;
 
   server.begin();
+
+  /*lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("Server:"));
+  lcd.setCursor(0, 1);
+  lcd.print(WiFi.localIP());*/
 }
 
 void loop() {
+  listenForClients();
+}
 
+void listenForClients() {
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                      // If a new client connects,
@@ -175,14 +183,5 @@ void loop() {
     client.stop();
     Serial.println("Client disconnected.");
     Serial.println("");
-  }
-
-  if (printInfo) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(F("Server:"));
-    lcd.setCursor(0, 1);
-    lcd.print(WiFi.localIP());
-    printInfo = false;
   }
 }
