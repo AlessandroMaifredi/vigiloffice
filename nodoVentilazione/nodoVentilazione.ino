@@ -46,4 +46,7 @@ void connectToMQTTBroker() {
 void mqttMessageReceived(String &topic, String &payload) {
   // this function handles a message from the MQTT broker
   Serial.println("Incoming MQTT message: " + topic + " - " + payload);
+  if (topic == MQTT_TOPIC_WELCOME) {
+    
+  }
 }
