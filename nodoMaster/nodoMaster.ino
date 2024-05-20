@@ -204,9 +204,17 @@ void connectToMQTTBroker() {
       delay(1000);
     }
     Serial.println(F("\nConnected!"));
-    mqttClient.publish(MQTT_TOPIC_WELCOME, "Welcome!", true, 2);
+    mqttClient.publish(MQTT_TOPIC_WELCOME, ipToString(WiFi.localIP()), true, 2);
   }
 }
 
 void mqttMessageReceived(String &topic, String &payload) {
+}
+
+String ipToString(IPAddress ip) {
+  String s = "";
+  for (int i = 0; i < 4; i++) {
+    s += i ? "." + String(ip[i]) : String(ip[i]);
+  }
+  return s;
 }
