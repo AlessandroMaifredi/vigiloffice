@@ -2,9 +2,19 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
+//L@b%I0T*Ui4!P@sS**0%Lessons!
+
+#define DISPLAY_CHARS 16    // number of characters on a line
+#define DISPLAY_LINES 2     // number of display lines
+#define DISPLAY_ADDR 0x27   // display address on I2C bus
+LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);   // display object
 
 // Set web server port number to 80
 WiFiServer server(80);
+boolean printInfo = false;
 
 // Variable to store the HTTP request
 String header;
@@ -27,13 +37,33 @@ void setup() {
   digitalWrite(output0, HIGH);
   digitalWrite(output4, HIGH);
 
+  Wire.begin();
+  Wire.beginTransmission(DISPLAY_ADDR);
+  byte error = Wire.endTransmission();
+
+  if (error == 0) {
+    Serial.println(F("LCD found."));
+    lcd.begin(DISPLAY_CHARS, 2);
+    lcd.setBacklight(255);
+    lcd.home();
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(F("Connect to SSID:"));
+    lcd.setCursor(0, 1);
+    lcd.print(F("847361"));
+  } else {
+    Serial.print(F("LCD not found. Error "));
+    Serial.println(error);
+    Serial.println(F("Check connections and configuration. Reset to try again!"));
+    while (true)
+      delay(1);
+  }
+
   // WiFiManager
   // Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
-
   // Uncomment and run it once, if you want to erase all the stored information
   wifiManager.resetSettings();
-
   // set custom ip for portal
   // wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 
@@ -47,11 +77,13 @@ void setup() {
 
   // if you get here you have connected to the WiFi
   Serial.println("Connected.");
+  printInfo = true;
 
   server.begin();
 }
 
 void loop() {
+
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                      // If a new client connects,
@@ -143,5 +175,14 @@ void loop() {
     client.stop();
     Serial.println("Client disconnected.");
     Serial.println("");
+  }
+
+  if (printInfo) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(F("Server:"));
+    lcd.setCursor(0, 1);
+    lcd.print(WiFi.localIP());
+    printInfo = false;
   }
 }
