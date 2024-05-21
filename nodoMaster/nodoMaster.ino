@@ -5,6 +5,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #include <MQTT.h>
+#include <ArduinoJson.h>
 #include "secrets.h"
 
 #define DISPLAY_CHARS 16    // number of characters on a line
@@ -204,7 +205,14 @@ void connectToMQTTBroker() {
       delay(1000);
     }
     Serial.println(F("\nConnected!"));
-    mqttClient.publish(MQTT_TOPIC_WELCOME, ipToString(WiFi.localIP()), true, 2);
+
+    JsonDocument doc;
+    doc["serverIP"] = ipToString(WiFi.localIP());
+    char buffer[128];
+    size_t n = serializeJson(doc, buffer);
+    Serial.print(F("JSON message: "));
+    Serial.println(buffer);
+    mqttClient.publish(MQTT_TOPIC_WELCOME, buffer, n, true, 2);
   }
 }
 
