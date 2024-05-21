@@ -1,4 +1,4 @@
-
+#include "comm.h"
 
 // === ALARM ===
 
@@ -15,6 +15,69 @@ enum ALARM_STATUS {
 };
 
 volatile ALARM_STATUS alarmStatus = ALARM_NORMAL;
+
+void disableAlarm() {
+  alarmSystemStatus = ALARM_DISABLED;
+}
+
+void enableAlarm() {
+  alarmSystemStatus = ALARM_ENABLED;
+}
+
+void activateAlarm() {
+  if (alarmSystemStatus == ALARM_ENABLED) {
+    alarmStatus = ALARM_ACTIVE;
+    Serial.println("!!ALARM ACTIVATED!!");
+  }
+}
+
+void deactivateAlarm() {
+  alarmStatus = ALARM_NORMAL;
+  Serial.println("SHUT OFF ALARM!");
+}
+
+// === PIR MOTION ===
+
+#define MOTION_SENSOR_PIN D8
+
+enum MOTION_SENSOR_STATUS {
+  MOTION_SENSOR_ENABLED,
+  MOTION_SENSOR_DISABLED
+};
+
+MOTION_SENSOR_STATUS motionSensorStatus = MOTION_SENSOR_ENABLED;
+
+enum MOTION_STATUS {
+  MOTION_DETECTED,
+  MOTION_NORMAL,
+  MOTION_INIT
+};
+
+volatile MOTION_STATUS motionStatus = MOTION_NORMAL;
+
+#define MOTION_INIT_TIME_DELAY 60000
+
+volatile unsigned long motionInitTimer;
+
+void readMotion() {
+  static unsigned long lastDetection = millis();
+  if (motionSensorStatus == MOTION_SENSOR_ENABLED) {
+    if (motionStatus == MOTION_INIT && millis() - motionInitTimer > MOTION_INIT_TIME_DELAY) {
+      motionStatus = MOTION_NORMAL;
+      Serial.println("MOTION SENSOR INIT COMPLETE");
+    }
+    if (motionStatus != MOTION_INIT) {
+      if (motionStatus == MOTION_NORMAL || (motionStatus == MOTION_DETECTED && millis() - lastDetection > 3000)) {
+        motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
+        if (motionStatus == MOTION_DETECTED) {
+          Serial.println("Set MOTION to MOTION_DETECTED!");
+          activateAlarm();
+          lastDetection = millis();
+        }
+      }
+    }
+  }
+}
 
 
 // === PHOTORESISTOR ===
@@ -46,6 +109,8 @@ void readLight() {
   if (lightSensorStatus == LIGHT_SENSOR_ENABLED) {
     if (millis() - lastLightReading > lightReadingInterval) {
       lightValue = analogRead(LIGHT_SENSOR_PIN);
+      Serial.print(F("LIGHT: "));
+      Serial.println(lightValue);
       if (lightValue <= lowLightTreshold) {
         lightStatus = LIGHT_LOW;
         Serial.println(F("Set LIGHT to LIGHT_LOW"));
@@ -85,10 +150,7 @@ void readFlame() {
       if (digitalRead(FLAME_SENSOR_PIN) == HIGH) {
         flameStatus = FLAME_PRESENT;
         Serial.println(F("Set FLAME to FLAME_PRESENT"));
-        if (alarmSystemStatus == ALARM_ENABLED) {
-          alarmStatus = ALARM_ACTIVE;
-          Serial.println(F("Set ALARM to ALARM_ACTIVE"));
-        }
+        activateAlarm();
       } else {
         flameStatus = FLAME_ABSENT;
         Serial.println(F("Set FLAME to FLAME_ABSENT"));
@@ -100,9 +162,9 @@ void readFlame() {
 
 // === RGB ===
 
-#define RGB_RED_PIN D3
-#define RGB_GREEN_PIN D2
-#define RGB_BLUE_PIN D1
+#define RGB_RED_PIN D2
+#define RGB_GREEN_PIN D1
+#define RGB_BLUE_PIN D3
 
 enum RGB_STATUS {
   RGB_ENABLED,
@@ -122,7 +184,7 @@ void setRGBOff() {
 }
 
 void setRGBOn() {
-  setRGB(HIGH, LOW, LOW);
+  setRGB(HIGH, HIGH, HIGH);
 }
 
 void setRGBAlarm() {
@@ -157,11 +219,17 @@ void setup() {
   setRGBOff();
 
   pinMode(FLAME_SENSOR_PIN, INPUT);
+
+  pinMode(MOTION_SENSOR_PIN, INPUT);
+  motionStatus = MOTION_INIT;
+  motionInitTimer = millis();
+  commSetup();
 }
 
 void loop() {
   readFlame();
   readLight();
+  readMotion();
   updateRGB();
-  //sendData();
+  //commLoop();
 }
