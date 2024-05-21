@@ -2,6 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <MQTT.h>
+#include <ArduinoJson.h>
 #include "secrets.h"
 
 // MQTT data
@@ -47,6 +48,9 @@ void mqttMessageReceived(String &topic, String &payload) {
   // this function handles a message from the MQTT broker
   Serial.println("Incoming MQTT message: " + topic + " - " + payload);
   if (topic == MQTT_TOPIC_WELCOME) {
-    
+    JsonDocument doc;
+    deserializeJson(doc, payload);
+    const char *serverIP = doc["serverIP"];
+    Serial.println(serverIP);
   }
 }
