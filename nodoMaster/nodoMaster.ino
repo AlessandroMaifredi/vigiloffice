@@ -18,6 +18,8 @@ MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication prot
 WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
 #define MQTT_TOPIC_REGISTER "vigiloffice/register"
+#define MQTT_TOPIC_VENTILAZIONE "ventilazione/"
+#define MQTT_TOPIC_LAMPADINE "lampadine/"
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -227,18 +229,23 @@ void mqttMessageReceived(String &topic, String &payload) {
     Serial.println(tipo);
 
     JsonDocument writeDoc;
-
+    String prefix = String("vigiloffice/");
     if (strcmp(tipo, "ventilazione") == 0) {
-      writeDoc["statusTopic"] = String("vigiloffice/ventilazione/") + mac + String("/status");
-      writeDoc["controlTopic"] = String("vigiloffice/ventilazione/") + mac + String("/control");
-      char buffer[256];
-      size_t n = serializeJson(writeDoc, buffer);
-
-      String registerTopicStr = String(MQTT_TOPIC_REGISTER) + "/" + mac;
-      const char *registerTopicMAC = registerTopicStr.c_str();
-
-      mqttClient.publish(registerTopicMAC, buffer, n, false, 1);
+      prefix = prefix + MQTT_TOPIC_VENTILAZIONE + mac;
+    } else if (strcmp(tipo, "lampadina") == 0) {
+      prefix = prefix + MQTT_TOPIC_LAMPADINE + mac;
+    } else {
+      return;
     }
+    writeDoc["statusTopic"] = prefix + String("/status");
+    writeDoc["controlTopic"] = prefix + String("/control");
+    char buffer[256];
+    size_t n = serializeJson(writeDoc, buffer);
+
+    String registerTopicStr = String(MQTT_TOPIC_REGISTER) + "/" + mac;
+    const char *registerTopicMAC = registerTopicStr.c_str();
+
+    mqttClient.publish(registerTopicMAC, buffer, n, false, 1);
   }
 }
 
