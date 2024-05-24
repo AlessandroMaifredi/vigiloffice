@@ -1,4 +1,6 @@
+
 #include "comm.h"
+#include <ArduinoJson.h>
 
 // === ALARM ===
 
@@ -38,14 +40,14 @@ void deactivateAlarm() {
 
 // === PIR MOTION ===
 
-#define MOTION_SENSOR_PIN D8
+#define MOTION_SENSOR_PIN D6
 
 enum MOTION_SENSOR_STATUS {
   MOTION_SENSOR_ENABLED,
   MOTION_SENSOR_DISABLED
 };
 
-MOTION_SENSOR_STATUS motionSensorStatus = MOTION_SENSOR_ENABLED;
+MOTION_SENSOR_STATUS motionSensorStatus = MOTION_SENSOR_DISABLED;
 
 enum MOTION_STATUS {
   MOTION_DETECTED,
@@ -53,27 +55,27 @@ enum MOTION_STATUS {
   MOTION_INIT
 };
 
-volatile MOTION_STATUS motionStatus = MOTION_NORMAL;
+volatile MOTION_STATUS motionStatus = MOTION_INIT;
 
-#define MOTION_INIT_TIME_DELAY 60000
+#define MOTION_INIT_TIME_DELAY 80000
 
 volatile unsigned long motionInitTimer;
 
 void readMotion() {
-  static unsigned long lastDetection = millis();
   if (motionSensorStatus == MOTION_SENSOR_ENABLED) {
-    if (motionStatus == MOTION_INIT && millis() - motionInitTimer > MOTION_INIT_TIME_DELAY) {
-      motionStatus = MOTION_NORMAL;
-      Serial.println("MOTION SENSOR INIT COMPLETE");
-    }
-    if (motionStatus != MOTION_INIT) {
-      if (motionStatus == MOTION_NORMAL || (motionStatus == MOTION_DETECTED && millis() - lastDetection > 3000)) {
-        motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
-        if (motionStatus == MOTION_DETECTED) {
-          Serial.println("Set MOTION to MOTION_DETECTED!");
-          activateAlarm();
-          lastDetection = millis();
-        }
+    if (motionStatus == MOTION_INIT) {
+      if (millis() - motionInitTimer > MOTION_INIT_TIME_DELAY) {
+        motionInitTimer = millis();
+        motionStatus = MOTION_NORMAL;
+        Serial.println("MOTION SENSOR INIT COMPLETE");
+      }
+    } else {
+      motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
+      if (motionStatus == MOTION_DETECTED) {
+        Serial.println("Set MOTION to MOTION_DETECTED!");
+        activateAlarm();
+      } else {
+        Serial.println("Set MOTION to MOTION_NORMAL!");
       }
     }
   }
@@ -111,7 +113,7 @@ void readLight() {
       lightValue = analogRead(LIGHT_SENSOR_PIN);
       Serial.print(F("LIGHT: "));
       Serial.println(lightValue);
-      if (lightValue <= lowLightTreshold) {
+      if (lightValue >= lowLightTreshold) {
         lightStatus = LIGHT_LOW;
         Serial.println(F("Set LIGHT to LIGHT_LOW"));
       } else {
@@ -208,6 +210,7 @@ void updateRGB() {
   }
 }
 
+
 void setup() {
   Serial.begin(9600);
   pinMode(LIGHT_SENSOR_PIN, INPUT);
@@ -226,10 +229,14 @@ void setup() {
   commSetup();
 }
 
+void applyChangesFromMaster(JsonDocument json){
+  Serial.println(F("applyChangesFromMaster called."));
+}
+
 void loop() {
   readFlame();
   readLight();
   readMotion();
   updateRGB();
-  //commLoop();
+  commLoop(applyChangesFromMaster);
 }
