@@ -17,7 +17,7 @@ LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);   // display 
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);   // handles the MQTT communication protocol
 WiFiClient networkClient;                  // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
-#define MQTT_TOPIC_REGISTER "vigiloffice/register"
+  #define MQTT_TOPIC_REGISTER "vigiloffice/register"
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -219,10 +219,26 @@ void connectToMQTTBroker() {
 
 void mqttMessageReceived(String &topic, String &payload) {
   if (topic == MQTT_TOPIC_REGISTER) {
-    JsonDocument doc;
-    deserializeJson(doc, payload);
-    const char *macVentilazione = doc["indirizzo-mac"];
-    Serial.println(macVentilazione);
+    JsonDocument readDoc;
+    deserializeJson(readDoc, payload);
+    const char *mac = readDoc["indirizzo-mac"];
+    const char *tipo = readDoc["tipo"];
+    Serial.println(mac);
+    Serial.println(tipo);
+
+    JsonDocument writeDoc;
+
+    if (strcmp(tipo, "ventilazione") == 0) {
+      writeDoc["statusTopic"] = String("vigiloffice/ventilazione/") + mac + String("/status");
+      writeDoc["controlTopic"] = String("vigiloffice/ventilazione/") + mac + String("/control");
+      char buffer[256];
+      size_t n = serializeJson(writeDoc, buffer);
+
+      String registerTopicStr = String(MQTT_TOPIC_REGISTER) + "/" + mac;
+      const char *registerTopicMAC = registerTopicStr.c_str();
+
+      mqttClient.publish(registerTopicMAC, buffer, n, false, 1);
+    }
   }
 }
 
