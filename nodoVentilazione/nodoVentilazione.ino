@@ -10,7 +10,7 @@
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);   // handles the MQTT communication protocol
 WiFiClient networkClient;                  // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
-#define MAC_ADDRESS "08:F9:E0:67:AC:08"
+String macAddress;
 
 const char *registerTopic;
 const char *serverIP;
@@ -39,6 +39,8 @@ void setup() {
   //wifiManager.resetSettings();
   wifiManager.autoConnect("AP Ventilazione - **MAC**");
   Serial.println(F("Connected."));
+
+  macAddress = WiFi.macAddress();
 }
 
 void loop() {
@@ -73,17 +75,21 @@ void mqttMessageReceived(String &topic, String &payload) {
     Serial.println(serverIP);
     Serial.println(registerTopic);
 
+    mqttClient.subscribe(String(registerTopic) + "/" + String(macAddress));
+
     registrazioneDispositivo();
+  } else if (topic == (String(registerTopic) + "/" + String(macAddress))) {
+    Serial.println(payload);
   }
 }
 
 void registrazioneDispositivo() {
   JsonDocument doc;
 
-  doc["indirizzo-mac"] = MAC_ADDRESS;
+  doc["indirizzo-mac"] = macAddress;
   doc["tipo"] = "ventilazione";
 
-  JsonArray sensori = doc.createNestedArray("sensori");
+  /*JsonArray sensori = doc.createNestedArray("sensori");
 
   JsonObject temperaturaSensor = sensori.createNestedObject();
   temperaturaSensor["nome"] = "temperatura";
@@ -107,10 +113,10 @@ void registrazioneDispositivo() {
 
   JsonObject allarme = doc.createNestedObject("allarme");
   allarme["stato"] = allarmeInCorso;
-  allarme["abilitato"] = allarmeAttivo;
+  allarme["abilitato"] = allarmeAttivo;*/
 
   // Serialize JSON to a buffer
-  char buffer[512];
+  char buffer[128];
   size_t n = serializeJson(doc, buffer);
 
   // Print the serialized JSON
