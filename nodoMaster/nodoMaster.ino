@@ -8,16 +8,16 @@
 #include <ArduinoJson.h>
 #include "secrets.h"
 
-#define DISPLAY_CHARS 16    // number of characters on a line
-#define DISPLAY_LINES 2     // number of display lines
-#define DISPLAY_ADDR 0x27   // display address on I2C bus
-LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);   // display object
+#define DISPLAY_CHARS 16                                            // number of characters on a line
+#define DISPLAY_LINES 2                                             // number of display lines
+#define DISPLAY_ADDR 0x27                                           // display address on I2C bus
+LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);  // display object
 
-#define MQTT_BUFFER_SIZE 1024               // the maximum size for packets being published and received
-MQTTClient mqttClient(MQTT_BUFFER_SIZE);   // handles the MQTT communication protocol
-WiFiClient networkClient;                  // handles the network connection to the MQTT broker
+#define MQTT_BUFFER_SIZE 1024             // the maximum size for packets being published and received
+MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication protocol
+WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
-  #define MQTT_TOPIC_REGISTER "vigiloffice/register"
+#define MQTT_TOPIC_REGISTER "vigiloffice/register"
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -36,8 +36,8 @@ const int output4 = D4;
 void setup() {
   Serial.begin(115200);
 
-  mqttClient.begin(MQTT_BROKERIP, 1883, networkClient);   // setup communication with MQTT broker
-  mqttClient.onMessage(mqttMessageReceived);              // callback on message received from MQTT broker
+  mqttClient.begin(MQTT_BROKERIP, 1883, networkClient);  // setup communication with MQTT broker
+  mqttClient.onMessage(mqttMessageReceived);             // callback on message received from MQTT broker
 
   // Initialize the output variables as outputs
   pinMode(output0, OUTPUT);
@@ -80,7 +80,7 @@ void setup() {
   // if it does not connect it starts an access point with the specified name
   // here  "AutoConnectAP"
   // and goes into a blocking loop awaiting configuration
-  wifiManager.autoConnect("AP Vigiloffice Master - **MAC**"); //Serve per creare un access point che broadcasterà il nome dell'SSID
+  wifiManager.autoConnect("AP Vigiloffice Master - **MAC**");  //Serve per creare un access point che broadcasterà il nome dell'SSID
   // or use this for auto generated name ESP + ChipID
   // wifiManager.autoConnect();
 
@@ -102,17 +102,17 @@ void loop() {
 }
 
 void listenForClients() {
-  WiFiClient client = server.available();   // Listen for incoming clients
+  WiFiClient client = server.available();  // Listen for incoming clients
 
-  if (client) {                      // If a new client connects,
-    Serial.println("New Client.");   // print a message out in the serial port
-    String currentLine = "";         // make a String to hold incoming data from the client
-    while (client.connected()) {     // loop while the client's connected
-      if (client.available()) {      // if there's bytes to read from the client,
-        char c = client.read();      // read a byte, then
-        Serial.write(c);             // print it out the serial monitor
+  if (client) {                     // If a new client connects,
+    Serial.println("New Client.");  // print a message out in the serial port
+    String currentLine = "";        // make a String to hold incoming data from the client
+    while (client.connected()) {    // loop while the client's connected
+      if (client.available()) {     // if there's bytes to read from the client,
+        char c = client.read();     // read a byte, then
+        Serial.write(c);            // print it out the serial monitor
         header += c;
-        if (c == '\n') {   // if the byte is a newline character
+        if (c == '\n') {  // if the byte is a newline character
           // if the current line is blank, you got two newline characters in a row.
           // that's the end of the client HTTP request, so send a response:
           if (currentLine.length() == 0) {
@@ -179,11 +179,11 @@ void listenForClients() {
             client.println();
             // Break out of the while loop
             break;
-          } else {   // if you got a newline, then clear currentLine
+          } else {  // if you got a newline, then clear currentLine
             currentLine = "";
           }
-        } else if (c != '\r') {   // if you got anything else but a carriage return character,
-          currentLine += c;       // add it to the end of the currentLine
+        } else if (c != '\r') {  // if you got anything else but a carriage return character,
+          currentLine += c;      // add it to the end of the currentLine
         }
       }
     }
@@ -197,14 +197,14 @@ void listenForClients() {
 }
 
 void connectToMQTTBroker() {
-  if (!mqttClient.connected()) {   // not connected
+  if (!mqttClient.connected()) {  // not connected
     Serial.print(F("\nConnecting to MQTT broker..."));
     while (!mqttClient.connect(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD)) {
       Serial.print(F("."));
       delay(1000);
     }
     Serial.println(F("\nConnected!"));
-    
+
     JsonDocument doc;
     doc["serverIP"] = ipToString(WiFi.localIP());
     doc["registerTopic"] = MQTT_TOPIC_REGISTER;
