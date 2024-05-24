@@ -13,10 +13,11 @@
 #define DISPLAY_ADDR 0x27   // display address on I2C bus
 LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);   // display object
 
-#define MQTT_BUFFER_SIZE 128               // the maximum size for packets being published and received
+#define MQTT_BUFFER_SIZE 1024               // the maximum size for packets being published and received
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);   // handles the MQTT communication protocol
 WiFiClient networkClient;                  // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
+#define MQTT_TOPIC_REGISTER "vigiloffice/register"
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -58,7 +59,7 @@ void setup() {
     lcd.setCursor(0, 0);
     lcd.print(F("Connect to SSID:"));
     lcd.setCursor(0, 1);
-    lcd.print(F("847361"));
+    lcd.print(F("AP Master - **MAC**"));
   } else {
     Serial.print(F("LCD not found. Error "));
     Serial.println(error);
@@ -71,7 +72,7 @@ void setup() {
   // Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
   // Uncomment and run it once, if you want to erase all the stored information
-  wifiManager.resetSettings();
+  //wifiManager.resetSettings();
   // set custom ip for portal
   // wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 
@@ -84,16 +85,14 @@ void setup() {
   // wifiManager.autoConnect();
 
   // if you get here you have connected to the WiFi
-  Serial.println(F("Connected."));
-  Serial.println(WiFi.macAddress());
 
   server.begin();
 
-  /*lcd.clear();
+  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(F("Server:"));
   lcd.setCursor(0, 1);
-  lcd.print(WiFi.localIP());*/
+  lcd.print(WiFi.localIP());
 }
 
 void loop() {
@@ -205,18 +204,26 @@ void connectToMQTTBroker() {
       delay(1000);
     }
     Serial.println(F("\nConnected!"));
-
+    
     JsonDocument doc;
     doc["serverIP"] = ipToString(WiFi.localIP());
+    doc["registerTopic"] = MQTT_TOPIC_REGISTER;
     char buffer[128];
     size_t n = serializeJson(doc, buffer);
-    Serial.print(F("JSON message: "));
-    Serial.println(buffer);
     mqttClient.publish(MQTT_TOPIC_WELCOME, buffer, n, true, 2);
+    Serial.println(buffer);
+    mqttClient.subscribe(MQTT_TOPIC_REGISTER);
+    Serial.println(F("Subscribed to register topic."));
   }
 }
 
 void mqttMessageReceived(String &topic, String &payload) {
+  if (topic == MQTT_TOPIC_REGISTER) {
+    JsonDocument doc;
+    deserializeJson(doc, payload);
+    const char *macVentilazione = doc["indirizzo-mac"];
+    Serial.println(macVentilazione);
+  }
 }
 
 String ipToString(IPAddress ip) {
