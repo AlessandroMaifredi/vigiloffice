@@ -13,7 +13,7 @@
 #define DISPLAY_ADDR 0x27                                           // display address on I2C bus
 LiquidCrystal_I2C lcd(DISPLAY_ADDR, DISPLAY_CHARS, DISPLAY_LINES);  // display object
 
-#define MQTT_BUFFER_SIZE 1024             // the maximum size for packets being published and received
+#define MQTT_BUFFER_SIZE 2048             // the maximum size for packets being published and received
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication protocol
 WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
@@ -239,6 +239,7 @@ void mqttMessageReceived(String &topic, String &payload) {
     }
     writeDoc["statusTopic"] = prefix + String("/status");
     writeDoc["controlTopic"] = prefix + String("/control");
+    mqttClient.subscribe(prefix + String("/status"));
     char buffer[256];
     size_t n = serializeJson(writeDoc, buffer);
 
@@ -246,6 +247,8 @@ void mqttMessageReceived(String &topic, String &payload) {
     const char *registerTopicMAC = registerTopicStr.c_str();
 
     mqttClient.publish(registerTopicMAC, buffer, n, false, 1);
+  } else {
+    Serial.println(payload);
   }
 }
 

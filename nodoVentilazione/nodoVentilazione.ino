@@ -6,15 +6,16 @@
 #include "secrets.h"
 
 // MQTT data
-#define MQTT_BUFFER_SIZE 1024               // the maximum size for packets being published and received
+#define MQTT_BUFFER_SIZE 2048               // the maximum size for packets being published and received
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);   // handles the MQTT communication protocol
 WiFiClient networkClient;                  // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
 String macAddress;
 
 const char *registerTopic;
+const char *statusTopic;
+const char *controlTopic;
 const char *serverIP;
-bool gotRegisterTopic = false;
 
 bool allarmeInCorso = false;
 bool allarmeAttivo = true;
@@ -26,8 +27,6 @@ float temperatura = 24.5;
 float umidita = 33.5;
 float fiamma = 0.0;
 float infrarossi = 0.0;
-
-char message[1024];
 
 void setup() {
   Serial.begin(115200);
@@ -49,6 +48,7 @@ void loop() {
 }
 
 void connectToMQTTBroker() {
+  static unsigned long lastDataSent = millis();
   if (!mqttClient.connected()) {   // not connected
     Serial.print(F("\nConnecting to MQTT broker..."));
     while (!mqttClient.connect(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD)) {
@@ -59,6 +59,49 @@ void connectToMQTTBroker() {
     // connected to broker, subscribe topics
     mqttClient.subscribe(MQTT_TOPIC_WELCOME);
     Serial.println(F("\nSubscribed to welcome topic!"));
+  } else {
+    if (millis() - lastDataSent > 10000) {
+      JsonDocument doc;
+
+      doc["indirizzo-mac"] = macAddress;
+      doc["tipo"] = "ventilazione";
+
+      JsonArray sensori = doc.createNestedArray("sensori");
+
+      JsonObject temperaturaSensor = sensori.createNestedObject();
+      temperaturaSensor["nome"] = "temperatura";
+      temperaturaSensor["misurazione"] = temperatura;
+      temperaturaSensor["attivo"] = sensoreTemperaturaAttivo;
+
+      JsonObject umiditaSensor = sensori.createNestedObject();
+      umiditaSensor["nome"] = "umidita";
+      umiditaSensor["misurazione"] = umidita;
+      umiditaSensor["attivo"] = sensoreUmiditaAttivo;
+
+      JsonObject fiammaSensor = sensori.createNestedObject();
+      fiammaSensor["nome"] = "fiamma";
+      fiammaSensor["misurazione"] = fiamma;
+      fiammaSensor["attivo"] = sensoreFiammaAttivo;
+
+      JsonObject infrarossiSensor = sensori.createNestedObject();
+      infrarossiSensor["nome"] = "infrarossi";
+      infrarossiSensor["misurazione"] = infrarossi;
+      infrarossiSensor["attivo"] = sensoreInfrarossiAttivo;
+
+      JsonObject allarme = doc.createNestedObject("allarme");
+      allarme["stato"] = allarmeInCorso;
+      allarme["abilitato"] = allarmeAttivo;
+
+      // Serialize JSON to a buffer*/
+      char buffer[1024];
+      size_t n = serializeJson(doc, buffer);
+
+      // Print the serialized JSON
+      //Serial.println(buffer);
+      Serial.println(String(statusTopic));
+      //mqttClient.publish(statusTopic, buffer, n, false, 0);
+      lastDataSent = millis();
+    }
   }
 }
 
@@ -79,7 +122,13 @@ void mqttMessageReceived(String &topic, String &payload) {
 
     registrazioneDispositivo();
   } else if (topic == (String(registerTopic) + "/" + String(macAddress))) {
-    Serial.println(payload);
+    JsonDocument settingsDoc;
+    deserializeJson(settingsDoc, payload);
+    const char *statTopic = settingsDoc["statusTopic"];
+    const char *contTopic = settingsDoc["controlTopic"];
+    statusTopic = statTopic;
+    controlTopic = contTopic;
+    mqttClient.subscribe(controlTopic);
   }
 }
 
@@ -88,32 +137,6 @@ void registrazioneDispositivo() {
 
   doc["indirizzo-mac"] = macAddress;
   doc["tipo"] = "ventilazione";
-
-  /*JsonArray sensori = doc.createNestedArray("sensori");
-
-  JsonObject temperaturaSensor = sensori.createNestedObject();
-  temperaturaSensor["nome"] = "temperatura";
-  temperaturaSensor["misurazione"] = temperatura;
-  temperaturaSensor["attivo"] = sensoreTemperaturaAttivo;
-
-  JsonObject umiditaSensor = sensori.createNestedObject();
-  umiditaSensor["nome"] = "umidita";
-  umiditaSensor["misurazione"] = umidita;
-  umiditaSensor["attivo"] = sensoreUmiditaAttivo;
-
-  JsonObject fiammaSensor = sensori.createNestedObject();
-  fiammaSensor["nome"] = "fiamma";
-  fiammaSensor["misurazione"] = fiamma;
-  fiammaSensor["attivo"] = sensoreFiammaAttivo;
-
-  JsonObject infrarossiSensor = sensori.createNestedObject();
-  infrarossiSensor["nome"] = "infrarossi";
-  infrarossiSensor["misurazione"] = infrarossi;
-  infrarossiSensor["attivo"] = sensoreInfrarossiAttivo;
-
-  JsonObject allarme = doc.createNestedObject("allarme");
-  allarme["stato"] = allarmeInCorso;
-  allarme["abilitato"] = allarmeAttivo;*/
 
   // Serialize JSON to a buffer
   char buffer[128];
