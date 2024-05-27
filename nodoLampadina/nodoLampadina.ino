@@ -1,6 +1,27 @@
+#include "wiring_private.h"
+#include <DNSServer.h>
+#include <ESP8266WiFi.h>
+#include <WiFiManager.h>
+#include <MQTT.h>
 #include <ArduinoJson.h>
+#include "secrets.h"
+#include "sensorsJsonNames.h"
+
+
+// === LOGGING ===
+
+enum LOG_LEVEL {
+  LOG_COMM,
+  LOG_SENSORS,
+  LOG_ALARMS,
+  LOG_ALL,
+  LOG_OFF,
+};
+
+LOG_LEVEL logLevel = LOG_COMM;
 
 // === ALARM ===
+
 
 enum ALARM_SYSTEM_STATUS {
   ALARM_ENABLED,
@@ -27,16 +48,21 @@ void enableAlarm() {
 void activateAlarm() {
   if (alarmSystemStatus == ALARM_ENABLED) {
     alarmStatus = ALARM_ACTIVE;
-    Serial.println("!!ALARM ACTIVATED!!");
+    if (logLevel != LOG_OFF) {
+      Serial.println("!!ALARM ACTIVATED!!");
+    }
   }
 }
 
 void deactivateAlarm() {
   alarmStatus = ALARM_NORMAL;
-  Serial.println("SHUT OFF ALARM!");
+  if (logLevel != LOG_OFF) {
+    Serial.println("SHUT OFF ALARM!");
+  }
 }
 
 // === PIR MOTION ===
+
 
 #define MOTION_SENSOR_PIN D6
 
@@ -65,15 +91,21 @@ void readMotion() {
       if (millis() - motionInitTimer > MOTION_INIT_TIME_DELAY) {
         motionInitTimer = millis();
         motionStatus = MOTION_NORMAL;
-        Serial.println("MOTION SENSOR INIT COMPLETE");
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println("MOTION SENSOR INIT COMPLETE");
+        }
       }
     } else {
       motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
       if (motionStatus == MOTION_DETECTED) {
-        Serial.println("Set MOTION to MOTION_DETECTED!");
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println("Set MOTION to MOTION_DETECTED!");
+        }
         activateAlarm();
       } else {
-        Serial.println("Set MOTION to MOTION_NORMAL!");
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println("Set MOTION to MOTION_NORMAL!");
+        }
       }
     }
   }
@@ -81,6 +113,7 @@ void readMotion() {
 
 
 // === PHOTORESISTOR ===
+
 
 #define LIGHT_SENSOR_PIN A0
 volatile unsigned int lightValue = 0;
@@ -93,8 +126,8 @@ enum LIGHT_SENSOR_STATUS {
 LIGHT_SENSOR_STATUS lightSensorStatus = LIGHT_SENSOR_ENABLED;
 
 enum LIGHT_STATUS {
-  LIGHT_LOW,
-  LIGHT_NORMAL
+  LIGHT_NORMAL,
+  LIGHT_LOW
 };
 
 volatile LIGHT_STATUS lightStatus = LIGHT_NORMAL;
@@ -109,14 +142,20 @@ void readLight() {
   if (lightSensorStatus == LIGHT_SENSOR_ENABLED) {
     if (millis() - lastLightReading > lightReadingInterval) {
       lightValue = analogRead(LIGHT_SENSOR_PIN);
-      Serial.print(F("LIGHT: "));
-      Serial.println(lightValue);
+      if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+        Serial.print(F("LIGHT: "));
+        Serial.println(lightValue);
+      }
       if (lightValue >= lowLightTreshold) {
         lightStatus = LIGHT_LOW;
-        Serial.println(F("Set LIGHT to LIGHT_LOW"));
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set LIGHT to LIGHT_LOW"));
+        }
       } else {
         lightStatus = LIGHT_NORMAL;
-        Serial.println(F("Set LIGHT to LIGHT_NORMAL"));
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set LIGHT to LIGHT_NORMAL"));
+        }
       }
       lastLightReading = millis();
     }
@@ -124,6 +163,7 @@ void readLight() {
 }
 
 // === FLAME SENSOR ===
+
 
 #define FLAME_SENSOR_PIN D7
 
@@ -149,11 +189,17 @@ void readFlame() {
     if (millis() - lastFlameReading > flameReadingInterval) {
       if (digitalRead(FLAME_SENSOR_PIN) == HIGH) {
         flameStatus = FLAME_PRESENT;
-        Serial.println(F("Set FLAME to FLAME_PRESENT"));
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+
+          Serial.println(F("Set FLAME to FLAME_PRESENT"));
+        }
         activateAlarm();
       } else {
         flameStatus = FLAME_ABSENT;
-        Serial.println(F("Set FLAME to FLAME_ABSENT"));
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+
+          Serial.println(F("Set FLAME to FLAME_ABSENT"));
+        }
       }
       lastFlameReading = millis();
     }
@@ -161,6 +207,7 @@ void readFlame() {
 }
 
 // === RGB ===
+
 
 #define RGB_RED_PIN D2
 #define RGB_GREEN_PIN D1
@@ -172,10 +219,11 @@ enum RGB_SENSOR_STATUS {
 };
 
 enum RGB_STATUS {
-  RGB_ON,
   RGB_OFF,
+  RGB_ON,
   RGB_ALARM,
-  RGB_CUSTOM
+  RGB_CUSTOM_ON,
+  RGB_CUSTOM_OFF
 };
 
 RGB_SENSOR_STATUS rgbSensorStatus = RGB_SENSOR_ENABLED;
@@ -186,7 +234,6 @@ void setRGB(byte red, byte green, byte blue) {
   digitalWrite(RGB_RED_PIN, red);
   digitalWrite(RGB_GREEN_PIN, green);
   digitalWrite(RGB_BLUE_PIN, blue);
-  rgbStatus = RGB_CUSTOM;
 }
 
 void setRGBOff() {
@@ -209,25 +256,30 @@ void updateRGB() {
     if (alarmStatus == ALARM_ACTIVE) {
       setRGBAlarm();
     } else {
-      switch (lightStatus) {
-        case LIGHT_LOW:
-          setRGBOn();
-          break;
-        case LIGHT_NORMAL:
-          setRGBOff();
-          break;
+      if (rgbStatus != RGB_CUSTOM_ON && rgbStatus != RGB_CUSTOM_OFF) {
+        switch (lightStatus) {
+          case LIGHT_LOW:
+            setRGBOn();
+            break;
+          case LIGHT_NORMAL:
+            setRGBOff();
+            break;
+        }
+      } else {
+        switch (rgbStatus) {
+          case RGB_CUSTOM_ON:
+            setRGB(HIGH, HIGH, HIGH);
+            break;
+          case RGB_CUSTOM_OFF:
+            setRGB(LOW, LOW, LOW);
+            break;
+        }
       }
     }
   }
 }
 
-#include "wiring_private.h"
-#include <DNSServer.h>
-#include <ESP8266WiFi.h>
-#include <WiFiManager.h>
-#include <MQTT.h>
-#include <ArduinoJson.h>
-#include "secrets.h"
+
 
 // MQTT data
 #define MQTT_BUFFER_SIZE 1024             // the maximum size for packets being published and received
@@ -236,69 +288,85 @@ WiFiClient networkClient;                 // handles the network connection to t
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
 String macAddress;
 
-const char *registerTopic;
-const char *statusTopic;
-const char *controlTopic;
-String settingsTopic;
+String registerTopic = "";
+String statusTopic = "";
+String controlTopic = "";
+String settingsTopic = "";
 
 JsonDocument statusDoc;
 
 volatile bool applyChanges = false;
 
+void updateStatusDoc() {
+  statusDoc["indirizzo-mac"] = macAddress;
+  statusDoc["tipo"] = DEVICE_TYPE;
+  JsonArray sensori = statusDoc.createNestedArray("sensori");
+  JsonObject lightSensor = sensori.createNestedObject();
+  lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
+  lightSensor[SENSOR_VALUE_JSON_NAME] = lightValue;
+  lightSensor[SENSOR_THRESHOLD_JSON_NAME] = lowLightTreshold;
+  lightSensor[STATUS_JSON_NAME] = lightStatus;
+  lightSensor[SENSOR_STATUS_JSON_NAME] = lightSensorStatus == LIGHT_SENSOR_ENABLED ? true : false;
+
+  JsonObject motionSensor = sensori.createNestedObject();
+  motionSensor[SENSOR_NAME_JSON_NAME] = MOTION_JSON_NAME;
+  motionSensor[SENSOR_VALUE_JSON_NAME] = motionStatus == MOTION_INIT || motionStatus == MOTION_NORMAL ? 0 : 1;
+  motionSensor[STATUS_JSON_NAME] = motionStatus;
+  motionSensor[SENSOR_STATUS_JSON_NAME] = motionSensorStatus == MOTION_SENSOR_ENABLED ? true : false;
+
+  JsonObject flameSensor = sensori.createNestedObject();
+  flameSensor[SENSOR_NAME_JSON_NAME] = FLAME_JSON_NAME;
+  flameSensor[SENSOR_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
+  flameSensor[STATUS_JSON_NAME] = flameStatus;
+  flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
+
+  JsonObject RGBLed = sensori.createNestedObject();
+  RGBLed[SENSOR_NAME_JSON_NAME] = RGB_JSON_NAME;
+  RGBLed[SENSOR_VALUE_JSON_NAME] = rgbStatus;
+  RGBLed[STATUS_JSON_NAME] = rgbStatus;
+  RGBLed[SENSOR_STATUS_JSON_NAME] = rgbSensorStatus == RGB_SENSOR_ENABLED ? true : false;
+
+  JsonObject alarm = statusDoc.createNestedObject(ALARM_JSON_NAME);
+  alarm[STATUS_JSON_NAME] = alarmStatus == ALARM_NORMAL ? false : true;
+  alarm[SENSOR_STATUS_JSON_NAME] = alarmSystemStatus == ALARM_ENABLED ? true : false;
+}
+
 void connectToMQTTBroker() {
   static unsigned long lastDataSend = millis();
   if (!mqttClient.connected()) {  // not connected
-    Serial.print(F("\nConnecting to MQTT broker..."));
+    if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+      Serial.print(F("\nConnecting to MQTT broker..."));
+    }
     while (!mqttClient.connect(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD)) {
-      Serial.print(F("."));
+      if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+        Serial.print(F("."));
+      }
       delay(1000);
     }
-    Serial.println(F("\nConnected!"));
-
+    if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+      Serial.println(F("\nConnected!"));
+    }
     // connected to broker, subscribe topics
     mqttClient.subscribe(MQTT_TOPIC_WELCOME);
-    Serial.println(F("\nSubscribed to welcome topic!"));
+    if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+      Serial.println(F("\nSubscribed to welcome topic!"));
+    }
   } else {
-    if (millis() - lastDataSend > 5000) {
-      statusDoc["indirizzo-mac"] = macAddress;
-      statusDoc["tipo"] = DEVICE_TYPE;
-      JsonArray sensori = statusDoc.createNestedArray("sensori");
-      JsonObject lightSensor = sensori.createNestedObject();
-      lightSensor["nome"] = "luce";
-      lightSensor["misurazione"] = lightValue;
-      lightSensor["stato"] = lightStatus;
-      lightSensor["abilitato"] = lightSensorStatus == LIGHT_SENSOR_ENABLED ? true : false;
+    if (statusTopic != "" && millis() - lastDataSend > 5000) {
 
-      JsonObject motionSensor = sensori.createNestedObject();
-      motionSensor["nome"] = "movimento";
-      motionSensor["misurazione"] = motionStatus == MOTION_INIT || motionStatus == MOTION_NORMAL ? 0 : 1;
-      motionSensor["stato"] = motionStatus;
-      motionSensor["abilitato"] = motionSensorStatus == MOTION_SENSOR_ENABLED ? true : false;
-
-      JsonObject flameSensor = sensori.createNestedObject();
-      flameSensor["nome"] = "fiamma";
-      flameSensor["misurazione"] = flameStatus == FLAME_PRESENT ? 1 : 0;
-      flameSensor["stato"] = flameStatus;
-      flameSensor["abilitato"] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
-
-      JsonObject RGBLed = sensori.createNestedObject();
-      RGBLed["nome"] = "rgb";
-      RGBLed["misurazione"] = rgbStatus;
-      RGBLed["stato"] = rgbStatus;
-      RGBLed["abilitato"] = rgbSensorStatus == RGB_SENSOR_ENABLED ? true : false;
-
-
-      JsonObject alarm = statusDoc.createNestedObject("allarme");
-      alarm["stato"] = alarmStatus == ALARM_NORMAL ? false : true;
-      alarm["abilitato"] = alarmSystemStatus == ALARM_ENABLED ? true : false;
+      updateStatusDoc();
 
       // Serialize JSON to a buffer
       char buffer[1024];
       size_t n = serializeJson(statusDoc, buffer);
 
       // Print the serialized JSON
-      Serial.println(buffer);
-      mqttClient.publish(statusTopic, buffer, n, false, 1);
+      if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+        Serial.print("Sending status on ");
+        Serial.println(statusTopic);
+        Serial.println(buffer);
+      }
+      mqttClient.publish(statusTopic.c_str(), buffer, n, false, 1);
       lastDataSend = millis();
     }
   }
@@ -306,27 +374,79 @@ void connectToMQTTBroker() {
 
 void mqttMessageReceived(String &topic, String &payload) {
   // this function handles a message from the MQTT broker
-  Serial.println("Incoming MQTT message: " + topic + " - " + payload);
+  if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+    Serial.println("Incoming MQTT message: " + topic + " - " + payload);
+  }
   if (topic == MQTT_TOPIC_WELCOME) {
     JsonDocument doc;
     deserializeJson(doc, payload);
-    registerTopic = doc["registerTopic"];
-    JsonDocument settingsDoc;
-    settingsDoc["indirizzo-mac"] = macAddress;
-    settingsDoc["tipo"] = DEVICE_TYPE;
-    char buffer[128];
-    size_t n = serializeJson(settingsDoc, buffer);
-    settingsTopic = registerTopic + String("/") + macAddress;
-    mqttClient.subscribe(settingsTopic);
-    mqttClient.publish(registerTopic, buffer, n);
+    setRegisterTopic(doc);
   } else if (topic == settingsTopic) {
     JsonDocument doc;
     deserializeJson(doc, payload);
-    statusTopic = doc["statusTopic"];
-    controlTopic = doc["controlTopic"];
-    mqttClient.subscribe(statusTopic);
-    mqttClient.subscribe(controlTopic);
+    setTopics(doc);
   } else if (topic == controlTopic) {
+    JsonDocument controlDoc;
+    deserializeJson(controlDoc, payload);
+    applyControlChanges(controlDoc);
+  }
+}
+
+void setRegisterTopic(JsonDocument doc) {
+  registerTopic = String(doc["registerTopic"]);
+  if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+    Serial.print("Recieved register topic: ");
+    Serial.println(registerTopic);
+  }
+  JsonDocument settingsDoc;
+  settingsDoc["indirizzo-mac"] = macAddress;
+  settingsDoc["tipo"] = DEVICE_TYPE;
+  char buffer[512];
+  size_t n = serializeJson(settingsDoc, buffer);
+  settingsTopic = registerTopic + String("/") + macAddress;
+  if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+    Serial.print("Setting topic is: ");
+    Serial.println(settingsTopic);
+  }
+  mqttClient.subscribe(settingsTopic.c_str());
+  mqttClient.publish(registerTopic.c_str(), buffer, n);
+}
+
+void setTopics(JsonDocument topicsDoc) {
+  statusTopic = String(topicsDoc["statusTopic"]);
+  controlTopic = String(topicsDoc["controlTopic"]);
+  //mqttClient.subscribe(statusTopic);
+  mqttClient.subscribe(controlTopic.c_str());
+  if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+    Serial.print("Status topic set to: ");
+    Serial.println(statusTopic);
+    Serial.print("Control topic set to: ");
+    Serial.println(controlTopic);
+  }
+}
+
+void applyControlChanges(JsonDocument controlDoc) {
+  JsonObject allarme = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
+  alarmStatus = allarme[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
+  alarmSystemStatus = allarme[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
+  JsonArray sensori = controlDoc["sensori"].as<JsonArray>();
+  for (JsonVariant v : sensori) {
+    JsonObject sensore = v.as<JsonObject>();
+    String nome = String(sensore[SENSOR_NAME_JSON_NAME]);
+    if (nome == LIGHT_JSON_NAME) {
+      lightStatus = sensore[STATUS_JSON_NAME];
+      lightSensorStatus = sensore[SENSOR_STATUS_JSON_NAME] == true ? LIGHT_SENSOR_ENABLED : LIGHT_SENSOR_DISABLED;
+      lowLightTreshold = sensore[SENSOR_THRESHOLD_JSON_NAME];
+    } else if (nome == MOTION_JSON_NAME) {
+      motionStatus = sensore[STATUS_JSON_NAME];
+      motionSensorStatus = sensore[SENSOR_STATUS_JSON_NAME] == true ? MOTION_SENSOR_ENABLED : MOTION_SENSOR_DISABLED;
+    } else if (nome == FLAME_JSON_NAME) {
+      flameStatus = sensore[STATUS_JSON_NAME];
+      flameSensorStatus = sensore[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
+    } else if (nome == RGB_JSON_NAME) {
+      rgbStatus = sensore[STATUS_JSON_NAME];
+      rgbSensorStatus = sensore[SENSOR_STATUS_JSON_NAME] == true ? RGB_SENSOR_ENABLED : RGB_SENSOR_DISABLED;
+    }
   }
 }
 
