@@ -9,6 +9,7 @@
 #include <InfluxDbClient.h>
 #include "sensorsJsonNames.h"
 #include "secrets.h"
+#include "UriBraces.h"
 
 #define DISPLAY_CHARS 16                                            // number of characters on a line
 #define DISPLAY_LINES 2                                             // number of display lines
@@ -29,7 +30,7 @@ Point pointDeviceHVAC("HVACs");
 boolean alarmStatus = false;
 
 // Set web server port number to 80
-WiFiServer server(80);
+ESP8266WebServer server(80);
 
 // Variable to store the HTTP request
 String header;
@@ -77,24 +78,23 @@ void setup() {
       delay(1);
   }*/
 
-  // WiFiManager
-  // Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
-  // Uncomment and run it once, if you want to erase all the stored information
-  //wifiManager.resetSettings();
-  // set custom ip for portal
-  // wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 
-  // fetches ssid and pass from eeprom and tries to connect
-  // if it does not connect it starts an access point with the specified name
-  // here  "AutoConnectAP"
-  // and goes into a blocking loop awaiting configuration
-  wifiManager.autoConnect("AP Vigiloffice Master - **MAC**");  //Serve per creare un access point che broadcasterà il nome dell'SSID
-  // or use this for auto generated name ESP + ChipID
-  // wifiManager.autoConnect();
+  wifiManager.autoConnect("AP Vigiloffice Master - **MAC**");
 
-  // if you get here you have connected to the WiFi
+  server.on("/", handle_root);
+  server.on("/devices/", handle_devices);
 
+  server.on("/devices/lightbulbs/", handle_intermediate);
+  //server.on("/devices/conditioning/", handle_intermediate);
+
+  server.on(UriBraces("/devices/lightbulbs/{}/edit"), handle_single_lightbulb_edit);
+  //server.on(UriBraces("/devices/conditioning/{}/edit"), handle_single_conditioning_edit);
+
+  server.on(UriBraces("/devices/lightbulbs/{}"), handle_single_lightbulb);
+  //server.on(UriBraces("/devices/conditioning/{}"), handle_single_conditioning);
+
+  server.onNotFound(handle_NotFound);
   server.begin();
 
   lcd.clear();
@@ -105,106 +105,114 @@ void setup() {
 }
 
 void loop() {
-  listenForClients();
+  server.handleClient();
   connectToMQTTBroker();
   mqttClient.loop();
   check_influxdb();
 }
 
-void listenForClients() {
-  WiFiClient client = server.available();  // Listen for incoming clients
+// === WEBSERVER ===
 
-  if (client) {                     // If a new client connects,
-    Serial.println("New Client.");  // print a message out in the serial port
-    String currentLine = "";        // make a String to hold incoming data from the client
-    while (client.connected()) {    // loop while the client's connected
-      if (client.available()) {     // if there's bytes to read from the client,
-        char c = client.read();     // read a byte, then
-        Serial.write(c);            // print it out the serial monitor
-        header += c;
-        if (c == '\n') {  // if the byte is a newline character
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
-          if (currentLine.length() == 0) {
-            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-            // and a content-type so the client knows what's coming, then a blank line:
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type:text/html");
-            client.println("Connection: close");
-            client.println();
+JsonDocument knownDevices;
 
-            // turns the GPIOs on and off
-            if (header.indexOf("GET /0/on") >= 0) {
-              Serial.println("GPIO 0 on");
-              output0State = "on";
-              digitalWrite(output0, LOW);
-            } else if (header.indexOf("GET /0/off") >= 0) {
-              Serial.println("GPIO 0 off");
-              output0State = "off";
-              digitalWrite(output0, HIGH);
-            } else if (header.indexOf("GET /4/on") >= 0) {
-              Serial.println("GPIO 4 on");
-              output4State = "on";
-              digitalWrite(output4, LOW);
-            } else if (header.indexOf("GET /4/off") >= 0) {
-              Serial.println("GPIO 4 off");
-              output4State = "off";
-              digitalWrite(output4, HIGH);
-            }
+const String root_html = "<!DOCTYPE html>\
+  <html>\
+  <head>\
+    <title>VigilOffice</title>\
+  </head>\
+  <body>\
+    <button href='/devices'>Manage devices</button>\
+    <button href='/alarm'>Manage alarm</button>\
+  </button>\
+</html>";
 
-            // Display the HTML web page
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons
-            // Feel free to change the background-color and font-size attributes to fit your preferences
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #77878A;}</style></head>");
+String createDevicesPage() {
+  String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body><table><th><td>#</td><td>Device type</td><td>Device MAC</td></th>";
+  int i = 0;
+  JsonArray devices = knownDevices["devices"].as<JsonArray>();
+  for (JsonVariant v : devices) {
+    JsonObject device = v.as<JsonObject>();
+    ++i;
+    page += "<tr onclick=\"location.href = '/devices/" + String(device["url"]) + "/" + String(device["mac"]) + "';\">";
+    page += "<td>" + String(i) + "</td>";
+    page += "<td>" + String(device["type"]) + "</td>";
+    page += "<td>" + String(device["mac"]) + "</td>";
+    page += "</tr>";
+  }
+  page += "</table></body></html>";
+  return page;
+}
 
-            // Web Page Heading
-            client.println("<body><h1>ESP8266 Web Server</h1>");
+void handle_root() {
+  Serial.print(F("New Client with IP: "));
+  Serial.println(server.client().remoteIP().toString());
+  server.send(200, F("text/html"), root_html);
+}
 
-            // Display current state, and ON/OFF buttons for GPIO 0
-            client.println("<p>GPIO 0 - State " + output0State + "</p>");
-            // If the output0State is off, it displays the ON button
-            if (output0State == "off") {
-              client.println("<p><a href=\"/0/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/0/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
+void handle_NotFound() {
+  server.send(404, F("text/plain"), F("ERROR 404 - Not found"));
+}
 
-            // Display current state, and ON/OFF buttons for GPIO 4
-            client.println("<p>GPIO 4 - State " + output4State + "</p>");
-            // If the output4State is off, it displays the ON button
-            if (output4State == "off") {
-              client.println("<p><a href=\"/4/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
-            client.println("</body></html>");
+void handle_devices() {
+  Serial.print(F("New Client with IP: "));
+  Serial.println(server.client().remoteIP().toString());
+  server.send(200, F("text/html"), createDevicesPage());
+}
 
-            // The HTTP response ends with another blank line
-            client.println();
-            // Break out of the while loop
-            break;
-          } else {  // if you got a newline, then clear currentLine
-            currentLine = "";
-          }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
-        }
-      }
-    }
-    // Clear the header variable
-    header = "";
-    // Close the connection
-    client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println("");
+void handle_intermediate() {
+  server.sendHeader("Location", String("http://") + server.client().localIP().toString() + "/devices/", true);
+  server.send(301);
+}
+
+void handle_single_lightbulb() {
+  String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body>";
+  String mac = server.pathArg(0);
+  //TODO: RETRIEVE INFORMATION FROM INFLUX?
+  //TODO: DISPLAY DEVICE INFO
+  //TODO: DISPLAY CONFIGURATION EDITING FORM
+  page += "<form method=\"post\" enctype=\"application/x-www-form-urlencoded\" action=\"/control\">\
+      <label for=\"flame\">Flame status:</label>\
+      <input type=\"number\" name=\"flameStatus\" value=\"0\" min=\"0\" max=\"1\"><br>\
+      <label for=\"flame\">Flame sensor enabled:</label>\
+      <input type=\"number\" name=\"flameEnabled\" value=\"0\" min=\"0\" max=\"1\"><br>\
+      <button class=\"button\" type=\"submit\">Send new configuration</button>\
+    </form>";
+  page += "</body></html>";
+}
+
+/*void handle_single_conditioning() {
+  String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body>";
+  String mac = server.pathArg(0);
+  //RETRIEVE INFORMATION FROM INFLUX?
+  //DISPLAY DEVICE INFO
+  //DISPLAY CONFIGURATION EDITING FORM
+  page += "<form method=\"post\" enctype=\"application/x-www-form-urlencoded\" action=\"/control\">\
+  <input type=\"hidden\" value="
+          + "\
+      <label for=\"flame\">Flame status:</label>\
+      <input type=\"number\" name=\"flameStatus\" value=\"0\" min=\"0\" max=\"1\"><br>\
+      <label for=\"flame\">Flame sensor enabled:</label>\
+      <input type=\"number\" name=\"flameEnabled\" value=\"0\" min=\"0\" max=\"1\"><br>\
+      <button class=\"button\" type=\"submit\">Send new configuration</button>\
+    </form>";
+  page += "</body></html>";
+}*/
+
+void handle_single_lightbulb_edit() {
+  String mac = server.pathArg(0);
+  if (server.method() != HTTP_POST) {
+    server.send(405, F("text/plain"), F("ERROR 405 - Method Not Allowed"));
+  } else if (!server.hasArg(F("mac"))) {
+    server.send(400, F("text/plain"), F("ERROR 400 - Bad Request"));
+  } else {
+    //TODO: SEND NEW CONFIGURATION TO DEVICE
+    //server.sendHeader("Location", String("http://") + server.client().localIP().toString() + "/devices/" + device.url + "/" + device.mac, true);
+    server.sendHeader("Location", String("http://") + server.client().localIP().toString(), true);
+    server.send(301);
   }
 }
+
+// === MQTT ===
 
 void connectToMQTTBroker() {
   if (!mqttClient.connected()) {  // not connected
