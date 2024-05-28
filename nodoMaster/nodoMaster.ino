@@ -20,13 +20,13 @@ MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication prot
 WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
 #define MQTT_TOPIC_REGISTER "vigiloffice/register"
-#define MQTT_TOPIC_VENTILAZIONE "ventilazione/"
-#define MQTT_TOPIC_LAMPADINE "lampadine/"
+#define MQTT_TOPIC_HVAC "hvacs/"
+#define MQTT_TOPIC_LAMPS "lamps/"
 
 InfluxDBClient client_idb(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
-Point pointDeviceLampadina("Lampadine");
-Point pointDeviceVentilatore("Ventilatori");
-boolean allarmeInCorso = false;
+Point pointDeviceLamp("Lamps");
+Point pointDeviceHVAC("HVACs");
+boolean alarmStatus = false;
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -231,17 +231,17 @@ void mqttMessageReceived(String &topic, String &payload) {
   if (topic == MQTT_TOPIC_REGISTER) {
     JsonDocument readDoc;
     deserializeJson(readDoc, payload);
-    const char *mac = readDoc["indirizzo-mac"];
-    const char *tipo = readDoc["tipo"];
+    const char *mac = readDoc["mac-address"];
+    const char *type = readDoc["type"];
     Serial.println(mac);
-    Serial.println(tipo);
+    Serial.println(type);
 
     JsonDocument writeDoc;
     String prefix = String("vigiloffice/");
-    if (strcmp(tipo, "ventilazione") == 0) {
-      prefix = prefix + MQTT_TOPIC_VENTILAZIONE + mac;
-    } else if (strcmp(tipo, "lampadina") == 0) {
-      prefix = prefix + MQTT_TOPIC_LAMPADINE + mac;
+    if (strcmp(type, "hvac") == 0) {
+      prefix = prefix + MQTT_TOPIC_HVAC + mac;
+    } else if (strcmp(type, "lamp") == 0) {
+      prefix = prefix + MQTT_TOPIC_LAMPS + mac;
     } else {
       return;
     }
@@ -255,44 +255,44 @@ void mqttMessageReceived(String &topic, String &payload) {
     const char *registerTopicMAC = registerTopicStr.c_str();
 
     mqttClient.publish(registerTopicMAC, buffer, n, false, 1);
-  } else if (topic.startsWith("vigiloffice/lampadine") && topic.endsWith("/status")) {
+  } else if (topic.startsWith("vigiloffice/lamps") && topic.endsWith("/status")) {
     Serial.println(payload);
 
     JsonDocument doc;
     deserializeJson(doc, payload);
 
-    pointDeviceLampadina.clearFields();
-    pointDeviceLampadina.clearTags();
-    pointDeviceLampadina.addTag("indirizzo-mac", doc["indirizzo-mac"]);
+    pointDeviceLamp.clearFields();
+    pointDeviceLamp.clearTags();
+    pointDeviceLamp.addTag("mac-address", doc["mac-address"]);
 
-    JsonArray sensori = doc["sensori"];
+    JsonArray sensori = doc["sensors"];
     for (JsonObject sensor : sensori) {
       const char* sensorName = sensor[SENSOR_NAME_JSON_NAME];
       if (strcmp(sensorName, LIGHT_JSON_NAME) == 0) {
-        pointDeviceLampadina.addField("luce-misurazione", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLampadina.addField("luce-soglia", (int) sensor[SENSOR_THRESHOLD_JSON_NAME]);
-        pointDeviceLampadina.addField("luce-stato", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLampadina.addField("luce-abilitato", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("light-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("light-threshold", (int) sensor[SENSOR_THRESHOLD_JSON_NAME]);
+        pointDeviceLamp.addField("light-status", (int) sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("light-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       } else if (strcmp(sensorName, MOTION_JSON_NAME) == 0) {
-        pointDeviceLampadina.addField("movimento-misurazione", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLampadina.addField("movimento-stato", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLampadina.addField("movimento-abilitato", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("motion-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("motion-status", (int) sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("motion-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       } else if (strcmp(sensorName, FLAME_JSON_NAME) == 0) {
-        pointDeviceLampadina.addField("fiamma-misurazione", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLampadina.addField("fiamma-stato", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLampadina.addField("fiamma-abilitato", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("flame-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("flame-status", (int) sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("flame-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       } else if (strcmp(sensorName, RGB_JSON_NAME) == 0) {
-        pointDeviceLampadina.addField("rgb-misurazione", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLampadina.addField("rgb-stato", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLampadina.addField("rgb-abilitato", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("rgb-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("rgb-status", (int) sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("rgb-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       }
     }
 
-    JsonObject allarme = doc["allarme"];
-    pointDeviceLampadina.addField("allarme-stato", ((int) allarme[STATUS_JSON_NAME]) == 1 ? true : false);
-    pointDeviceLampadina.addField("allarme-abilitato", ((int) allarme[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+    JsonObject allarme = doc["alarm"];
+    pointDeviceLamp.addField("alarm-status", ((int) allarme[STATUS_JSON_NAME]) == 1 ? true : false);
+    pointDeviceLamp.addField("alarm-enabled", ((int) allarme[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
 
-    if (!client_idb.writePoint(pointDeviceLampadina)) {
+    if (!client_idb.writePoint(pointDeviceLamp)) {
       Serial.print(F("InfluxDB write failed: "));
       Serial.println(client_idb.getLastErrorMessage());
     }

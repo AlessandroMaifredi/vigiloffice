@@ -2,5 +2,5 @@
 #define MQTT_CLIENTID "VO-L-bc:dd:c2:b6:6f:9b"                 // client identifier
 #define MQTT_USERNAME "AlessandroMaifredi"         // mqtt user's name
 #define MQTT_PASSWORD "iot851610"         // mqtt user's password
-#define DEVICE_TYPE "lampadina"
-#define AP_NAME "VigilOffice-Lampadina"
+#define DEVICE_TYPE "lamp"
+#define AP_NAME "VigilOffice-Lamp"
