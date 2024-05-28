@@ -298,9 +298,9 @@ JsonDocument statusDoc;
 volatile bool applyChanges = false;
 
 void updateStatusDoc() {
-  statusDoc["indirizzo-mac"] = macAddress;
-  statusDoc["tipo"] = DEVICE_TYPE;
-  JsonArray sensori = statusDoc.createNestedArray("sensori");
+  statusDoc["mac-address"] = macAddress;
+  statusDoc["type"] = DEVICE_TYPE;
+  JsonArray sensori = statusDoc.createNestedArray("sensors");
   JsonObject lightSensor = sensori.createNestedObject();
   lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
   lightSensor[SENSOR_VALUE_JSON_NAME] = lightValue;
@@ -399,8 +399,8 @@ void setRegisterTopic(JsonDocument doc) {
     Serial.println(registerTopic);
   }
   JsonDocument settingsDoc;
-  settingsDoc["indirizzo-mac"] = macAddress;
-  settingsDoc["tipo"] = DEVICE_TYPE;
+  settingsDoc["mac-address"] = macAddress;
+  settingsDoc["type"] = DEVICE_TYPE;
   char buffer[512];
   size_t n = serializeJson(settingsDoc, buffer);
   settingsTopic = registerTopic + String("/") + macAddress;
