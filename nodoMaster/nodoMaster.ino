@@ -167,16 +167,9 @@ void handle_intermediate() {
 void handle_single_lamp() {
   String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body>";
   String mac = server.pathArg(0);
+  page += "<h1>" + mac + "</h1>";
   //TODO: RETRIEVE INFORMATION FROM INFLUX?
   //TODO: DISPLAY DEVICE INFO
-  //TODO: DISPLAY CONFIGURATION EDITING FORM
-  page += "<form method=\"post\" enctype=\"application/x-www-form-urlencoded\" action=\"/control\">\
-      <label for=\"flame\">Flame status:</label>\
-      <input type=\"number\" name=\"flameStatus\" value=\"0\" min=\"0\" max=\"1\"><br>\
-      <label for=\"flame\">Flame sensor enabled:</label>\
-      <input type=\"number\" name=\"flameEnabled\" value=\"0\" min=\"0\" max=\"1\"><br>\
-      <button class=\"button\" type=\"submit\">Send new configuration</button>\
-    </form>";
   page += "</body></html>";
 }
 
@@ -200,15 +193,21 @@ void handle_single_lamp() {
 
 void handle_single_lamp_edit() {
   String mac = server.pathArg(0);
-  if (server.method() != HTTP_POST) {
-    server.send(405, F("text/plain"), F("ERROR 405 - Method Not Allowed"));
-  } else if (!server.hasArg(F("mac"))) {
-    server.send(400, F("text/plain"), F("ERROR 400 - Bad Request"));
+  if (server.method() == HTTP_GET) {
+    //TODO: SHOW CONFIG FORM
   } else {
-    //TODO: SEND NEW CONFIGURATION TO DEVICE
-    //server.sendHeader("Location", String("http://") + server.client().localIP().toString() + "/devices/" + device.url + "/" + device.mac, true);
-    server.sendHeader("Location", String("http://") + server.client().localIP().toString(), true);
-    server.send(301);
+    if (server.method() != HTTP_POST) {
+      server.send(405, F("text/plain"), F("ERROR 405 - Method not allowed"));
+    } else {
+      if (!server.hasArg(F("mac"))) {
+        server.send(400, F("text/plain"), F("ERROR 400 - Bad Request"));
+      } else {
+        //TODO: SEND NEW CONFIGURATION TO DEVICE
+        //server.sendHeader("Location", String("http://") + server.client().localIP().toString() + "/devices/" + device.url + "/" + device.mac, true);
+        server.sendHeader("Location", String("http://") + server.client().localIP().toString(), true);
+        server.send(301);
+      }
+    }
   }
 }
 
@@ -275,30 +274,30 @@ void mqttMessageReceived(String &topic, String &payload) {
 
     JsonArray sensori = doc["sensors"];
     for (JsonObject sensor : sensori) {
-      const char* sensorName = sensor[SENSOR_NAME_JSON_NAME];
+      const char *sensorName = sensor[SENSOR_NAME_JSON_NAME];
       if (strcmp(sensorName, LIGHT_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("light-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("light-threshold", (int) sensor[SENSOR_THRESHOLD_JSON_NAME]);
-        pointDeviceLamp.addField("light-status", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("light-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("light-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("light-threshold", (int)sensor[SENSOR_THRESHOLD_JSON_NAME]);
+        pointDeviceLamp.addField("light-status", (int)sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("light-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       } else if (strcmp(sensorName, MOTION_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("motion-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("motion-status", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("motion-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("motion-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("motion-status", (int)sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("motion-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       } else if (strcmp(sensorName, FLAME_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("flame-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("flame-status", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("flame-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("flame-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("flame-status", (int)sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("flame-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       } else if (strcmp(sensorName, RGB_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("rgb-value", (int) sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("rgb-status", (int) sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("rgb-enabled", ((int) sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+        pointDeviceLamp.addField("rgb-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+        pointDeviceLamp.addField("rgb-status", (int)sensor[STATUS_JSON_NAME]);
+        pointDeviceLamp.addField("rgb-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
       }
     }
 
     JsonObject allarme = doc["alarm"];
-    pointDeviceLamp.addField("alarm-status", ((int) allarme[STATUS_JSON_NAME]) == 1 ? true : false);
-    pointDeviceLamp.addField("alarm-enabled", ((int) allarme[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+    pointDeviceLamp.addField("alarm-status", ((int)allarme[STATUS_JSON_NAME]) == 1 ? true : false);
+    pointDeviceLamp.addField("alarm-enabled", ((int)allarme[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
 
     if (!client_idb.writePoint(pointDeviceLamp)) {
       Serial.print(F("InfluxDB write failed: "));
