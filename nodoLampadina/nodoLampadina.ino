@@ -473,7 +473,7 @@ void commLoop() {
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LIGHT_SENSOR_PIN, INPUT);
 
   pinMode(RGB_RED_PIN, OUTPUT);
