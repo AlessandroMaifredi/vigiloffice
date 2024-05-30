@@ -85,13 +85,13 @@ void setup() {
   server.on("/", handle_root);
   server.on("/devices/", handle_devices);
 
-  server.on("/devices/lightbulbs/", handle_intermediate);
+  server.on("/devices/lamps/", handle_intermediate);
   //server.on("/devices/conditioning/", handle_intermediate);
 
-  server.on(UriBraces("/devices/lightbulbs/{}/edit"), handle_single_lightbulb_edit);
+  server.on(UriBraces("/devices/lamps/{}/edit"), handle_single_lamp_edit);
   //server.on(UriBraces("/devices/conditioning/{}/edit"), handle_single_conditioning_edit);
 
-  server.on(UriBraces("/devices/lightbulbs/{}"), handle_single_lightbulb);
+  server.on(UriBraces("/devices/lamps/{}"), handle_single_lamp);
   //server.on(UriBraces("/devices/conditioning/{}"), handle_single_conditioning);
 
   server.onNotFound(handle_NotFound);
@@ -164,7 +164,7 @@ void handle_intermediate() {
   server.send(301);
 }
 
-void handle_single_lightbulb() {
+void handle_single_lamp() {
   String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body>";
   String mac = server.pathArg(0);
   //TODO: RETRIEVE INFORMATION FROM INFLUX?
@@ -198,7 +198,7 @@ void handle_single_lightbulb() {
   page += "</body></html>";
 }*/
 
-void handle_single_lightbulb_edit() {
+void handle_single_lamp_edit() {
   String mac = server.pathArg(0);
   if (server.method() != HTTP_POST) {
     server.send(405, F("text/plain"), F("ERROR 405 - Method Not Allowed"));
