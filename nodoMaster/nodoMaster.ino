@@ -10,6 +10,8 @@
 #include "sensorsJsonNames.h"
 #include "secrets.h"
 #include "UriBraces.h"
+#include "lampHtml.h"
+
 
 #define DISPLAY_CHARS 16                                            // number of characters on a line
 #define DISPLAY_LINES 2                                             // number of display lines
@@ -88,9 +90,6 @@ void setup() {
   server.on("/devices/lamps/", handle_intermediate);
   //server.on("/devices/conditioning/", handle_intermediate);
 
-  server.on(UriBraces("/devices/lamps/{}/edit"), handle_single_lamp_edit);
-  //server.on(UriBraces("/devices/conditioning/{}/edit"), handle_single_conditioning_edit);
-
   server.on(UriBraces("/devices/lamps/{}"), handle_single_lamp);
   //server.on(UriBraces("/devices/conditioning/{}"), handle_single_conditioning);
 
@@ -113,7 +112,7 @@ void loop() {
 
 // === WEBSERVER ===
 
-JsonDocument knownDevices;
+JsonDocument knownDevicesDoc;
 
 const String root_html = "<!DOCTYPE html>\
   <html>\
@@ -121,18 +120,21 @@ const String root_html = "<!DOCTYPE html>\
     <title>VigilOffice</title>\
   </head>\
   <body>\
-    <button href='/devices'>Manage devices</button>\
-    <button href='/alarm'>Manage alarm</button>\
-  </button>\
+    <a href='/devices/'>Manage devices</a>\
+    <a href='/alarm/'>Manage alarm</a>\
+  </body>\
 </html>";
 
 String createDevicesPage() {
   String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body><table><th><td>#</td><td>Device type</td><td>Device MAC</td></th>";
   int i = 0;
-  JsonArray devices = knownDevices["devices"].as<JsonArray>();
-  for (JsonVariant v : devices) {
-    JsonObject device = v.as<JsonObject>();
+  Serial.println("DEVICES PAGE HAS " + String(knownDevicesDoc.size()) + " DEVICES");
+  JsonArray array = knownDevicesDoc.as<JsonArray>();
+  for (JsonObject device : array) {
     ++i;
+    for (JsonPair kv : device) {
+      Serial.println(kv.key().c_str());
+    }
     page += "<tr onclick=\"location.href = '/devices/" + String(device["url"]) + "/" + String(device["mac"]) + "';\">";
     page += "<td>" + String(i) + "</td>";
     page += "<td>" + String(device["type"]) + "</td>";
@@ -164,13 +166,69 @@ void handle_intermediate() {
   server.send(301);
 }
 
+JsonDocument getLastDeviceStatusDoc() {
+  //TODO: QUERY MYSQL FOR LAST STATUS OF DEVICE
+  JsonDocument statusDoc;
+  statusDoc["mac-address"] = "BC:DD:C2:B6:6F:9B";
+  statusDoc["type"] = "lamp";
+  JsonArray sensors = statusDoc.createNestedArray("sensors");
+  JsonObject lightSensor = sensors.createNestedObject();
+  lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
+  lightSensor[SENSOR_VALUE_JSON_NAME] = 126;
+  lightSensor[SENSOR_THRESHOLD_JSON_NAME] = 350;
+  lightSensor[STATUS_JSON_NAME] = 0;
+  lightSensor[SENSOR_STATUS_JSON_NAME] = true;
+  lightSensor[SENSOR_READING_INTERVAL_JSON_NAME] = 3000;
+
+
+  JsonObject motionSensor = sensors.createNestedObject();
+  motionSensor[SENSOR_NAME_JSON_NAME] = MOTION_JSON_NAME;
+  motionSensor[SENSOR_VALUE_JSON_NAME] = 0;
+  motionSensor[STATUS_JSON_NAME] = 0;
+  motionSensor[SENSOR_STATUS_JSON_NAME] = false;
+
+  JsonObject flameSensor = sensors.createNestedObject();
+  flameSensor[SENSOR_NAME_JSON_NAME] = FLAME_JSON_NAME;
+  flameSensor[SENSOR_VALUE_JSON_NAME] = 0;
+  flameSensor[STATUS_JSON_NAME] = 0;
+  flameSensor[SENSOR_STATUS_JSON_NAME] = true;
+  flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = 1000;
+
+  JsonObject RGBLed = sensors.createNestedObject();
+  RGBLed[SENSOR_NAME_JSON_NAME] = RGB_JSON_NAME;
+  RGBLed[SENSOR_VALUE_JSON_NAME] = 0;
+  RGBLed[STATUS_JSON_NAME] = 0;
+  RGBLed[SENSOR_STATUS_JSON_NAME] = true;
+
+  JsonObject alarm = statusDoc.createNestedObject(ALARM_JSON_NAME);
+  alarm[STATUS_JSON_NAME] = false;
+  alarm[SENSOR_STATUS_JSON_NAME] = true;
+  return statusDoc;
+}
+
 void handle_single_lamp() {
-  String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body>";
   String mac = server.pathArg(0);
-  page += "<h1>" + mac + "</h1>";
-  //TODO: RETRIEVE INFORMATION FROM INFLUX?
-  //TODO: DISPLAY DEVICE INFO
-  page += "</body></html>";
+  if (server.method() == HTTP_GET) {
+    JsonDocument lastStatusFile = getLastDeviceStatusDoc();
+    server.send(200, F("text/html"), createSingleLampEditPage(lastStatusFile));
+  } else {
+    if (server.method() != HTTP_POST) {
+      server.send(405, F("text/plain"), F("ERROR 405 - Method not allowed"));
+    } else {
+      if (!server.hasArg(F("mac"))) {
+        server.send(400, F("text/plain"), F("ERROR 400 - Bad Request"));
+      } else {
+        String controlTopic = "vigiloffice/lamps/" + server.pathArg(0) + "/control";
+        Serial.print("Sendig new configuration to: ");
+        Serial.println(controlTopic);
+        char buffer[512];
+        JsonDocument configFile = createLampConfigFile();
+        size_t n = serializeJson(configFile, buffer);
+        mqttClient.publish(controlTopic.c_str(), buffer, n, false, 1);
+        server.send(200, F("text/html"), createSingleLampEditPage(configFile));
+      }
+    }
+  }
 }
 
 /*void handle_single_conditioning() {
@@ -191,24 +249,38 @@ void handle_single_lamp() {
   page += "</body></html>";
 }*/
 
-void handle_single_lamp_edit() {
-  String mac = server.pathArg(0);
-  if (server.method() == HTTP_GET) {
-    //TODO: SHOW CONFIG FORM
-  } else {
-    if (server.method() != HTTP_POST) {
-      server.send(405, F("text/plain"), F("ERROR 405 - Method not allowed"));
-    } else {
-      if (!server.hasArg(F("mac"))) {
-        server.send(400, F("text/plain"), F("ERROR 400 - Bad Request"));
-      } else {
-        //TODO: SEND NEW CONFIGURATION TO DEVICE
-        //server.sendHeader("Location", String("http://") + server.client().localIP().toString() + "/devices/" + device.url + "/" + device.mac, true);
-        server.sendHeader("Location", String("http://") + server.client().localIP().toString(), true);
-        server.send(301);
-      }
-    }
-  }
+
+JsonDocument createLampConfigFile() {
+  JsonDocument newConfig;
+  newConfig["mac-address"] = server.pathArg(0);
+  JsonArray sensori = newConfig.createNestedArray(F("sensors"));
+  JsonObject lightSensor = sensori.createNestedObject();
+  lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
+  lightSensor[SENSOR_THRESHOLD_JSON_NAME] = server.arg(F("lightSliderInput")).toInt();
+  lightSensor[STATUS_JSON_NAME] = server.arg(F("lightDropdown")).toInt();
+  lightSensor[SENSOR_STATUS_JSON_NAME] = server.arg(F("lightStatus")) == "true" ? true : false;
+  lightSensor[SENSOR_READING_INTERVAL_JSON_NAME] = server.arg(F("lightIntervalSliderInput")).toInt();
+  JsonObject motionSensor = sensori.createNestedObject();
+  motionSensor[SENSOR_NAME_JSON_NAME] = MOTION_JSON_NAME;
+  motionSensor[STATUS_JSON_NAME] = server.arg(F("motionDropdown")).toInt();
+  motionSensor[SENSOR_STATUS_JSON_NAME] = server.arg(F("motionStatus")) == "true" ? true : false;
+
+  JsonObject flameSensor = sensori.createNestedObject();
+  flameSensor[SENSOR_NAME_JSON_NAME] = FLAME_JSON_NAME;
+  flameSensor[STATUS_JSON_NAME] = server.arg(F("flameDropdown")).toInt();
+  flameSensor[SENSOR_STATUS_JSON_NAME] = server.arg(F("flameStatus")) == "true" ? true : false;
+  flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = server.arg(F("flameIntervalSliderInput")).toInt();
+
+  JsonObject RGBLed = sensori.createNestedObject();
+  RGBLed[SENSOR_NAME_JSON_NAME] = RGB_JSON_NAME;
+  RGBLed[STATUS_JSON_NAME] = server.arg(F("rgbDropdown")).toInt();
+  RGBLed[SENSOR_STATUS_JSON_NAME] = server.arg(F("rgbStatus")) == "true" ? true : false;
+
+  JsonObject alarm = newConfig.createNestedObject(ALARM_JSON_NAME);
+  alarm[STATUS_JSON_NAME] = server.arg(F("alarmDropdown")) == "true" ? true : false;
+  alarm[SENSOR_STATUS_JSON_NAME] = server.arg(F("alarmStatus")) == "true" ? true : false;
+
+  return newConfig;
 }
 
 // === MQTT ===
@@ -234,75 +306,98 @@ void connectToMQTTBroker() {
   }
 }
 
+
+void registerDevice(String &payload) {
+  JsonDocument readDoc;
+  deserializeJson(readDoc, payload);
+  String mac = readDoc["mac-address"];
+  String type = readDoc["type"];
+  Serial.println(mac);
+  Serial.println(type);
+
+  if (!knownDevicesDoc.containsKey(mac)) {
+    knownDevicesDoc[mac] = knownDevicesDoc.createNestedObject();
+  }
+
+  JsonObject newDevice = knownDevicesDoc[mac];
+
+  JsonDocument writeDoc;
+  String prefix = String("vigiloffice/");
+  if (type.equals("hvac")) {
+    prefix = prefix + MQTT_TOPIC_HVAC + mac;
+    newDevice["url"] = "hvac";
+  } else if (type.equals("lamp")) {
+    prefix = prefix + MQTT_TOPIC_LAMPS + mac;
+    newDevice["url"] = "lamps";
+  } else {
+    return;
+  }
+  newDevice["type"] = type;
+  newDevice["mac"] = mac;
+
+  writeDoc["statusTopic"] = prefix + String("/status");
+  writeDoc["controlTopic"] = prefix + String("/control");
+  mqttClient.subscribe(prefix + String("/status"));
+  char buffer[256];
+  size_t n = serializeJson(writeDoc, buffer);
+
+  String registerTopicStr = String(MQTT_TOPIC_REGISTER) + "/" + mac;
+
+  mqttClient.publish(registerTopicStr.c_str(), buffer, n, false, 1);
+  knownDevicesDoc[mac] = newDevice;
+  knownDevicesDoc.shrinkToFit();
+  Serial.println("Device registered: " + mac);
+}
+
+
+void handleLampStatusMessage(String &payload) {
+  Serial.println(payload);
+
+  JsonDocument doc;
+  deserializeJson(doc, payload);
+
+  pointDeviceLamp.clearFields();
+  pointDeviceLamp.clearTags();
+  pointDeviceLamp.addTag("mac-address", doc["mac-address"]);
+
+  JsonArray sensori = doc["sensors"];
+  for (JsonObject sensor : sensori) {
+    const char *sensorName = sensor[SENSOR_NAME_JSON_NAME];
+    if (strcmp(sensorName, LIGHT_JSON_NAME) == 0) {
+      pointDeviceLamp.addField("light-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+      pointDeviceLamp.addField("light-threshold", (int)sensor[SENSOR_THRESHOLD_JSON_NAME]);
+      pointDeviceLamp.addField("light-status", (int)sensor[STATUS_JSON_NAME]);
+      pointDeviceLamp.addField("light-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+    } else if (strcmp(sensorName, MOTION_JSON_NAME) == 0) {
+      pointDeviceLamp.addField("motion-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+      pointDeviceLamp.addField("motion-status", (int)sensor[STATUS_JSON_NAME]);
+      pointDeviceLamp.addField("motion-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+    } else if (strcmp(sensorName, FLAME_JSON_NAME) == 0) {
+      pointDeviceLamp.addField("flame-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+      pointDeviceLamp.addField("flame-status", (int)sensor[STATUS_JSON_NAME]);
+      pointDeviceLamp.addField("flame-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+    } else if (strcmp(sensorName, RGB_JSON_NAME) == 0) {
+      pointDeviceLamp.addField("rgb-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
+      pointDeviceLamp.addField("rgb-status", (int)sensor[STATUS_JSON_NAME]);
+      pointDeviceLamp.addField("rgb-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+    }
+  }
+
+  JsonObject allarme = doc["alarm"];
+  pointDeviceLamp.addField("alarm-status", ((int)allarme[STATUS_JSON_NAME]) == 1 ? true : false);
+  pointDeviceLamp.addField("alarm-enabled", ((int)allarme[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
+
+  if (!client_idb.writePoint(pointDeviceLamp)) {
+    Serial.print(F("InfluxDB write failed: "));
+    Serial.println(client_idb.getLastErrorMessage());
+  }
+}
+
 void mqttMessageReceived(String &topic, String &payload) {
   if (topic == MQTT_TOPIC_REGISTER) {
-    JsonDocument readDoc;
-    deserializeJson(readDoc, payload);
-    const char *mac = readDoc["mac-address"];
-    const char *type = readDoc["type"];
-    Serial.println(mac);
-    Serial.println(type);
-
-    JsonDocument writeDoc;
-    String prefix = String("vigiloffice/");
-    if (strcmp(type, "hvac") == 0) {
-      prefix = prefix + MQTT_TOPIC_HVAC + mac;
-    } else if (strcmp(type, "lamp") == 0) {
-      prefix = prefix + MQTT_TOPIC_LAMPS + mac;
-    } else {
-      return;
-    }
-    writeDoc["statusTopic"] = prefix + String("/status");
-    writeDoc["controlTopic"] = prefix + String("/control");
-    mqttClient.subscribe(prefix + String("/status"));
-    char buffer[256];
-    size_t n = serializeJson(writeDoc, buffer);
-
-    String registerTopicStr = String(MQTT_TOPIC_REGISTER) + "/" + mac;
-    const char *registerTopicMAC = registerTopicStr.c_str();
-
-    mqttClient.publish(registerTopicMAC, buffer, n, false, 1);
+    registerDevice(payload);
   } else if (topic.startsWith("vigiloffice/lamps") && topic.endsWith("/status")) {
-    Serial.println(payload);
-
-    JsonDocument doc;
-    deserializeJson(doc, payload);
-
-    pointDeviceLamp.clearFields();
-    pointDeviceLamp.clearTags();
-    pointDeviceLamp.addTag("mac-address", doc["mac-address"]);
-
-    JsonArray sensori = doc["sensors"];
-    for (JsonObject sensor : sensori) {
-      const char *sensorName = sensor[SENSOR_NAME_JSON_NAME];
-      if (strcmp(sensorName, LIGHT_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("light-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("light-threshold", (int)sensor[SENSOR_THRESHOLD_JSON_NAME]);
-        pointDeviceLamp.addField("light-status", (int)sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("light-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
-      } else if (strcmp(sensorName, MOTION_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("motion-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("motion-status", (int)sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("motion-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
-      } else if (strcmp(sensorName, FLAME_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("flame-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("flame-status", (int)sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("flame-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
-      } else if (strcmp(sensorName, RGB_JSON_NAME) == 0) {
-        pointDeviceLamp.addField("rgb-value", (int)sensor[SENSOR_VALUE_JSON_NAME]);
-        pointDeviceLamp.addField("rgb-status", (int)sensor[STATUS_JSON_NAME]);
-        pointDeviceLamp.addField("rgb-enabled", ((int)sensor[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
-      }
-    }
-
-    JsonObject allarme = doc["alarm"];
-    pointDeviceLamp.addField("alarm-status", ((int)allarme[STATUS_JSON_NAME]) == 1 ? true : false);
-    pointDeviceLamp.addField("alarm-enabled", ((int)allarme[SENSOR_STATUS_JSON_NAME]) == 1 ? true : false);
-
-    if (!client_idb.writePoint(pointDeviceLamp)) {
-      Serial.print(F("InfluxDB write failed: "));
-      Serial.println(client_idb.getLastErrorMessage());
-    }
+    handleLampStatusMessage(payload);
   }
 }
 

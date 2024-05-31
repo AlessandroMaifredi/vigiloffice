@@ -9,3 +9,4 @@
 #define SENSOR_VALUE_JSON_NAME "value"
 #define SENSOR_THRESHOLD_JSON_NAME "threshold"
 #define STATUS_JSON_NAME "status"
+#define SENSOR_READING_INTERVAL_JSON_NAME "interval"
