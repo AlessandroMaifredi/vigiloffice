@@ -49,7 +49,7 @@ void activateAlarm() {
   if (alarmSystemStatus == ALARM_ENABLED) {
     alarmStatus = ALARM_ACTIVE;
     if (logLevel != LOG_OFF) {
-      Serial.println("!!ALARM ACTIVATED!!");
+      Serial.println(F("!!ALARM ACTIVATED!!"));
     }
   }
 }
@@ -57,7 +57,7 @@ void activateAlarm() {
 void deactivateAlarm() {
   alarmStatus = ALARM_NORMAL;
   if (logLevel != LOG_OFF) {
-    Serial.println("SHUT OFF ALARM!");
+    Serial.println(F("SHUT OFF ALARM!"));
   }
 }
 
@@ -92,19 +92,19 @@ void readMotion() {
         motionInitTimer = millis();
         motionStatus = MOTION_NORMAL;
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println("MOTION SENSOR INIT COMPLETE");
+          Serial.println(F("MOTION SENSOR INIT COMPLETE"));
         }
       }
     } else {
       motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
       if (motionStatus == MOTION_DETECTED) {
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println("Set MOTION to MOTION_DETECTED!");
+          Serial.println(F("Set MOTION to MOTION_DETECTED!"));
         }
         activateAlarm();
       } else {
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println("Set MOTION to MOTION_NORMAL!");
+          Serial.println(F("Set MOTION to MOTION_NORMAL!"));
         }
       }
     }
@@ -273,6 +273,11 @@ void updateRGB() {
           case RGB_CUSTOM_OFF:
             setRGB(LOW, LOW, LOW);
             break;
+          case RGB_OFF:
+          case RGB_ON:
+          case RGB_ALARM:
+          default:
+            break;
         }
       }
     }
@@ -298,13 +303,13 @@ JsonDocument statusDoc;
 volatile bool applyChanges = false;
 
 void updateStatusDoc() {
-  statusDoc["mac-address"] = macAddress;
-  statusDoc["type"] = DEVICE_TYPE;
-  JsonArray sensors = statusDoc.createNestedArray("sensors");
+  statusDoc[F("mac-address")] = macAddress;
+  statusDoc[F("type")] = DEVICE_TYPE;
+  JsonArray sensors = statusDoc.createNestedArray(F("sensors"));
   JsonObject lightSensor = sensors.createNestedObject();
   lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
   lightSensor[SENSOR_VALUE_JSON_NAME] = lightValue;
-  lightSensor[SENSOR_THRESHOLD_JSON_NAME] = lowLightTreshold;
+  lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowLightTreshold;
   lightSensor[STATUS_JSON_NAME] = lightStatus;
   lightSensor[SENSOR_STATUS_JSON_NAME] = lightSensorStatus == LIGHT_SENSOR_ENABLED ? true : false;
   lightSensor[SENSOR_READING_INTERVAL_JSON_NAME] = lightReadingInterval;
@@ -366,7 +371,7 @@ void connectToMQTTBroker() {
 
       // Print the serialized JSON
       if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-        Serial.print("Sending status on ");
+        Serial.print(F("Sending status on "));
         Serial.println(statusTopic);
         Serial.println(buffer);
       }
@@ -379,7 +384,7 @@ void connectToMQTTBroker() {
 void mqttMessageReceived(String &topic, String &payload) {
   // this function handles a message from the MQTT broker
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-    Serial.println("Incoming MQTT message: " + topic + " - " + payload);
+    Serial.println(F("Incoming MQTT message: ") + topic + F(" - ") + payload);
   }
   if (topic == MQTT_TOPIC_WELCOME) {
     JsonDocument doc;
@@ -390,7 +395,7 @@ void mqttMessageReceived(String &topic, String &payload) {
     deserializeJson(doc, payload);
     setTopics(doc);
   } else if (topic == controlTopic) {
-    Serial.println("Control topic!");
+    Serial.println(F("Control topic!"));
     JsonDocument controlDoc;
     deserializeJson(controlDoc, payload);
     applyControlChanges(controlDoc);
@@ -398,19 +403,19 @@ void mqttMessageReceived(String &topic, String &payload) {
 }
 
 void setRegisterTopic(JsonDocument doc) {
-  registerTopic = String(doc["registerTopic"]);
+  registerTopic = String(doc[F("registerTopic")]);
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-    Serial.print("Recieved register topic: ");
+    Serial.print(F("Recieved register topic: "));
     Serial.println(registerTopic);
   }
   JsonDocument settingsDoc;
-  settingsDoc["mac-address"] = macAddress;
-  settingsDoc["type"] = DEVICE_TYPE;
+  settingsDoc[F("mac-address")] = macAddress;
+  settingsDoc[F("type")] = DEVICE_TYPE;
   char buffer[512];
   size_t n = serializeJson(settingsDoc, buffer);
-  settingsTopic = registerTopic + String("/") + macAddress;
+  settingsTopic = registerTopic + String(F("/")) + macAddress;
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-    Serial.print("Setting topic is: ");
+    Serial.print(F("Setting topic is: "));
     Serial.println(settingsTopic);
   }
   mqttClient.subscribe(settingsTopic.c_str());
@@ -418,14 +423,14 @@ void setRegisterTopic(JsonDocument doc) {
 }
 
 void setTopics(JsonDocument topicsDoc) {
-  statusTopic = String(topicsDoc["statusTopic"]);
-  controlTopic = String(topicsDoc["controlTopic"]);
+  statusTopic = String(topicsDoc[F("statusTopic")]);
+  controlTopic = String(topicsDoc[F("controlTopic")]);
   //mqttClient.subscribe(statusTopic);
   mqttClient.subscribe(controlTopic.c_str());
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-    Serial.print("Status topic set to: ");
+    Serial.print(F("Status topic set to: "));
     Serial.println(statusTopic);
-    Serial.print("Control topic set to: ");
+    Serial.print(F("Control topic set to: "));
     Serial.println(controlTopic);
   }
 }
@@ -434,14 +439,14 @@ void applyControlChanges(JsonDocument controlDoc) {
   JsonObject allarme = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
   alarmStatus = allarme[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
   alarmSystemStatus = allarme[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
-  JsonArray sensors = controlDoc["sensors"].as<JsonArray>();
+  JsonArray sensors = controlDoc[F("sensors")].as<JsonArray>();
   for (JsonVariant v : sensors) {
     JsonObject sensor = v.as<JsonObject>();
     String nome = String(sensor[SENSOR_NAME_JSON_NAME]);
     if (nome == LIGHT_JSON_NAME) {
       lightStatus = sensor[STATUS_JSON_NAME];
       lightSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? LIGHT_SENSOR_ENABLED : LIGHT_SENSOR_DISABLED;
-      lowLightTreshold = sensor[SENSOR_THRESHOLD_JSON_NAME];
+      lowLightTreshold = sensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
       lightReadingInterval = sensor[SENSOR_READING_INTERVAL_JSON_NAME];
     } else if (nome == MOTION_JSON_NAME) {
       motionStatus = sensor[STATUS_JSON_NAME];
