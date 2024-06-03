@@ -126,19 +126,19 @@ const String root_html = "<!DOCTYPE html>\
 </html>";
 
 String createDevicesPage() {
-  String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body><table><th><td>#</td><td>Device type</td><td>Device MAC</td></th>";
+  String page = "<!DOCTYPE html><html><head><title>VigilOffice</title></head><body><table><th><td>#</td><td>Device type</td><td>Device MAC</td><td>Device status</td></th>";
   int i = 0;
-  Serial.println("DEVICES PAGE HAS " + String(knownDevicesDoc.size()) + " DEVICES");
-  JsonArray array = knownDevicesDoc.as<JsonArray>();
-  for (JsonObject device : array) {
+  JsonArray macArray = knownDevicesDoc["macs"].as<JsonArray>();
+  Serial.println("DEVICES PAGE HAS " + String(macArray.size()) + " DEVICES");
+  for (JsonVariant deviceMacVariant : macArray) {
+    String deviceMac = deviceMacVariant.as<String>();
+    JsonObject device = knownDevicesDoc[deviceMac].as<JsonObject>();
     ++i;
-    for (JsonPair kv : device) {
-      Serial.println(kv.key().c_str());
-    }
-    page += "<tr onclick=\"location.href = '/devices/" + String(device["url"]) + "/" + String(device["mac"]) + "';\">";
+    page += "<tr onclick=\"location.href = '/devices/" + String(device["url"]) + "/" + deviceMac + "';\">";
     page += "<td>" + String(i) + "</td>";
     page += "<td>" + String(device["type"]) + "</td>";
     page += "<td>" + String(device["mac"]) + "</td>";
+    page += "<td>" + String(device["status"]) + "</td>";
     page += "</tr>";
   }
   page += "</table></body></html>";
@@ -317,6 +317,7 @@ void registerDevice(String &payload) {
 
   if (!knownDevicesDoc.containsKey(mac)) {
     knownDevicesDoc[mac] = knownDevicesDoc.createNestedObject();
+    knownDevicesDoc["macs"].add(mac);
   }
 
   JsonObject newDevice = knownDevicesDoc[mac];
@@ -333,7 +334,7 @@ void registerDevice(String &payload) {
     return;
   }
   newDevice["type"] = type;
-  newDevice["mac"] = mac;
+  newDevice["status"] = "connected";
 
   writeDoc["statusTopic"] = prefix + String("/status");
   writeDoc["controlTopic"] = prefix + String("/control");
@@ -359,6 +360,7 @@ void handleLampStatusMessage(String &payload) {
   pointDeviceLamp.clearFields();
   pointDeviceLamp.clearTags();
   pointDeviceLamp.addTag("mac-address", doc["mac-address"]);
+  knownDevicesDoc[mac].as<JsonObject>()["status"] = "connected";
 
   JsonArray sensori = doc["sensors"];
   for (JsonObject sensor : sensori) {
@@ -391,6 +393,14 @@ void handleLampStatusMessage(String &payload) {
     Serial.print(F("InfluxDB write failed: "));
     Serial.println(client_idb.getLastErrorMessage());
   }
+}
+
+void handleLastWillTestamentMessage(String &payload){
+  JsonDocument doc;
+  deserializeJson(doc, payload);
+  String mac = doc["mac-address"];
+  knownDevicesDoc[mac].as<JsonObject>()["status"] = "disconnected";
+  Serial.println("Device of type "+ doc["type"] +" with mac " + mac + " disconnected!");
 }
 
 void mqttMessageReceived(String &topic, String &payload) {
