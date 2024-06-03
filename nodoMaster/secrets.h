@@ -9,3 +9,4 @@
 #define MYSQL_IP {149, 132, 178, 179}            // IP address of the machine running MySQL
 #define MYSQL_USER "QazimToska"                  // db user
 #define MYSQL_PASS "iot847361"              // db user's password
+#define AP_NAME "VigilOffice-Master"
