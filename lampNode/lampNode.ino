@@ -7,6 +7,7 @@
 #include "secrets.h"
 #include "sensorsJsonNames.h"
 
+#define ENABLE_LOGS true
 
 #ifdef ENABLE_LOGS
 
@@ -375,7 +376,7 @@ void connectToMQTTBroker() {
     char buffer[1024];
     serializeJson(statusDoc, buffer);
     String lwtTopic = MQTT_TOPIC_LWT + macAddress;
-    mqttClient.setWill(lwtTopic.c_str(), buffer, true, 1);
+    mqttClient.setWill(lwtTopic.c_str(), buffer, false, 1);
 #ifdef ENABLE_LOGS
     if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
       Serial.print(F("LWT message set!"));
