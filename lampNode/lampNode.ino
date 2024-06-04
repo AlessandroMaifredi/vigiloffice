@@ -8,6 +8,8 @@
 #include "sensorsJsonNames.h"
 
 
+#ifdef ENABLE_LOGS
+
 // === LOGGING ===
 
 enum LOG_LEVEL {
@@ -19,6 +21,8 @@ enum LOG_LEVEL {
 };
 
 LOG_LEVEL logLevel = LOG_COMM;
+
+#endif
 
 // === ALARM ===
 
@@ -48,17 +52,21 @@ void enableAlarm() {
 void activateAlarm() {
   if (alarmSystemStatus == ALARM_ENABLED) {
     alarmStatus = ALARM_ACTIVE;
+#ifdef ENABLE_LOGS
     if (logLevel != LOG_OFF) {
       Serial.println(F("!!ALARM ACTIVATED!!"));
     }
+#endif
   }
 }
 
 void deactivateAlarm() {
   alarmStatus = ALARM_NORMAL;
+#ifdef ENABLE_LOGS
   if (logLevel != LOG_OFF) {
     Serial.println(F("SHUT OFF ALARM!"));
   }
+#endif
 }
 
 // === PIR MOTION ===
@@ -91,21 +99,27 @@ void readMotion() {
       if (millis() - motionInitTimer > MOTION_INIT_TIME_DELAY) {
         motionInitTimer = millis();
         motionStatus = MOTION_NORMAL;
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
           Serial.println(F("MOTION SENSOR INIT COMPLETE"));
         }
+#endif
       }
     } else {
       motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
       if (motionStatus == MOTION_DETECTED) {
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
           Serial.println(F("Set MOTION to MOTION_DETECTED!"));
         }
+#endif
         activateAlarm();
       } else {
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
           Serial.println(F("Set MOTION to MOTION_NORMAL!"));
         }
+#endif
       }
     }
   }
@@ -142,20 +156,26 @@ void readLight() {
   if (lightSensorStatus == LIGHT_SENSOR_ENABLED) {
     if (millis() - lastLightReading > lightReadingInterval) {
       lightValue = analogRead(LIGHT_SENSOR_PIN);
+#ifdef ENABLE_LOGS
       if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
         Serial.print(F("LIGHT: "));
         Serial.println(lightValue);
       }
+#endif
       if (lightValue >= lowLightTreshold) {
         lightStatus = LIGHT_LOW;
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
           Serial.println(F("Set LIGHT to LIGHT_LOW"));
         }
+#endif
       } else {
         lightStatus = LIGHT_NORMAL;
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
           Serial.println(F("Set LIGHT to LIGHT_NORMAL"));
         }
+#endif
       }
       lastLightReading = millis();
     }
@@ -189,17 +209,19 @@ void readFlame() {
     if (millis() - lastFlameReading > flameReadingInterval) {
       if (digitalRead(FLAME_SENSOR_PIN) == HIGH) {
         flameStatus = FLAME_PRESENT;
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-
           Serial.println(F("Set FLAME to FLAME_PRESENT"));
         }
+#endif
         activateAlarm();
       } else {
         flameStatus = FLAME_ABSENT;
+#ifdef ENABLE_LOGS
         if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-
           Serial.println(F("Set FLAME to FLAME_ABSENT"));
         }
+#endif
       }
       lastFlameReading = millis();
     }
@@ -291,6 +313,7 @@ void updateRGB() {
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication protocol
 WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
+#define MQTT_TOPIC_LWT "vigiloffice/lwt"
 String macAddress;
 
 String registerTopic = "";
@@ -343,23 +366,41 @@ void updateStatusDoc() {
 void connectToMQTTBroker() {
   static unsigned long lastDataSend = millis();
   if (!mqttClient.connected()) {  // not connected
+#ifdef ENABLE_LOGS
     if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
       Serial.print(F("\nConnecting to MQTT broker..."));
     }
+#endif
+    updateStatusDoc();
+    char buffer[1024];
+    serializeJson(statusDoc, buffer);
+    String lwtTopic = MQTT_TOPIC_LWT + macAddress;
+    mqttClient.setWill(lwtTopic.c_str(), buffer, true, 1);
+#ifdef ENABLE_LOGS
+    if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+      Serial.print(F("LWT message set!"));
+    }
+#endif
     while (!mqttClient.connect(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD)) {
+#ifdef ENABLE_LOGS
       if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
         Serial.print(F("."));
       }
+#endif
       delay(1000);
     }
+#ifdef ENABLE_LOGS
     if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
       Serial.println(F("\nConnected!"));
     }
+#endif
     // connected to broker, subscribe topics
     mqttClient.subscribe(MQTT_TOPIC_WELCOME);
+#ifdef ENABLE_LOGS
     if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
       Serial.println(F("\nSubscribed to welcome topic!"));
     }
+#endif
   } else {
     if (statusTopic != "" && millis() - lastDataSend > 5000) {
 
@@ -369,12 +410,13 @@ void connectToMQTTBroker() {
       char buffer[1024];
       size_t n = serializeJson(statusDoc, buffer);
 
-      // Print the serialized JSON
+#ifdef ENABLE_LOGS
       if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
         Serial.print(F("Sending status on "));
         Serial.println(statusTopic);
         Serial.println(buffer);
       }
+#endif
       mqttClient.publish(statusTopic.c_str(), buffer, n, false, 1);
       lastDataSend = millis();
     }
@@ -382,10 +424,11 @@ void connectToMQTTBroker() {
 }
 
 void mqttMessageReceived(String &topic, String &payload) {
-  // this function handles a message from the MQTT broker
+#ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
     Serial.println(F("Incoming MQTT message: ") + topic + F(" - ") + payload);
   }
+#endif
   if (topic == MQTT_TOPIC_WELCOME) {
     JsonDocument doc;
     deserializeJson(doc, payload);
@@ -395,7 +438,11 @@ void mqttMessageReceived(String &topic, String &payload) {
     deserializeJson(doc, payload);
     setTopics(doc);
   } else if (topic == controlTopic) {
-    Serial.println(F("Control topic!"));
+#ifdef ENABLE_LOGS
+    if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
+      Serial.println(F("Control topic!"));
+    }
+#endif
     JsonDocument controlDoc;
     deserializeJson(controlDoc, payload);
     applyControlChanges(controlDoc);
@@ -404,20 +451,24 @@ void mqttMessageReceived(String &topic, String &payload) {
 
 void setRegisterTopic(JsonDocument doc) {
   registerTopic = String(doc[F("registerTopic")]);
+#ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
     Serial.print(F("Recieved register topic: "));
     Serial.println(registerTopic);
   }
+#endif
   JsonDocument settingsDoc;
   settingsDoc[F("mac-address")] = macAddress;
   settingsDoc[F("type")] = DEVICE_TYPE;
   char buffer[512];
   size_t n = serializeJson(settingsDoc, buffer);
   settingsTopic = registerTopic + String(F("/")) + macAddress;
+#ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
     Serial.print(F("Setting topic is: "));
     Serial.println(settingsTopic);
   }
+#endif
   mqttClient.subscribe(settingsTopic.c_str());
   mqttClient.publish(registerTopic.c_str(), buffer, n);
 }
@@ -427,12 +478,14 @@ void setTopics(JsonDocument topicsDoc) {
   controlTopic = String(topicsDoc[F("controlTopic")]);
   //mqttClient.subscribe(statusTopic);
   mqttClient.subscribe(controlTopic.c_str());
+#ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
     Serial.print(F("Status topic set to: "));
     Serial.println(statusTopic);
     Serial.print(F("Control topic set to: "));
     Serial.println(controlTopic);
   }
+#endif
 }
 
 void applyControlChanges(JsonDocument controlDoc) {
@@ -478,7 +531,9 @@ void commLoop() {
 
 
 void setup() {
+#ifdef ENABLE_LOGS
   Serial.begin(115200);
+#endif
   pinMode(LIGHT_SENSOR_PIN, INPUT);
 
   pinMode(RGB_RED_PIN, OUTPUT);

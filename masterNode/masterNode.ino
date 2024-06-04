@@ -159,6 +159,71 @@ void handle_intermediate() {
 
 JsonDocument getLastLampDeviceStatusDoc(String &mac) {
   //TODO: QUERY MYSQL FOR LAST STATUS OF DEVICE
+  /*
+  char GET_DATA_LAMP[] = "SELECT * FROM `%s`.`vigiloffice_lamp` WHERE `mac-address` = '%s'";
+
+  sprintf(query, GET_DATA_LAMP, mysql_user, mac.c_str());
+
+  MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
+  // Execute the query
+  cur_mem->execute(query);
+  // Fetch the columns (required) but we don't use them.
+  column_names *columns = cur_mem->get_columns();
+  row_values *row = NULL;
+  row = cur_mem->get_next_row();
+  JsonDocument statusDoc;
+  if (row == NULL) {
+#ifdef ENABLE_LOGS
+    if (logLevel == LOG_DB || logLevel == LOG_ALL) {
+      Serial.println(F("NO RESULTS IN GET LAST STATUS QUERY!"));
+    }
+#endif
+  } else {
+#ifdef ENABLE_LOGS
+    if (logLevel == LOG_DB || logLevel == LOG_ALL) {
+      Serial.print(F("LAST STATUS RECIEVED FROM DB! #: "));
+      Serial.println(columns->num_fields);
+    }
+#endif
+    statusDoc["mac-address"] = mac;
+    statusDoc["type"] = "lamp";
+    statusDoc[F("status")] = knownDevicesDoc[mac][F("status")];
+    JsonArray sensors = statusDoc.createNestedArray("sensors");
+    JsonObject lightSensor = sensors.createNestedObject();
+    lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
+    lightSensor[SENSOR_VALUE_JSON_NAME] = row->values[4];
+    lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = row->values[3];
+    lightSensor[STATUS_JSON_NAME] = row->values[2];
+    lightSensor[SENSOR_STATUS_JSON_NAME] = row->values[1];
+    lightSensor[SENSOR_READING_INTERVAL_JSON_NAME] = 3000;  //TODO ADD
+
+
+    JsonObject motionSensor = sensors.createNestedObject();
+    motionSensor[SENSOR_NAME_JSON_NAME] = MOTION_JSON_NAME;
+    motionSensor[SENSOR_VALUE_JSON_NAME] = row->values[7];
+    motionSensor[STATUS_JSON_NAME] = row->values[6];
+    motionSensor[SENSOR_STATUS_JSON_NAME] = row->values[5];
+
+    JsonObject flameSensor = sensors.createNestedObject();
+    flameSensor[SENSOR_NAME_JSON_NAME] = FLAME_JSON_NAME;
+    flameSensor[SENSOR_VALUE_JSON_NAME] = row->values[10];
+    flameSensor[STATUS_JSON_NAME] = row->values[9];
+    flameSensor[SENSOR_STATUS_JSON_NAME] = row->values[8];
+    flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = 1000;  //TODO ADD
+
+    JsonObject RGBLed = sensors.createNestedObject();
+    RGBLed[SENSOR_NAME_JSON_NAME] = RGB_JSON_NAME;
+    RGBLed[SENSOR_VALUE_JSON_NAME] = row->values[13];
+    RGBLed[STATUS_JSON_NAME] = row->values[12];
+    RGBLed[SENSOR_STATUS_JSON_NAME] = row->values[11];
+
+    JsonObject alarm = statusDoc.createNestedObject(ALARM_JSON_NAME);
+    alarm[STATUS_JSON_NAME] = row->values[15];
+    alarm[SENSOR_STATUS_JSON_NAME] = row->values[14];
+  }
+  delete cur_mem;
+  return statusDoc;
+  */
   JsonDocument statusDoc;
   statusDoc["mac-address"] = mac;
   statusDoc["type"] = "lamp";
@@ -196,6 +261,7 @@ JsonDocument getLastLampDeviceStatusDoc(String &mac) {
   alarm[STATUS_JSON_NAME] = false;
   alarm[SENSOR_STATUS_JSON_NAME] = true;
   return statusDoc;
+  
 }
 
 void handle_single_lamp() {
