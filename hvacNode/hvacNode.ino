@@ -205,7 +205,7 @@ void readFlame() {
 MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication protocol
 WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
-#define MQTT_TOPIC_LWT "vigiloffice/lwt"
+#define MQTT_TOPIC_LWT "vigiloffice/lwt/"
 String macAddress;
 
 String registerTopic = "";
