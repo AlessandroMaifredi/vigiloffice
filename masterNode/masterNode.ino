@@ -1,3 +1,23 @@
+
+/*
+ *** MASTER NODE ***
+
+ By Qazim Toska 847361 & Alessandro Maifredi 851610
+
+ Currently, the master node is configured to manage ONLY the lampNode. 
+ The code that manages the hvacNode is commented out and marked with ***REMOVE TO HANDLE HVAC***.
+ You can search this phrase to be sure to uncomment the right code.
+
+ In case of memory errors caused by MYSQL and webserver, the method `getLastLampDeviceStatusDoc` can 
+ communicate the status of the node using a hardcoded JSON. Follow the instructions given in the commented code to
+ switch operation mode. 
+ !! The same method for hvac does not have the same capability !!
+
+ To optimize memory usage, logging features are disabled unless the `ENABLE_LOGS` variable is defined at the top of the code.
+ See line 38.
+
+*/
+
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
@@ -15,7 +35,8 @@
 #include "lampHtml.h"
 #include "hvacHtml.h"
 
-#define ENABLE_LOGS true
+//REMOVE COMMENT TO ENABLE LOGGING
+// #define ENABLE_LOGS true
 
 #ifdef ENABLE_LOGS
 
@@ -36,7 +57,7 @@ MQTTClient mqttClient(MQTT_BUFFER_SIZE);  // handles the MQTT communication prot
 WiFiClient networkClient;                 // handles the network connection to the MQTT broker
 #define MQTT_TOPIC_WELCOME "vigiloffice/welcome"
 #define MQTT_TOPIC_REGISTER "vigiloffice/register"
-#define MQTT_TOPIC_LWT "vigiloffice/lwt"
+#define MQTT_TOPIC_LWT "vigiloffice/lwt/"
 #define MQTT_TOPIC_HVAC "hvacs/"
 #define MQTT_TOPIC_LAMPS "lamps/"
 
@@ -55,6 +76,9 @@ boolean alarmStatus = false;
 
 // Set web server port number to 80
 ESP8266WebServer server(80);
+
+JsonDocument knownDevicesDoc;
+
 
 void setup() {
 #ifdef ENABLE_LOGS
@@ -79,6 +103,7 @@ void setup() {
 
   server.onNotFound(handle_NotFound);
   server.begin();
+  knownDevicesDoc[F("macs")].clear();
 }
 
 void loop() {
@@ -90,8 +115,6 @@ void loop() {
 
 // === WEBSERVER ===
 
-JsonDocument knownDevicesDoc;
-
 const String root_html = "<!DOCTYPE html>\
   <html>\
   <head>\
@@ -99,7 +122,6 @@ const String root_html = "<!DOCTYPE html>\
   </head>\
   <body>\
     <a href='/devices/'>Manage devices</a>\
-    <a href='/alarm/'>Manage alarm</a>\
   </body>\
 </html>";
 
@@ -107,7 +129,7 @@ String createDevicesPage() {
   String page = "<!DOCTYPE html><html><head><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>"
                 "<title>VigilOffice</title></head><body><table class='table table-striped table-hover'><tr><th scope='col'>#</th><th scope='col'>Device type</th><th scope='col'>Device MAC</th><th scope='col'>Device status</th></tr>";
   int i = 0;
-  JsonArray macArray = knownDevicesDoc["macs"].as<JsonArray>();
+  JsonArray macArray = knownDevicesDoc[F("macs")].as<JsonArray>();
 #ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_WEB) {
     Serial.println("DEVICES PAGE HAS " + String(macArray.size()) + " DEVICES");
@@ -158,7 +180,10 @@ void handle_intermediate() {
 }
 
 JsonDocument getLastLampDeviceStatusDoc(String &mac) {
-  //TODO: QUERY MYSQL FOR LAST STATUS OF DEVICE
+  /***  REMOVE COMMENT TO ENABLE MYSQL CONNECTION AND GET REAL LAST STATUS ***/
+  /***  BE SURE TO COMMENT THE FAKE CODE PART TO DISABLE THE FAKE STATUS PART ***/
+
+  // *** REAL STATUS START ***
   /*
   char GET_DATA_LAMP[] = "SELECT * FROM `%s`.`vigiloffice_lamp` WHERE `mac-address` = '%s'";
 
@@ -224,6 +249,11 @@ JsonDocument getLastLampDeviceStatusDoc(String &mac) {
   delete cur_mem;
   return statusDoc;
   */
+  // *** REAL STATUS END ***
+
+  // *** THE FOLLOWING CODE SIMULATES THE LAST STATUS OF THE DEVICE ***
+  // *** COMMENT THE FOLLOWING CODE IF YOU WANT TO USE REAL MYSQL CONNECTION ***
+  // *** FAKE STATUS START ***
   JsonDocument statusDoc;
   statusDoc["mac-address"] = mac;
   statusDoc["type"] = "lamp";
@@ -261,7 +291,7 @@ JsonDocument getLastLampDeviceStatusDoc(String &mac) {
   alarm[STATUS_JSON_NAME] = false;
   alarm[SENSOR_STATUS_JSON_NAME] = true;
   return statusDoc;
-  
+  // *** FAKE STATUS END ***
 }
 
 void handle_single_lamp() {
@@ -328,10 +358,11 @@ JsonDocument createLampConfigFile() {
 
 
 // === HANDLE HVAC ===
-/*
-JsonDocument getLastHvacDeviceStatusDoc(String mac) {
-  //TODO: QUERY MYSQL OR INFLUXDB FOR LAST STATUS OF DEVICE
+/* ***REMOVE TO HANDLE HVAC***
 
+
+
+JsonDocument getLastHvacDeviceStatusDoc(String mac) {
   JsonDocument statusDoc;
   statusDoc[F("mac-address")] = mac;
   statusDoc[F("type")] = "hvac";
@@ -365,8 +396,7 @@ JsonDocument getLastHvacDeviceStatusDoc(String mac) {
 
   return statusDoc;
 }
-*/
-/*
+
 void handle_single_hvac() {
   String mac = server.pathArg(0);
   if (server.method() == HTTP_GET) {
@@ -395,8 +425,7 @@ void handle_single_hvac() {
     }
   }
 }
-*/
-/*
+
 JsonDocument createHvacConfigFile() {
   JsonDocument newConfig;
   newConfig[F("mac-address")] = server.pathArg(0);
@@ -427,7 +456,7 @@ JsonDocument createHvacConfigFile() {
 
   return newConfig;
 }
-*/
+***REMOVE TO HANDLE HVAC***  */
 
 // === MQTT ===
 
@@ -508,9 +537,15 @@ void registerDevice(String &payload) {
   String registerTopicStr = String(MQTT_TOPIC_REGISTER) + "/" + mac;
 
   mqttClient.publish(registerTopicStr.c_str(), buffer, n, false, 1);
-  if (!knownDevicesDoc.containsKey(mac)) {
-    knownDevicesDoc[F("macs")].add(mac);
+  int j = 0;
+  for (JsonVariant v : knownDevicesDoc[F("macs")].as<JsonArray>()) {
+    if (v.as<String>() == mac) {
+      knownDevicesDoc[F("macs")].remove(j);
+      break;
+    }
+    j++;
   }
+  knownDevicesDoc[F("macs")].add(mac);
   knownDevicesDoc[mac][F("url")] = url;
   knownDevicesDoc[mac][F("mac")] = mac;
   knownDevicesDoc[mac][F("type")] = type;
@@ -627,29 +662,29 @@ void handleLampStatusMessage(String &payload) {
     }
   }
   char UPSERT_DATA_LAMP[] = "INSERT INTO `%s`.`vigiloffice_lamp` ("
-                     "`mac-address`, `light-enabled`, `light-status`, "
-                     "`light-threshold`, `light-value`, "
-                     "`motion-enabled`, `motion-status`, `motion-value`, "
-                     "`flame-enabled`, `flame-status`, `flame-value`, "
-                     "`rgb-enabled`, `rgb-status`, `rgb-value`, "
-                     "`alarm-enabled`, `alarm-status`) "
-                     "VALUES ('%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d) "
-                     "ON DUPLICATE KEY UPDATE "
-                     "`light-enabled` = VALUES(`light-enabled`), "
-                     "`light-status` = VALUES(`light-status`), "
-                     "`light-threshold` = VALUES(`light-threshold`), "
-                     "`light-value` = VALUES(`light-value`), "
-                     "`motion-enabled` = VALUES(`motion-enabled`), "
-                     "`motion-status` = VALUES(`motion-status`), "
-                     "`motion-value` = VALUES(`motion-value`), "
-                     "`flame-enabled` = VALUES(`flame-enabled`), "
-                     "`flame-status` = VALUES(`flame-status`), "
-                     "`flame-value` = VALUES(`flame-value`), "
-                     "`rgb-enabled` = VALUES(`rgb-enabled`), "
-                     "`rgb-status` = VALUES(`rgb-status`), "
-                     "`rgb-value` = VALUES(`rgb-value`), "
-                     "`alarm-enabled` = VALUES(`alarm-enabled`), "
-                     "`alarm-status` = VALUES(`alarm-status`)";
+                            "`mac-address`, `light-enabled`, `light-status`, "
+                            "`light-threshold`, `light-value`, "
+                            "`motion-enabled`, `motion-status`, `motion-value`, "
+                            "`flame-enabled`, `flame-status`, `flame-value`, "
+                            "`rgb-enabled`, `rgb-status`, `rgb-value`, "
+                            "`alarm-enabled`, `alarm-status`) "
+                            "VALUES ('%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d) "
+                            "ON DUPLICATE KEY UPDATE "
+                            "`light-enabled` = VALUES(`light-enabled`), "
+                            "`light-status` = VALUES(`light-status`), "
+                            "`light-threshold` = VALUES(`light-threshold`), "
+                            "`light-value` = VALUES(`light-value`), "
+                            "`motion-enabled` = VALUES(`motion-enabled`), "
+                            "`motion-status` = VALUES(`motion-status`), "
+                            "`motion-value` = VALUES(`motion-value`), "
+                            "`flame-enabled` = VALUES(`flame-enabled`), "
+                            "`flame-status` = VALUES(`flame-status`), "
+                            "`flame-value` = VALUES(`flame-value`), "
+                            "`rgb-enabled` = VALUES(`rgb-enabled`), "
+                            "`rgb-status` = VALUES(`rgb-status`), "
+                            "`rgb-value` = VALUES(`rgb-value`), "
+                            "`alarm-enabled` = VALUES(`alarm-enabled`), "
+                            "`alarm-status` = VALUES(`alarm-status`)";
 
   MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
   sprintf(query, UPSERT_DATA_LAMP, mysql_user, mac_address.c_str(), light_status, light_enabled, light_threshold, light_value,
@@ -667,7 +702,7 @@ void handleLampStatusMessage(String &payload) {
   knownDevicesDoc[mac_address][F("status")] = "connected";
 }
 
-/*
+/* ***REMOVE TO HANDLE HVAC***
 void handleHvacStatusMessage(String &payload) {
   //Serial.println(payload);
 
@@ -795,7 +830,7 @@ void handleHvacStatusMessage(String &payload) {
 
   knownDevicesDoc[mac_address][F("status")] = "connected";
 }
-*/
+***REMOVE TO HANDLE HVAC*** */
 
 void handleLastWillTestamentMessage(String &payload) {
   JsonDocument doc;
@@ -815,7 +850,7 @@ void mqttMessageReceived(String &topic, String &payload) {
   } else if (topic.startsWith(F("vigiloffice/lamps")) && topic.endsWith(F("/status"))) {
     handleLampStatusMessage(payload);
   } else if (topic.startsWith(F("vigiloffice/hvacs")) && topic.endsWith(F("/status"))) {
-    //handleHvacStatusMessage(payload);
+    //***REMOVE TO HANDLE HVAC*** handleHvacStatusMessage(payload);
   } else if (topic.startsWith(MQTT_TOPIC_LWT)) {
     handleLastWillTestamentMessage(payload);
   }
