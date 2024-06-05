@@ -32,16 +32,36 @@ class DeviceEndpoint extends Endpoint {
   ///
   /// Returns the updated device.
   Future<Device> updateDevice(Session session, Device device) async {
-    var newDevice = await Device.db.updateRow(session, device);
-    await session.caches.local
-        .put(device.macAddress, newDevice, lifetime: Duration(minutes: 5));
-    return newDevice;
+    var oldDevice = await session.caches.local.get(
+      '$deviceCacheKeyPrefix${device.macAddress}',
+      CacheMissHandler(
+        () async => Device.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(device.macAddress)),
+        lifetime: Duration(minutes: 5),
+      ),
+    );
+    if (oldDevice == null) {
+      return createDevice(session, device);
+    }
+    device.id = oldDevice.id;
+    return Device.db.updateRow(session, device);
   }
 
   /// Deletes a device.
   ///
   /// Returns the deleted device.
-  Future<Device> deleteDevice(Session session, Device device) async {
+  Future<Device?> deleteDevice(Session session, Device device) async {
+    var id = (await session.caches.local.get(
+      '$deviceCacheKeyPrefix${device.macAddress}',
+      CacheMissHandler(
+        () async => Device.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(device.macAddress)),
+        lifetime: Duration(minutes: 5),
+      ),
+    ))
+        ?.id;
+    if (id == null) return null;
+    device.id = id;
     session.caches.local
         .invalidateKey('$deviceCacheKeyPrefix${device.macAddress}');
     return await Device.db.deleteRow(session, device);

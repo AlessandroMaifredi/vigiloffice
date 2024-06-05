@@ -3,3 +3,8 @@ device:
   - readDevice:
   - updateDevice:
   - deleteDevice:
+lamps:
+  - createLamp:
+  - readLamp:
+  - updateLamp:
+  - deleteLamp:

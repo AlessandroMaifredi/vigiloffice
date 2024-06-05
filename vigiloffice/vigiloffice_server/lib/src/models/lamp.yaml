@@ -1,0 +1,11 @@
+class: Lamp
+
+table: lamps
+
+fields:
+  macAddress: String
+  lightSensor: LightSensor
+  motionSensor: MotionSensor
+  flameSensor: FlameSensor
+  rgbLed: RGBLed
+  alarm: Alarm

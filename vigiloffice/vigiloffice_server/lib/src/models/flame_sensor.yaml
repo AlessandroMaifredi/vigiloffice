@@ -1,0 +1,8 @@
+class: FlameSensor
+
+fields:
+  name: String
+  value: int
+  status: int
+  enabled: bool
+  interval: int

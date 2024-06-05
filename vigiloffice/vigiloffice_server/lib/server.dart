@@ -1,5 +1,5 @@
 import 'package:serverpod/serverpod.dart';
-import 'src/mqtt/mqtt_serverpod.dart';
+import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
 
 import 'package:vigiloffice_server/src/web/routes/root.dart';
 
@@ -12,11 +12,14 @@ import 'src/generated/endpoints.dart';
 
 void run(List<String> args) async {
   // Initialize Serverpod and connect it with your generated code.
-  final pod = MQTTServerpod(
+  final pod = Serverpod(
     args,
     Protocol(),
     Endpoints(),
   );
+
+  final MqttManager mqttManager = MqttManager(
+      pod.getPassword('mqttUsername')!, pod.getPassword('mqttPassword')!);
 
   // If you are using any future calls, they need to be registered here.
   // pod.registerFutureCall(ExampleFutureCall(), 'exampleFutureCall');

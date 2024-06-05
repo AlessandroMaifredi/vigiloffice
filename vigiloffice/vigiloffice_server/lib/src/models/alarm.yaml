@@ -1,0 +1,5 @@
+class: Alarm
+
+fields:
+  status: bool
+  enabled: bool
