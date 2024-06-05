@@ -1,0 +1,7 @@
+class: Device
+
+table: devices
+
+fields:
+  type: String
+  macAddress: String

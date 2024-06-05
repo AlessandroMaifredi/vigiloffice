@@ -10,19 +10,42 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'protocol.dart' as _i3;
+import 'package:vigiloffice_client/src/protocol/device.dart' as _i3;
+import 'protocol.dart' as _i4;
 
 /// {@category Endpoint}
-class EndpointExample extends _i1.EndpointRef {
-  EndpointExample(_i1.EndpointCaller caller) : super(caller);
+class EndpointDevice extends _i1.EndpointRef {
+  EndpointDevice(_i1.EndpointCaller caller) : super(caller);
 
   @override
-  String get name => 'example';
+  String get name => 'device';
 
-  _i2.Future<String> hello(String name) => caller.callServerEndpoint<String>(
-        'example',
-        'hello',
-        {'name': name},
+  _i2.Future<_i3.Device> createDevice(_i3.Device device) =>
+      caller.callServerEndpoint<_i3.Device>(
+        'device',
+        'createDevice',
+        {'device': device},
+      );
+
+  _i2.Future<_i3.Device?> readDevice(int deviceMac) =>
+      caller.callServerEndpoint<_i3.Device?>(
+        'device',
+        'readDevice',
+        {'deviceMac': deviceMac},
+      );
+
+  _i2.Future<_i3.Device> updateDevice(_i3.Device device) =>
+      caller.callServerEndpoint<_i3.Device>(
+        'device',
+        'updateDevice',
+        {'device': device},
+      );
+
+  _i2.Future<_i3.Device> deleteDevice(_i3.Device device) =>
+      caller.callServerEndpoint<_i3.Device>(
+        'device',
+        'deleteDevice',
+        {'device': device},
       );
 }
 
@@ -41,7 +64,7 @@ class Client extends _i1.ServerpodClient {
     Function(_i1.MethodCallContext)? onSucceededCall,
   }) : super(
           host,
-          _i3.Protocol(),
+          _i4.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -49,13 +72,13 @@ class Client extends _i1.ServerpodClient {
           onFailedCall: onFailedCall,
           onSucceededCall: onSucceededCall,
         ) {
-    example = EndpointExample(this);
+    device = EndpointDevice(this);
   }
 
-  late final EndpointExample example;
+  late final EndpointDevice device;
 
   @override
-  Map<String, _i1.EndpointRef> get endpointRefLookup => {'example': example};
+  Map<String, _i1.EndpointRef> get endpointRefLookup => {'device': device};
 
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup => {};

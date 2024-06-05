@@ -51,10 +51,13 @@ class MyHomePageState extends State<MyHomePage> {
   // is successful.
   void _callHello() async {
     try {
-      final result = await client.example.hello(_textEditingController.text);
+      final result = await client.device.createDevice(Device(
+        type: _textEditingController.text,
+        macAddress: "1a:2b:3c:4d:5e:6f",
+      ));
       setState(() {
         _errorMessage = null;
-        _resultMessage = result;
+        _resultMessage = result.type;
       });
     } catch (e) {
       setState(() {

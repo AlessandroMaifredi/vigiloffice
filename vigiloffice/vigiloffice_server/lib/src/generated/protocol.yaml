@@ -1,2 +1,5 @@
-example:
-  - hello:
+device:
+  - createDevice:
+  - readDevice:
+  - updateDevice:
+  - deleteDevice:

@@ -9,29 +9,30 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import '../endpoints/example_endpoint.dart' as _i2;
+import '../endpoints/device_endpoint.dart' as _i2;
+import 'package:vigiloffice_server/src/generated/device.dart' as _i3;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
   void initializeEndpoints(_i1.Server server) {
     var endpoints = <String, _i1.Endpoint>{
-      'example': _i2.ExampleEndpoint()
+      'device': _i2.DeviceEndpoint()
         ..initialize(
           server,
-          'example',
+          'device',
           null,
         )
     };
-    connectors['example'] = _i1.EndpointConnector(
-      name: 'example',
-      endpoint: endpoints['example']!,
+    connectors['device'] = _i1.EndpointConnector(
+      name: 'device',
+      endpoint: endpoints['device']!,
       methodConnectors: {
-        'hello': _i1.MethodConnector(
-          name: 'hello',
+        'createDevice': _i1.MethodConnector(
+          name: 'createDevice',
           params: {
-            'name': _i1.ParameterDescription(
-              name: 'name',
-              type: _i1.getType<String>(),
+            'device': _i1.ParameterDescription(
+              name: 'device',
+              type: _i1.getType<_i3.Device>(),
               nullable: false,
             )
           },
@@ -39,11 +40,65 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['example'] as _i2.ExampleEndpoint).hello(
+              (endpoints['device'] as _i2.DeviceEndpoint).createDevice(
             session,
-            params['name'],
+            params['device'],
           ),
-        )
+        ),
+        'readDevice': _i1.MethodConnector(
+          name: 'readDevice',
+          params: {
+            'deviceMac': _i1.ParameterDescription(
+              name: 'deviceMac',
+              type: _i1.getType<int>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['device'] as _i2.DeviceEndpoint).readDevice(
+            session,
+            params['deviceMac'],
+          ),
+        ),
+        'updateDevice': _i1.MethodConnector(
+          name: 'updateDevice',
+          params: {
+            'device': _i1.ParameterDescription(
+              name: 'device',
+              type: _i1.getType<_i3.Device>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['device'] as _i2.DeviceEndpoint).updateDevice(
+            session,
+            params['device'],
+          ),
+        ),
+        'deleteDevice': _i1.MethodConnector(
+          name: 'deleteDevice',
+          params: {
+            'device': _i1.ParameterDescription(
+              name: 'device',
+              type: _i1.getType<_i3.Device>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['device'] as _i2.DeviceEndpoint).deleteDevice(
+            session,
+            params['device'],
+          ),
+        ),
       },
     );
   }
