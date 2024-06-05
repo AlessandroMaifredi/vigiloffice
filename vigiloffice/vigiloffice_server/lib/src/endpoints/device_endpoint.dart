@@ -3,11 +3,18 @@ import 'package:vigiloffice_server/src/constants.dart';
 
 import '../generated/protocol.dart';
 
+/// Endpoint for managing devices.
 class DeviceEndpoint extends Endpoint {
+  /// Creates a new device.
+  ///
+  /// Returns the created device.
   Future<Device> createDevice(Session session, Device device) async {
     return await Device.db.insertRow(session, device);
   }
 
+  /// Reads a device by its MAC address.
+  ///
+  /// Returns the device with the specified MAC address, or `null` if not found.
   Future<Device?> readDevice(Session session, int deviceMac) async {
     // Try to retrieve the object from the cache
     var device = await session.caches.local.get(
@@ -21,6 +28,9 @@ class DeviceEndpoint extends Endpoint {
     return device;
   }
 
+  /// Updates an existing device.
+  ///
+  /// Returns the updated device.
   Future<Device> updateDevice(Session session, Device device) async {
     var newDevice = await Device.db.updateRow(session, device);
     await session.caches.local
@@ -28,6 +38,9 @@ class DeviceEndpoint extends Endpoint {
     return newDevice;
   }
 
+  /// Deletes a device.
+  ///
+  /// Returns the deleted device.
   Future<Device> deleteDevice(Session session, Device device) async {
     session.caches.local
         .invalidateKey('$deviceCacheKeyPrefix${device.macAddress}');

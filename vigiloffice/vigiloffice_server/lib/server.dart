@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'src/mqtt/mqtt_serverpod.dart';
 
 import 'package:vigiloffice_server/src/web/routes/root.dart';
 
@@ -11,7 +12,7 @@ import 'src/generated/endpoints.dart';
 
 void run(List<String> args) async {
   // Initialize Serverpod and connect it with your generated code.
-  final pod = Serverpod(
+  final pod = MQTTServerpod(
     args,
     Protocol(),
     Endpoints(),
@@ -30,8 +31,6 @@ void run(List<String> args) async {
     RouteStaticDirectory(serverDirectory: 'static', basePath: '/'),
     '/*',
   );
-
-  
 
   // Start the server.
   await pod.start();
