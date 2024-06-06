@@ -1,10 +1,13 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
+import 'package:vigiloffice_server/src/web/routes/lamps_route.dart';
 
 import 'package:vigiloffice_server/src/web/routes/root.dart';
+import 'package:vigiloffice_server/src/web/routes/single_lamp_route.dart';
 
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
+import 'src/web/routes/devices_route.dart';
 
 // This is the starting point of your Serverpod server. In most cases, you will
 // only need to make additions to this file if you add future calls,  are
@@ -30,6 +33,22 @@ void run(List<String> args) async {
   // Setup a default page at the web root.
   pod.webServer.addRoute(RouteRoot(), '/');
   pod.webServer.addRoute(RouteRoot(), '/index.html');
+  pod.webServer.addRoute(DevicesRoute(), '/devices/');
+  pod.webServer.addRoute(DevicesRoute(), '/devices');
+  for (DeviceType type in DeviceType.values) {
+    WidgetRoute listRoute = DevicesRoute();
+    WidgetRoute singleRoute = DevicesRoute();
+    switch (type) {
+      case DeviceType.lamp:
+        singleRoute = SingleLampRoute();
+        listRoute = LampsRoute();
+      case DeviceType.hvac:
+      // TODO: Handle this case.
+    }
+    pod.webServer.addRoute(listRoute, '/devices/${type.name}s');
+    pod.webServer.addRoute(listRoute, '/devices/${type.name}s/');
+    pod.webServer.addRoute(singleRoute, '/devices/${type.name}s/*');
+  }
   // Serve all files in the /static directory.
   pod.webServer.addRoute(
     RouteStaticDirectory(serverDirectory: 'static', basePath: '/'),

@@ -129,9 +129,10 @@ class MqttManager {
     builder.addString(msg);
     _client!.publishMessage("vigiloffice/register/${device.macAddress}",
         MqttQos.atLeastOnce, builder.payload!);
-    _client!.subscribe(
+    /* _client!.subscribe(
         "vigiloffice/${device.type}s/${device.macAddress}/status",
         MqttQos.atLeastOnce);
+        */
   }
 
   /// Handles the logic when the connection to the broker is established.
@@ -218,6 +219,7 @@ class MqttManager {
   void _onSubscribeFail(String topic) async {
     Serverpod.instance.createSession().then((session) {
       session.log("Failed to subscribe to topic: $topic");
+      session.close();
     });
   }
 
