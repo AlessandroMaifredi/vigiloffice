@@ -10,6 +10,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import 'protocol.dart' as _i2;
+import 'package:serverpod_serialization/serverpod_serialization.dart';
 
 abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
   Lamp._({
@@ -20,6 +21,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
     required this.flameSensor,
     required this.rgbLed,
     required this.alarm,
+    this.lastUpdate,
   }) : super(id);
 
   factory Lamp({
@@ -30,6 +32,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
     required _i2.FlameSensor flameSensor,
     required _i2.RGBLed rgbLed,
     required _i2.Alarm alarm,
+    DateTime? lastUpdate,
   }) = _LampImpl;
 
   factory Lamp.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,6 +49,9 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
           (jsonSerialization['rgbLed'] as Map<String, dynamic>)),
       alarm: _i2.Alarm.fromJson(
           (jsonSerialization['alarm'] as Map<String, dynamic>)),
+      lastUpdate: jsonSerialization['lastUpdate'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastUpdate']),
     );
   }
 
@@ -65,6 +71,8 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
 
   _i2.Alarm alarm;
 
+  DateTime? lastUpdate;
+
   @override
   _i1.Table get table => t;
 
@@ -76,6 +84,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
     _i2.FlameSensor? flameSensor,
     _i2.RGBLed? rgbLed,
     _i2.Alarm? alarm,
+    DateTime? lastUpdate,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -87,6 +96,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
       'flameSensor': flameSensor.toJson(),
       'rgbLed': rgbLed.toJson(),
       'alarm': alarm.toJson(),
+      if (lastUpdate != null) 'lastUpdate': lastUpdate?.toJson(),
     };
   }
 
@@ -100,6 +110,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
       'flameSensor': flameSensor.toJsonForProtocol(),
       'rgbLed': rgbLed.toJsonForProtocol(),
       'alarm': alarm.toJsonForProtocol(),
+      if (lastUpdate != null) 'lastUpdate': lastUpdate?.toJson(),
     };
   }
 
@@ -144,6 +155,7 @@ class _LampImpl extends Lamp {
     required _i2.FlameSensor flameSensor,
     required _i2.RGBLed rgbLed,
     required _i2.Alarm alarm,
+    DateTime? lastUpdate,
   }) : super._(
           id: id,
           macAddress: macAddress,
@@ -152,6 +164,7 @@ class _LampImpl extends Lamp {
           flameSensor: flameSensor,
           rgbLed: rgbLed,
           alarm: alarm,
+          lastUpdate: lastUpdate,
         );
 
   @override
@@ -163,6 +176,7 @@ class _LampImpl extends Lamp {
     _i2.FlameSensor? flameSensor,
     _i2.RGBLed? rgbLed,
     _i2.Alarm? alarm,
+    Object? lastUpdate = _Undefined,
   }) {
     return Lamp(
       id: id is int? ? id : this.id,
@@ -172,6 +186,7 @@ class _LampImpl extends Lamp {
       flameSensor: flameSensor ?? this.flameSensor.copyWith(),
       rgbLed: rgbLed ?? this.rgbLed.copyWith(),
       alarm: alarm ?? this.alarm.copyWith(),
+      lastUpdate: lastUpdate is DateTime? ? lastUpdate : this.lastUpdate,
     );
   }
 }
@@ -202,6 +217,10 @@ class LampTable extends _i1.Table {
       'alarm',
       this,
     );
+    lastUpdate = _i1.ColumnDateTime(
+      'lastUpdate',
+      this,
+    );
   }
 
   late final _i1.ColumnString macAddress;
@@ -216,6 +235,8 @@ class LampTable extends _i1.Table {
 
   late final _i1.ColumnSerializable alarm;
 
+  late final _i1.ColumnDateTime lastUpdate;
+
   @override
   List<_i1.Column> get columns => [
         id,
@@ -225,6 +246,7 @@ class LampTable extends _i1.Table {
         flameSensor,
         rgbLed,
         alarm,
+        lastUpdate,
       ];
 }
 

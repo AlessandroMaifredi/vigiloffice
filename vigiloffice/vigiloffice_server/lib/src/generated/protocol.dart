@@ -13,13 +13,15 @@ import 'package:serverpod/serverpod.dart' as _i1;
 import 'package:serverpod/protocol.dart' as _i2;
 import 'alarm.dart' as _i3;
 import 'device.dart' as _i4;
-import 'flame_sensor.dart' as _i5;
-import 'lamp.dart' as _i6;
-import 'light_sensor.dart' as _i7;
-import 'motion_sensor.dart' as _i8;
-import 'rgb_led.dart' as _i9;
+import 'device_type.dart' as _i5;
+import 'flame_sensor.dart' as _i6;
+import 'lamp.dart' as _i7;
+import 'light_sensor.dart' as _i8;
+import 'motion_sensor.dart' as _i9;
+import 'rgb_led.dart' as _i10;
 export 'alarm.dart';
 export 'device.dart';
+export 'device_type.dart';
 export 'flame_sensor.dart';
 export 'lamp.dart';
 export 'light_sensor.dart';
@@ -51,7 +53,7 @@ class Protocol extends _i1.SerializationManagerServer {
           name: 'type',
           columnType: _i2.ColumnType.text,
           isNullable: false,
-          dartType: 'String',
+          dartType: 'protocol:DeviceType',
         ),
         _i2.ColumnDefinition(
           name: 'macAddress',
@@ -127,6 +129,12 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'protocol:Alarm',
         ),
+        _i2.ColumnDefinition(
+          name: 'lastUpdate',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
       ],
       foreignKeys: [],
       indexes: [
@@ -161,20 +169,23 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i4.Device) {
       return _i4.Device.fromJson(data) as T;
     }
-    if (t == _i5.FlameSensor) {
-      return _i5.FlameSensor.fromJson(data) as T;
+    if (t == _i5.DeviceType) {
+      return _i5.DeviceType.fromJson(data) as T;
     }
-    if (t == _i6.Lamp) {
-      return _i6.Lamp.fromJson(data) as T;
+    if (t == _i6.FlameSensor) {
+      return _i6.FlameSensor.fromJson(data) as T;
     }
-    if (t == _i7.LightSensor) {
-      return _i7.LightSensor.fromJson(data) as T;
+    if (t == _i7.Lamp) {
+      return _i7.Lamp.fromJson(data) as T;
     }
-    if (t == _i8.MotionSensor) {
-      return _i8.MotionSensor.fromJson(data) as T;
+    if (t == _i8.LightSensor) {
+      return _i8.LightSensor.fromJson(data) as T;
     }
-    if (t == _i9.RGBLed) {
-      return _i9.RGBLed.fromJson(data) as T;
+    if (t == _i9.MotionSensor) {
+      return _i9.MotionSensor.fromJson(data) as T;
+    }
+    if (t == _i10.RGBLed) {
+      return _i10.RGBLed.fromJson(data) as T;
     }
     if (t == _i1.getType<_i3.Alarm?>()) {
       return (data != null ? _i3.Alarm.fromJson(data) : null) as T;
@@ -182,20 +193,23 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i4.Device?>()) {
       return (data != null ? _i4.Device.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i5.FlameSensor?>()) {
-      return (data != null ? _i5.FlameSensor.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i5.DeviceType?>()) {
+      return (data != null ? _i5.DeviceType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i6.Lamp?>()) {
-      return (data != null ? _i6.Lamp.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i6.FlameSensor?>()) {
+      return (data != null ? _i6.FlameSensor.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.LightSensor?>()) {
-      return (data != null ? _i7.LightSensor.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.Lamp?>()) {
+      return (data != null ? _i7.Lamp.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.MotionSensor?>()) {
-      return (data != null ? _i8.MotionSensor.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.LightSensor?>()) {
+      return (data != null ? _i8.LightSensor.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i9.RGBLed?>()) {
-      return (data != null ? _i9.RGBLed.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i9.MotionSensor?>()) {
+      return (data != null ? _i9.MotionSensor.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i10.RGBLed?>()) {
+      return (data != null ? _i10.RGBLed.fromJson(data) : null) as T;
     }
     try {
       return _i2.Protocol().deserialize<T>(data, t);
@@ -211,19 +225,22 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i4.Device) {
       return 'Device';
     }
-    if (data is _i5.FlameSensor) {
+    if (data is _i5.DeviceType) {
+      return 'DeviceType';
+    }
+    if (data is _i6.FlameSensor) {
       return 'FlameSensor';
     }
-    if (data is _i6.Lamp) {
+    if (data is _i7.Lamp) {
       return 'Lamp';
     }
-    if (data is _i7.LightSensor) {
+    if (data is _i8.LightSensor) {
       return 'LightSensor';
     }
-    if (data is _i8.MotionSensor) {
+    if (data is _i9.MotionSensor) {
       return 'MotionSensor';
     }
-    if (data is _i9.RGBLed) {
+    if (data is _i10.RGBLed) {
       return 'RGBLed';
     }
     return super.getClassNameForObject(data);
@@ -237,20 +254,23 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data['className'] == 'Device') {
       return deserialize<_i4.Device>(data['data']);
     }
+    if (data['className'] == 'DeviceType') {
+      return deserialize<_i5.DeviceType>(data['data']);
+    }
     if (data['className'] == 'FlameSensor') {
-      return deserialize<_i5.FlameSensor>(data['data']);
+      return deserialize<_i6.FlameSensor>(data['data']);
     }
     if (data['className'] == 'Lamp') {
-      return deserialize<_i6.Lamp>(data['data']);
+      return deserialize<_i7.Lamp>(data['data']);
     }
     if (data['className'] == 'LightSensor') {
-      return deserialize<_i7.LightSensor>(data['data']);
+      return deserialize<_i8.LightSensor>(data['data']);
     }
     if (data['className'] == 'MotionSensor') {
-      return deserialize<_i8.MotionSensor>(data['data']);
+      return deserialize<_i9.MotionSensor>(data['data']);
     }
     if (data['className'] == 'RGBLed') {
-      return deserialize<_i9.RGBLed>(data['data']);
+      return deserialize<_i10.RGBLed>(data['data']);
     }
     return super.deserializeByClassName(data);
   }
@@ -266,8 +286,8 @@ class Protocol extends _i1.SerializationManagerServer {
     switch (t) {
       case _i4.Device:
         return _i4.Device.t;
-      case _i6.Lamp:
-        return _i6.Lamp.t;
+      case _i7.Lamp:
+        return _i7.Lamp.t;
     }
     return null;
   }

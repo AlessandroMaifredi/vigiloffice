@@ -185,6 +185,24 @@ class Endpoints extends _i1.EndpointDispatch {
             params['lamp'],
           ),
         ),
+        'controlLamp': _i1.MethodConnector(
+          name: 'controlLamp',
+          params: {
+            'lamp': _i1.ParameterDescription(
+              name: 'lamp',
+              type: _i1.getType<_i5.Lamp>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['lamps'] as _i3.LampsEndpoint).controlLamp(
+            session,
+            params['lamp'],
+          ),
+        ),
       },
     );
   }

@@ -8,3 +8,4 @@ lamps:
   - readLamp:
   - updateLamp:
   - deleteLamp:
+  - controlLamp:

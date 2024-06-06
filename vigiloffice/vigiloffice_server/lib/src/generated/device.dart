@@ -9,6 +9,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
+import 'protocol.dart' as _i2;
 
 abstract class Device extends _i1.TableRow
     implements _i1.ProtocolSerialization {
@@ -20,14 +21,14 @@ abstract class Device extends _i1.TableRow
 
   factory Device({
     int? id,
-    required String type,
+    required _i2.DeviceType type,
     required String macAddress,
   }) = _DeviceImpl;
 
   factory Device.fromJson(Map<String, dynamic> jsonSerialization) {
     return Device(
       id: jsonSerialization['id'] as int?,
-      type: jsonSerialization['type'] as String,
+      type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       macAddress: jsonSerialization['macAddress'] as String,
     );
   }
@@ -36,7 +37,7 @@ abstract class Device extends _i1.TableRow
 
   static const db = DeviceRepository._();
 
-  String type;
+  _i2.DeviceType type;
 
   String macAddress;
 
@@ -45,14 +46,14 @@ abstract class Device extends _i1.TableRow
 
   Device copyWith({
     int? id,
-    String? type,
+    _i2.DeviceType? type,
     String? macAddress,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'type': type,
+      'type': type.toJson(),
       'macAddress': macAddress,
     };
   }
@@ -61,7 +62,7 @@ abstract class Device extends _i1.TableRow
   Map<String, dynamic> toJsonForProtocol() {
     return {
       if (id != null) 'id': id,
-      'type': type,
+      'type': type.toJson(),
       'macAddress': macAddress,
     };
   }
@@ -101,7 +102,7 @@ class _Undefined {}
 class _DeviceImpl extends Device {
   _DeviceImpl({
     int? id,
-    required String type,
+    required _i2.DeviceType type,
     required String macAddress,
   }) : super._(
           id: id,
@@ -112,7 +113,7 @@ class _DeviceImpl extends Device {
   @override
   Device copyWith({
     Object? id = _Undefined,
-    String? type,
+    _i2.DeviceType? type,
     String? macAddress,
   }) {
     return Device(
@@ -125,9 +126,10 @@ class _DeviceImpl extends Device {
 
 class DeviceTable extends _i1.Table {
   DeviceTable({super.tableRelation}) : super(tableName: 'devices') {
-    type = _i1.ColumnString(
+    type = _i1.ColumnEnum(
       'type',
       this,
+      _i1.EnumSerialization.byName,
     );
     macAddress = _i1.ColumnString(
       'macAddress',
@@ -135,7 +137,7 @@ class DeviceTable extends _i1.Table {
     );
   }
 
-  late final _i1.ColumnString type;
+  late final _i1.ColumnEnum<_i2.DeviceType> type;
 
   late final _i1.ColumnString macAddress;
 

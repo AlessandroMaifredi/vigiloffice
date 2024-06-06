@@ -91,7 +91,9 @@ class EndpointLamps extends _i1.EndpointRef {
         {'lampMac': lampMac},
       );
 
-  /// Updates an existing lamp.
+  /// Updates an existing lamp on the database.
+  ///
+  /// Does not update the lamp on the MQTT broker. See [controlLamp] for that.
   ///
   /// Returns the updated lamp.
   _i2.Future<_i4.Lamp> updateLamp(_i4.Lamp lamp) =>
@@ -108,6 +110,18 @@ class EndpointLamps extends _i1.EndpointRef {
       caller.callServerEndpoint<_i4.Lamp>(
         'lamps',
         'deleteLamp',
+        {'lamp': lamp},
+      );
+
+  /// Updates the state of a lamp on the database and sends the new state to the MQTT broker.
+  ///
+  /// See [updateLamp] for updating the lamp on the database without sending the new state to the MQTT broker.
+  ///
+  /// Returns the updated lamp.
+  _i2.Future<_i4.Lamp> controlLamp(_i4.Lamp lamp) =>
+      caller.callServerEndpoint<_i4.Lamp>(
+        'lamps',
+        'controlLamp',
         {'lamp': lamp},
       );
 }

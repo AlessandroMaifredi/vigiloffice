@@ -9,3 +9,4 @@ fields:
   flameSensor: FlameSensor
   rgbLed: RGBLed
   alarm: Alarm
+  lastUpdate: DateTime?

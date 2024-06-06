@@ -1,0 +1,132 @@
+{
+  "moduleName": "vigiloffice",
+  "tables": [
+    {
+      "name": "devices",
+      "dartName": "Device",
+      "module": "vigiloffice",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('devices_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "type",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "protocol:DeviceType"
+        },
+        {
+          "name": "macAddress",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "devices_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        }
+      ],
+      "managed": true
+    },
+    {
+      "name": "lamps",
+      "dartName": "Lamp",
+      "module": "vigiloffice",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('lamps_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "macAddress",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "lightSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:LightSensor"
+        },
+        {
+          "name": "motionSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:MotionSensor"
+        },
+        {
+          "name": "flameSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:FlameSensor"
+        },
+        {
+          "name": "rgbLed",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:RGBLed"
+        },
+        {
+          "name": "alarm",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:Alarm"
+        },
+        {
+          "name": "lastUpdate",
+          "columnType": 4,
+          "isNullable": true,
+          "dartType": "DateTime?"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "lamps_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        }
+      ],
+      "managed": true
+    }
+  ],
+  "installedModules": [
+    {
+      "module": "serverpod",
+      "version": "20240516151843329"
+    },
+    {
+      "module": "vigiloffice",
+      "version": "20240606083046777"
+    }
+  ],
+  "migrationApiVersion": 1
+}

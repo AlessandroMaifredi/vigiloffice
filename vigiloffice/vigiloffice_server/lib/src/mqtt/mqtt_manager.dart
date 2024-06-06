@@ -3,68 +3,176 @@ import 'dart:convert';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/endpoints/device_endpoint.dart';
 import 'package:vigiloffice_server/src/endpoints/lamps_endpoint.dart';
 
 import '../generated/protocol.dart';
 
 /// A class that manages the MQTT connection and provides methods to handle events.
+///
+/// This class is responsible for establishing and maintaining the MQTT connection,
+/// as well as handling various events related to the MQTT communication.
+///
+/// Example usage:
+/// ```dart
+/// MqttManager mqttManager = MqttManager();
+/// mqttManager.connect();
+/// ```
 class MqttManager {
-  final MqttServerClient _client;
+  static final MqttManager _instance = MqttManager._internal();
+  factory MqttManager() => _instance;
+
+  MqttServerClient? _client;
   static final String _brokerUrl = '149.132.178.179';
   static final String _clientId = 'serverpod';
   static final int maxReconnectAttempts = 5;
   int timesConnected = 0;
+  static final LampsEndpoint _lampsEndpoint = LampsEndpoint();
+  //static final HVACsEndpoint _hvacEndpoint = HVACsEndpoint();
+  static final DeviceEndpoint _deviceEndpoint = DeviceEndpoint();
 
-  /// Creates a new instance of the [MqttManager] class.
-  ///
-  /// The [username] and [password] are used to authenticate with the MQTT broker.
-  MqttManager(String username, String password)
-      : _client = MqttServerClient(_brokerUrl, _clientId) {
-    _connect(username, password);
+  MqttManager._internal();
+
+  /// Ensures that the MQTT client is initialized.
+  void ensureInitialized() {
+    if (_client == null) {
+      throw Exception('The MQTT client is not initialized.');
+    }
   }
 
   /// Connects to the MQTT broker using the provided [username] and [password].
-  Future<void> _connect(String username, String password) async {
-    _client.logging(on: false);
-    _client.onConnected = _onConnected;
-    _client.onDisconnected = _onDisconnected;
-    _client.onSubscribed = _onSubscribed;
-    _client.onSubscribeFail = _onSubscribeFail;
-    _client.onAutoReconnect = _onAutoReconnect;
-    _client.onAutoReconnected = _onAutoReconnected;
-    _client.autoReconnect = true;
+  ///
+  /// This method establishes a connection to the MQTT broker using the specified
+  /// [username] and [password]. It allows the client to authenticate with the
+  /// broker and gain access to the MQTT services.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// MqttManager mqttManager = MqttManager();
+  /// mqttManager.connect(username: 'myUsername', password: 'myPassword');
+  /// ```
+  ///
+  /// Throws an [MqttException] if the connection fails.
+  Future<void> connect(String username, String password) async {
+    if (_client != null &&
+        _client?.connectionStatus != null &&
+        _client!.connectionStatus!.state == MqttConnectionState.connected) {
+      return;
+    }
+    _client = _client ?? MqttServerClient(_brokerUrl, _clientId);
+    _client!.logging(on: false);
+    _client!.onConnected = _onConnected;
+    _client!.onSubscribeFail = _onSubscribeFail;
+    _client!.onAutoReconnected = _onAutoReconnected;
+    _client!.autoReconnect = true;
+
     try {
-      await _client.connect(username, password);
+      await _client!.connect(username, password);
     } catch (e) {
       timesConnected++;
       if (timesConnected < maxReconnectAttempts) {
-        _connect(username, password);
+        await connect(username, password);
       } else {
-        print('Failed to connect to the broker.');
         rethrow;
       }
     }
   }
 
+// === LAMP ===
+
+  /// Controls the specified [lamp].
+  ///
+  /// This method sends a control message to the specified [lamp] to control its state.
+  /// Throws an [Exception] if the MQTT client is not initialized.
+  void controlLamp(Lamp lamp) {
+    ensureInitialized();
+    // Handle the logic to control the lamp
+    MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+    builder.addString(jsonEncode(lamp.toJson()));
+    _client!.publishMessage(
+        "vigiloffice/${DeviceType.lamp}s/${lamp.macAddress}/control",
+        MqttQos.atLeastOnce,
+        builder.payload!);
+  }
+
   void _handleLampStatus(String macAddress, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
-    var endpoint = LampsEndpoint();
     Map<String, dynamic> data = jsonDecode(payload);
-    await endpoint.updateLamp(session, Lamp.fromJson(data));
+    Lamp lamp = Lamp.fromJson(data);
+    lamp.lastUpdate = DateTime.now();
+    await _lampsEndpoint.updateLamp(session, lamp);
     session.close();
   }
 
+//=== END LAMP ===
+
+// === HVAC ===
+
   void _handleHVACStatus(String macAddress, String payload) {
     // Handle the HVAC status message
+  }
+
+// === END HVAC ===
+
+  void _handleRegisterMessage(String payload) async {
+    InternalSession session = await Serverpod.instance.createSession();
+    Map<String, dynamic> data = jsonDecode(payload);
+    Device device =
+        await _deviceEndpoint.updateDevice(session, Device.fromJson(data));
+    session.log("Device registered: ${device.id} (${device.macAddress})");
+    session.close();
+    String msg = jsonEncode({
+      "statusTopic": "vigiloffice/${device.type}s/${device.macAddress}/status",
+      "controlTopic": "vigiloffice/${device.type}s/${device.macAddress}/control"
+    });
+    MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+    builder.addString(msg);
+    _client!.publishMessage("vigiloffice/register/${device.macAddress}",
+        MqttQos.atLeastOnce, builder.payload!);
+    _client!.subscribe(
+        "vigiloffice/${device.type}s/${device.macAddress}/status",
+        MqttQos.atLeastOnce);
   }
 
   /// Handles the logic when the connection to the broker is established.
   void _onConnected() async {
     InternalSession session = await Serverpod.instance.createSession();
     // Handle the logic when the connection to the broker is established
-    _client.subscribe("vigiloffice/welcome", MqttQos.atLeastOnce);
 
-    _client.updates!
+    session.log('Connected to the MQTT broker.');
+
+    _setupConnection();
+    session.log("Subscribed to topics");
+
+    //TODO: move message configuration to a dedicated endpoint
+    final Map<String, dynamic> welcomeMessage = {
+      "apiServer":
+          "${Serverpod.instance.config.apiServer.publicHost}:${Serverpod.instance.config.apiServer.publicPort}",
+      "webServer":
+          "${Serverpod.instance.config.webServer!.publicHost}:${Serverpod.instance.config.webServer!.publicPort}",
+      "registerTopic": "vigiloffice/register",
+    };
+    final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+    builder.addString(jsonEncode(welcomeMessage));
+    _client!.publishMessage(
+        "vigiloffice/welcome", MqttQos.atLeastOnce, builder.payload!,
+        retain: true);
+
+    session.log("Welcome message published.");
+
+    session.close();
+  }
+
+  void _setupConnection() {
+    _client!.subscribe("vigiloffice/register", MqttQos.atLeastOnce);
+    _client!.subscribe("vigiloffice/register/#", MqttQos.atLeastOnce);
+
+    for (DeviceType type in DeviceType.values) {
+      _client!
+          .subscribe("vigiloffice/${type.name}s/+/status", MqttQos.atLeastOnce);
+    }
+
+    _client!.updates!
         .listen((List<MqttReceivedMessage<MqttMessage>> messages) async {
       InternalSession msgSession = await Serverpod.instance.createSession();
       for (MqttReceivedMessage<MqttMessage> message in messages) {
@@ -73,55 +181,48 @@ class MqttManager {
         final String topic = message.topic;
         final String payload = MqttPublishPayload.bytesToStringAsString(
             receivedMessage.payload.message);
-        final String macAddress = topic.split('/')[2];
+        final List<String> paths = topic.split('/');
+
         // Handle the incoming message logic here
-        switch (topic) {
-          case 'vigiloffice/lamps/+/status':
-            msgSession.log('Received lamp status message: $payload');
-            _handleLampStatus(macAddress, payload);
-            break;
-          case 'vigiloffice/hvac/+/status':
-            msgSession.log('Received hvac status message: $payload');
-            _handleHVACStatus(macAddress, payload);
-            break;
-          default:
-            // Handle unknown topic
-            print('Unknown topic: $topic');
-            break;
+        if (topic == 'vigiloffice/welcome') {
+          msgSession.log('Received welcome message: $payload');
+        } else if (topic == "vigiloffice/register") {
+          msgSession.log('Received generic register message: $payload');
+          _handleRegisterMessage(payload);
+        } else if (topic.startsWith("vigiloffice/register/")) {
+          final String macAddress = paths[2];
+          msgSession
+              .log('Received device ($macAddress) register message: $payload');
+        } else if (topic.endsWith("/status")) {
+          msgSession.log('Received status message: $payload');
+          DeviceType type =
+              DeviceType.fromJson(paths[1].substring(0, paths[1].length - 1));
+          switch (type) {
+            case DeviceType.lamp:
+              _handleLampStatus(paths[2], payload);
+              break;
+            case DeviceType.hvac:
+              _handleHVACStatus(paths[2], payload);
+              break;
+          }
+        } else {
+          // Handle unknown topic
+          print('Unknown topic: $topic');
         }
       }
       msgSession.close();
     });
-    session.log('Connected to the broker.');
-    session.close();
-  }
-
-  /// Handles the logic when the connection to the broker is lost.
-  ///
-  /// Implement automatic reconnection logic here.
-  void _onDisconnected() {
-    // Handle the logic when the connection to the broker is lost
-  }
-
-  /// Handles the logic when a subscription is successful.
-  void _onSubscribed(String topic) {
-    // Handle the logic when a subscription is successful
   }
 
   /// Handles the logic when a subscription fails.
-  void _onSubscribeFail(String topic) {
-    // Handle the logic when a subscription fails
-  }
-
-  /// Handles the logic when the client is attempting to reconnect.
-  void _onAutoReconnect() {
-    // Handle the logic when the client is attempting to reconnect
+  void _onSubscribeFail(String topic) async {
+    Serverpod.instance.createSession().then((session) {
+      session.log("Failed to subscribe to topic: $topic");
+    });
   }
 
   /// Handles the logic when the client successfully reconnects.
   void _onAutoReconnected() {
-    // Handle the logic when the client successfully reconnects
+    _setupConnection();
   }
-
-  // Add your methods and properties here
 }

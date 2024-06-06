@@ -20,6 +20,7 @@ abstract class Lamp implements _i1.SerializableModel {
     required this.flameSensor,
     required this.rgbLed,
     required this.alarm,
+    this.lastUpdate,
   });
 
   factory Lamp({
@@ -30,6 +31,7 @@ abstract class Lamp implements _i1.SerializableModel {
     required _i2.FlameSensor flameSensor,
     required _i2.RGBLed rgbLed,
     required _i2.Alarm alarm,
+    DateTime? lastUpdate,
   }) = _LampImpl;
 
   factory Lamp.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,6 +48,9 @@ abstract class Lamp implements _i1.SerializableModel {
           (jsonSerialization['rgbLed'] as Map<String, dynamic>)),
       alarm: _i2.Alarm.fromJson(
           (jsonSerialization['alarm'] as Map<String, dynamic>)),
+      lastUpdate: jsonSerialization['lastUpdate'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastUpdate']),
     );
   }
 
@@ -66,6 +71,8 @@ abstract class Lamp implements _i1.SerializableModel {
 
   _i2.Alarm alarm;
 
+  DateTime? lastUpdate;
+
   Lamp copyWith({
     int? id,
     String? macAddress,
@@ -74,6 +81,7 @@ abstract class Lamp implements _i1.SerializableModel {
     _i2.FlameSensor? flameSensor,
     _i2.RGBLed? rgbLed,
     _i2.Alarm? alarm,
+    DateTime? lastUpdate,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -85,6 +93,7 @@ abstract class Lamp implements _i1.SerializableModel {
       'flameSensor': flameSensor.toJson(),
       'rgbLed': rgbLed.toJson(),
       'alarm': alarm.toJson(),
+      if (lastUpdate != null) 'lastUpdate': lastUpdate?.toJson(),
     };
   }
 
@@ -105,6 +114,7 @@ class _LampImpl extends Lamp {
     required _i2.FlameSensor flameSensor,
     required _i2.RGBLed rgbLed,
     required _i2.Alarm alarm,
+    DateTime? lastUpdate,
   }) : super._(
           id: id,
           macAddress: macAddress,
@@ -113,6 +123,7 @@ class _LampImpl extends Lamp {
           flameSensor: flameSensor,
           rgbLed: rgbLed,
           alarm: alarm,
+          lastUpdate: lastUpdate,
         );
 
   @override
@@ -124,6 +135,7 @@ class _LampImpl extends Lamp {
     _i2.FlameSensor? flameSensor,
     _i2.RGBLed? rgbLed,
     _i2.Alarm? alarm,
+    Object? lastUpdate = _Undefined,
   }) {
     return Lamp(
       id: id is int? ? id : this.id,
@@ -133,6 +145,7 @@ class _LampImpl extends Lamp {
       flameSensor: flameSensor ?? this.flameSensor.copyWith(),
       rgbLed: rgbLed ?? this.rgbLed.copyWith(),
       alarm: alarm ?? this.alarm.copyWith(),
+      lastUpdate: lastUpdate is DateTime? ? lastUpdate : this.lastUpdate,
     );
   }
 }

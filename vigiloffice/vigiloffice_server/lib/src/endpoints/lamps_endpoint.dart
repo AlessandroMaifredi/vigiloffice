@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:vigiloffice_server/src/constants.dart';
+import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
 
 import '../generated/protocol.dart';
 
@@ -28,7 +29,9 @@ class LampsEndpoint extends Endpoint {
     return lamp;
   }
 
-  /// Updates an existing lamp.
+  /// Updates an existing lamp on the database.
+  ///
+  /// Does not update the lamp on the MQTT broker. See [controlLamp] for that.
   ///
   /// Returns the updated lamp.
   Future<Lamp> updateLamp(Session session, Lamp lamp) async {
@@ -53,5 +56,16 @@ class LampsEndpoint extends Endpoint {
   Future<Lamp> deleteLamp(Session session, Lamp lamp) async {
     session.caches.local.invalidateKey('$lampCacheKeyPrefix${lamp.macAddress}');
     return await Lamp.db.deleteRow(session, lamp);
+  }
+
+  /// Updates the state of a lamp on the database and sends the new state to the MQTT broker.
+  /// 
+  /// See [updateLamp] for updating the lamp on the database without sending the new state to the MQTT broker.
+  ///
+  /// Returns the updated lamp.
+  Future<Lamp> controlLamp(Session session, Lamp lamp) async {
+    lamp = await updateLamp(session, lamp);
+    MqttManager().controlLamp(lamp);
+    return lamp;
   }
 }

@@ -9,6 +9,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'protocol.dart' as _i2;
 
 abstract class Device implements _i1.SerializableModel {
   Device._({
@@ -19,14 +20,14 @@ abstract class Device implements _i1.SerializableModel {
 
   factory Device({
     int? id,
-    required String type,
+    required _i2.DeviceType type,
     required String macAddress,
   }) = _DeviceImpl;
 
   factory Device.fromJson(Map<String, dynamic> jsonSerialization) {
     return Device(
       id: jsonSerialization['id'] as int?,
-      type: jsonSerialization['type'] as String,
+      type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       macAddress: jsonSerialization['macAddress'] as String,
     );
   }
@@ -36,20 +37,20 @@ abstract class Device implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  String type;
+  _i2.DeviceType type;
 
   String macAddress;
 
   Device copyWith({
     int? id,
-    String? type,
+    _i2.DeviceType? type,
     String? macAddress,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'type': type,
+      'type': type.toJson(),
       'macAddress': macAddress,
     };
   }
@@ -65,7 +66,7 @@ class _Undefined {}
 class _DeviceImpl extends Device {
   _DeviceImpl({
     int? id,
-    required String type,
+    required _i2.DeviceType type,
     required String macAddress,
   }) : super._(
           id: id,
@@ -76,7 +77,7 @@ class _DeviceImpl extends Device {
   @override
   Device copyWith({
     Object? id = _Undefined,
-    String? type,
+    _i2.DeviceType? type,
     String? macAddress,
   }) {
     return Device(

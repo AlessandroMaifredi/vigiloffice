@@ -12,15 +12,16 @@ import 'src/generated/endpoints.dart';
 
 void run(List<String> args) async {
   // Initialize Serverpod and connect it with your generated code.
+  for (String arg in args) {
+    print(arg);
+  }
   final pod = Serverpod(
     args,
     Protocol(),
     Endpoints(),
   );
 
-  final MqttManager mqttManager = MqttManager(
-      pod.getPassword('mqttUsername')!, pod.getPassword('mqttPassword')!);
-
+  final MqttManager mqttManager = MqttManager();
   // If you are using any future calls, they need to be registered here.
   // pod.registerFutureCall(ExampleFutureCall(), 'exampleFutureCall');
 
@@ -34,6 +35,13 @@ void run(List<String> args) async {
     RouteStaticDirectory(serverDirectory: 'static', basePath: '/'),
     '/*',
   );
+
+  try {
+    await mqttManager.connect(
+        pod.getPassword('mqttUsername')!, pod.getPassword('mqttPassword')!);
+  } catch (e) {
+    print('Failed to connect to the broker.');
+  }
 
   // Start the server.
   await pod.start();

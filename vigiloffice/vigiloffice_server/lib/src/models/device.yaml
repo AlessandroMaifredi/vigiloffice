@@ -3,5 +3,5 @@ class: Device
 table: devices
 
 fields:
-  type: String
+  type: DeviceType
   macAddress: String
