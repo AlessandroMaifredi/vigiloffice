@@ -9,7 +9,7 @@
         "lowThreshold": 18,
         "target": 22
     },
-    "hvacSensor": {
+    "ventActuator": {
         "enabled": true
     },
     "flameSensor": {
