@@ -155,7 +155,20 @@ void setRGBReserved() {
 }
 
 void updateRGB() {
-  // TODO:
+  switch (rgbStatus) {
+    case RGB_OFF:
+      setRGBOff();
+      break;
+    case RGB_OCCUPIED:
+      setRGBOccupied();
+      break;
+    case RGB_AVAILABLE:
+      setRGBAvailable();
+      break;
+    case RGB_RESERVED:
+      setRGBReserved();
+      break;
+  }
 }
 
 // MQTT data
