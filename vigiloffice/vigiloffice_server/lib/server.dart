@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/constants.dart';
 
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
@@ -29,7 +30,9 @@ void run(List<String> args) async {
   // If you are using any future calls, they need to be registered here.
   // pod.registerFutureCall(ExampleFutureCall(), 'exampleFutureCall');
 
-  //TODO: IMPLEMENT WEB SERVER WITH MUSTACHE
+  //TODO: IMPLEMENT MTM API
+  //pod.webServer.addRoute(JsonDevicesRoot(), '$mtmPrefix/devices');
+  //pod.webServer.addRoute(JsonDevicesRoot(), '$mtmPrefix/devices/');
 
   // Setup a default page at the web root.
   pod.webServer.addRoute(RouteRoot(), '/');
