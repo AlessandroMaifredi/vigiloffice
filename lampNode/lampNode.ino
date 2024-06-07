@@ -327,41 +327,41 @@ JsonDocument statusDoc;
 volatile bool applyChanges = false;
 
 void updateStatusDoc() {
-  statusDoc[F("mac-address")] = macAddress;
-  statusDoc[F("type")] = DEVICE_TYPE;
-  JsonArray sensors = statusDoc.createNestedArray(F("sensors"));
-  JsonObject lightSensor = sensors.createNestedObject();
-  lightSensor[SENSOR_NAME_JSON_NAME] = LIGHT_JSON_NAME;
-  lightSensor[SENSOR_VALUE_JSON_NAME] = lightValue;
-  lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowLightTreshold;
-  lightSensor[STATUS_JSON_NAME] = lightStatus;
-  lightSensor[SENSOR_STATUS_JSON_NAME] = lightSensorStatus == LIGHT_SENSOR_ENABLED ? true : false;
-  lightSensor[SENSOR_READING_INTERVAL_JSON_NAME] = lightReadingInterval;
+  statusDoc[F("macAddress")] = macAddress;
 
-  JsonObject motionSensor = sensors.createNestedObject();
-  motionSensor[SENSOR_NAME_JSON_NAME] = MOTION_JSON_NAME;
-  motionSensor[SENSOR_VALUE_JSON_NAME] = motionStatus == MOTION_INIT || motionStatus == MOTION_NORMAL ? 0 : 1;
-  motionSensor[STATUS_JSON_NAME] = motionStatus;
-  motionSensor[SENSOR_STATUS_JSON_NAME] = motionSensorStatus == MOTION_SENSOR_ENABLED ? true : false;
+  JsonObject lightSensor = statusDoc.createNestedObject(F("lightSensor"));
+  lightSensor[F("name")] = LIGHT_JSON_NAME;
+  lightSensor[F("value")] = lightValue;
+  lightSensor[F("status")] = lightStatus;
+  lightSensor[F("enabled")] = lightSensorStatus == LIGHT_SENSOR_ENABLED ? true : false;
+  lightSensor[F("interval")] = lightReadingInterval;
+  lightSensor[F("lowThreshold")] = lowLightTreshold;
 
-  JsonObject flameSensor = sensors.createNestedObject();
-  flameSensor[SENSOR_NAME_JSON_NAME] = FLAME_JSON_NAME;
-  flameSensor[SENSOR_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
-  flameSensor[STATUS_JSON_NAME] = flameStatus;
-  flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
-  flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
+  JsonObject motionSensor = statusDoc.createNestedObject(F("motionSensor"));
+  motionSensor[F("name")] = MOTION_JSON_NAME;
+  motionSensor[F("value")] = motionStatus == MOTION_INIT || motionStatus == MOTION_NORMAL ? 0 : 1;
+  motionSensor[F("status")] = motionStatus;
+  motionSensor[F("enabled")] = motionSensorStatus == MOTION_SENSOR_ENABLED ? true : false;
 
-  JsonObject RGBLed = sensors.createNestedObject();
-  RGBLed[SENSOR_NAME_JSON_NAME] = RGB_JSON_NAME;
-  RGBLed[SENSOR_VALUE_JSON_NAME] = rgbStatus;
-  RGBLed[STATUS_JSON_NAME] = rgbStatus;
-  RGBLed[SENSOR_STATUS_JSON_NAME] = rgbSensorStatus == RGB_SENSOR_ENABLED ? true : false;
+  JsonObject flameSensor = statusDoc.createNestedObject(F("flameSensor"));
+  flameSensor[F("name")] = FLAME_JSON_NAME;
+  flameSensor[F("value")] = flameStatus == FLAME_PRESENT ? 1 : 0;
+  flameSensor[F("status")] = flameStatus;
+  flameSensor[F("enabled")] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
+  flameSensor[F("interval")] = flameReadingInterval;
 
-  JsonObject alarm = statusDoc.createNestedObject(ALARM_JSON_NAME);
-  alarm[STATUS_JSON_NAME] = alarmStatus == ALARM_NORMAL ? false : true;
-  alarm[SENSOR_STATUS_JSON_NAME] = alarmSystemStatus == ALARM_ENABLED ? true : false;
+  JsonObject rgbLed = statusDoc.createNestedObject(F("rgbLed"));
+  rgbLed[F("name")] = RGB_JSON_NAME;
+  rgbLed[F("value")] = rgbStatus;
+  rgbLed[F("status")] = rgbStatus;
+  rgbLed[F("enabled")] = rgbSensorStatus == RGB_SENSOR_ENABLED ? true : false;
+
+  JsonObject alarm = statusDoc.createNestedObject(F("alarm"));
+  alarm[F("status")] = alarmStatus == ALARM_NORMAL ? false : true;
+  alarm[F("enabled")] = alarmSystemStatus == ALARM_ENABLED ? true : false;
 
   statusDoc.shrinkToFit();
+
 }
 
 void connectToMQTTBroker() {
@@ -490,30 +490,28 @@ void setTopics(JsonDocument topicsDoc) {
 }
 
 void applyControlChanges(JsonDocument controlDoc) {
-  JsonObject allarme = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
-  alarmStatus = allarme[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
-  alarmSystemStatus = allarme[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
-  JsonArray sensors = controlDoc[F("sensors")].as<JsonArray>();
-  for (JsonVariant v : sensors) {
-    JsonObject sensor = v.as<JsonObject>();
-    String nome = String(sensor[SENSOR_NAME_JSON_NAME]);
-    if (nome == LIGHT_JSON_NAME) {
-      lightStatus = sensor[STATUS_JSON_NAME];
-      lightSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? LIGHT_SENSOR_ENABLED : LIGHT_SENSOR_DISABLED;
-      lowLightTreshold = sensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
-      lightReadingInterval = sensor[SENSOR_READING_INTERVAL_JSON_NAME];
-    } else if (nome == MOTION_JSON_NAME) {
-      motionStatus = sensor[STATUS_JSON_NAME];
-      motionSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? MOTION_SENSOR_ENABLED : MOTION_SENSOR_DISABLED;
-    } else if (nome == FLAME_JSON_NAME) {
-      flameStatus = sensor[STATUS_JSON_NAME];
-      flameSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
-      flameReadingInterval = sensor[SENSOR_READING_INTERVAL_JSON_NAME];
-    } else if (nome == RGB_JSON_NAME) {
-      rgbStatus = sensor[STATUS_JSON_NAME];
-      rgbSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? RGB_SENSOR_ENABLED : RGB_SENSOR_DISABLED;
-    }
-  }
+  JsonObject alarm = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
+  alarmStatus = alarm[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
+  alarmSystemStatus = alarm[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
+
+  JsonObject lightSensor = controlDoc[LIGHT_SENSOR_JSON_NAME].as<JsonObject>();
+  lightStatus = lightSensor[STATUS_JSON_NAME];
+  lightSensorStatus = lightSensor[SENSOR_STATUS_JSON_NAME] == true ? LIGHT_SENSOR_ENABLED : LIGHT_SENSOR_DISABLED;
+  lowLightTreshold = lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
+  lightReadingInterval = lightSensor[SENSOR_READING_INTERVAL_JSON_NAME];
+
+  JsonObject motionSensor = controlDoc[MOTION_SENSOR_JSON_NAME].as<JsonObject>();
+  motionStatus = motionSensor[STATUS_JSON_NAME];
+  motionSensorStatus = motionSensor[SENSOR_STATUS_JSON_NAME] == true ? MOTION_SENSOR_ENABLED : MOTION_SENSOR_DISABLED;
+
+  JsonObject flameSensor = controlDoc[FLAME_SENSOR_JSON_NAME].as<JsonObject>();
+  flameStatus = flameSensor[STATUS_JSON_NAME];
+  flameSensorStatus = flameSensor[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
+  flameReadingInterval = flameSensor[SENSOR_READING_INTERVAL_JSON_NAME];
+
+  JsonObject rgbActuator = controlDoc[RGB_ACTUATOR_JSON_NAME].as<JsonObject>();
+  rgbStatus = rgbActuator[STATUS_JSON_NAME];
+  rgbSensorStatus = rgbActuator[RGB_ACTUATOR_JSON_NAME] == true ? RGB_SENSOR_ENABLED : RGB_SENSOR_DISABLED;
 }
 
 void commSetup() {
