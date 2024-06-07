@@ -1,0 +1,25 @@
+{
+    "macAddress": "2a:2b:2c:3d:3e:3f",
+    "floodingSensor": {
+        "status": 0,
+        "enabled": true,
+        "interval": 1000
+    },
+    "flameSensor": {
+        "status": 0,
+        "enabled": true,
+        "interval": 1000
+    },
+    "proximitySensor": {
+        "status": 0,
+        "enabled": true
+    },
+    "rgbLed": {
+        "status": 0,
+        "enabled": true
+    },
+    "alarm": {
+        "status": false,
+        "enabled": true
+    }
+}

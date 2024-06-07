@@ -1,18 +1,15 @@
-#include "wiring_private.h"
-#include <DNSServer.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <MQTT.h>
 #include <ArduinoJson.h>
 #include "secrets.h"
-#include "sensorsJsonNames.h"
+#include "sensorJsonNames.h"
 
 #define ENABLE_LOGS true
 
 #ifdef ENABLE_LOGS
 
 // === LOGGING ===
-
 enum LOG_LEVEL {
   LOG_COMM,
   LOG_SENSORS,
@@ -22,12 +19,9 @@ enum LOG_LEVEL {
 };
 
 LOG_LEVEL logLevel = LOG_COMM;
-
 #endif
 
 // === ALARM ===
-
-
 enum ALARM_SYSTEM_STATUS {
   ALARM_ENABLED,
   ALARM_DISABLED
@@ -70,122 +64,7 @@ void deactivateAlarm() {
 #endif
 }
 
-// === PIR MOTION ===
-
-
-#define MOTION_SENSOR_PIN D6
-
-enum MOTION_SENSOR_STATUS {
-  MOTION_SENSOR_ENABLED,
-  MOTION_SENSOR_DISABLED
-};
-
-MOTION_SENSOR_STATUS motionSensorStatus = MOTION_SENSOR_DISABLED;
-
-enum MOTION_STATUS {
-  MOTION_DETECTED,
-  MOTION_NORMAL,
-  MOTION_INIT
-};
-
-volatile MOTION_STATUS motionStatus = MOTION_INIT;
-
-#define MOTION_INIT_TIME_DELAY 80000
-
-volatile unsigned long motionInitTimer;
-
-void readMotion() {
-  if (motionSensorStatus == MOTION_SENSOR_ENABLED) {
-    if (motionStatus == MOTION_INIT) {
-      if (millis() - motionInitTimer > MOTION_INIT_TIME_DELAY) {
-        motionInitTimer = millis();
-        motionStatus = MOTION_NORMAL;
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("MOTION SENSOR INIT COMPLETE"));
-        }
-#endif
-      }
-    } else {
-      motionStatus = digitalRead(MOTION_SENSOR_PIN) == HIGH ? MOTION_DETECTED : MOTION_NORMAL;
-      if (motionStatus == MOTION_DETECTED) {
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("Set MOTION to MOTION_DETECTED!"));
-        }
-#endif
-        activateAlarm();
-      } else {
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("Set MOTION to MOTION_NORMAL!"));
-        }
-#endif
-      }
-    }
-  }
-}
-
-
-// === PHOTORESISTOR ===
-
-
-#define LIGHT_SENSOR_PIN A0
-volatile unsigned int lightValue = 0;
-
-enum LIGHT_SENSOR_STATUS {
-  LIGHT_SENSOR_ENABLED,
-  LIGHT_SENSOR_DISABLED
-};
-
-LIGHT_SENSOR_STATUS lightSensorStatus = LIGHT_SENSOR_ENABLED;
-
-enum LIGHT_STATUS {
-  LIGHT_NORMAL,
-  LIGHT_LOW
-};
-
-volatile LIGHT_STATUS lightStatus = LIGHT_NORMAL;
-
-unsigned int lowLightTreshold = 450;
-
-unsigned long lightReadingInterval = 3500;
-
-
-void readLight() {
-  static unsigned long lastLightReading = millis();
-  if (lightSensorStatus == LIGHT_SENSOR_ENABLED) {
-    if (millis() - lastLightReading > lightReadingInterval) {
-      lightValue = analogRead(LIGHT_SENSOR_PIN);
-#ifdef ENABLE_LOGS
-      if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-        Serial.print(F("LIGHT: "));
-        Serial.println(lightValue);
-      }
-#endif
-      if (lightValue >= lowLightTreshold) {
-        lightStatus = LIGHT_LOW;
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("Set LIGHT to LIGHT_LOW"));
-        }
-#endif
-      } else {
-        lightStatus = LIGHT_NORMAL;
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("Set LIGHT to LIGHT_NORMAL"));
-        }
-#endif
-      }
-      lastLightReading = millis();
-    }
-  }
-}
-
 // === FLAME SENSOR ===
-
-
 #define FLAME_SENSOR_PIN D7
 
 enum FLAME_SENSOR_STATUS {
@@ -193,12 +72,12 @@ enum FLAME_SENSOR_STATUS {
   FLAME_SENSOR_DISABLED
 };
 
-FLAME_SENSOR_STATUS flameSensorStatus = FLAME_SENSOR_ENABLED;
-
 enum FLAME_STATUS {
   FLAME_PRESENT,
   FLAME_ABSENT
 };
+
+FLAME_SENSOR_STATUS flameSensorStatus = FLAME_SENSOR_ENABLED;
 
 volatile FLAME_STATUS flameStatus = FLAME_ABSENT;
 
@@ -230,8 +109,6 @@ void readFlame() {
 }
 
 // === RGB ===
-
-
 #define RGB_RED_PIN D2
 #define RGB_GREEN_PIN D1
 #define RGB_BLUE_PIN D3
@@ -243,15 +120,13 @@ enum RGB_SENSOR_STATUS {
 
 enum RGB_STATUS {
   RGB_OFF,
-  RGB_ON,
-  RGB_ALARM,
-  RGB_CUSTOM_ON,
-  RGB_CUSTOM_OFF
+  RGB_OCCUPIED,
+  RGB_AVAILABLE,
+  RGB_RESERVED
 };
 
 RGB_SENSOR_STATUS rgbSensorStatus = RGB_SENSOR_ENABLED;
-
-RGB_STATUS rgbStatus = RGB_OFF;
+RGB_STATUS rgbStatus;
 
 void setRGB(byte red, byte green, byte blue) {
   digitalWrite(RGB_RED_PIN, red);
@@ -264,50 +139,24 @@ void setRGBOff() {
   rgbStatus = RGB_OFF;
 }
 
-void setRGBOn() {
-  setRGB(HIGH, HIGH, HIGH);
-  rgbStatus = RGB_ON;
+void setRGBOccupied() {
+  setRGB(HIGH, LOW, LOW);
+  rgbStatus = RGB_OCCUPIED;
 }
 
-void setRGBAlarm() {
-  setRGB(HIGH, LOW, LOW);
-  rgbStatus = RGB_ALARM;
+void setRGBAvailable() {
+  setRGB(LOW, HIGH, LOW);
+  rgbStatus = RGB_AVAILABLE;
+}
+
+void setRGBReserved() {
+  setRGB(LOW, LOW, HIGH);
+  rgbStatus = RGB_RESERVED;
 }
 
 void updateRGB() {
-  if (rgbSensorStatus == RGB_SENSOR_ENABLED) {
-    if (alarmStatus == ALARM_ACTIVE) {
-      setRGBAlarm();
-    } else {
-      if (rgbStatus != RGB_CUSTOM_ON && rgbStatus != RGB_CUSTOM_OFF) {
-        switch (lightStatus) {
-          case LIGHT_LOW:
-            setRGBOn();
-            break;
-          case LIGHT_NORMAL:
-            setRGBOff();
-            break;
-        }
-      } else {
-        switch (rgbStatus) {
-          case RGB_CUSTOM_ON:
-            setRGB(HIGH, HIGH, HIGH);
-            break;
-          case RGB_CUSTOM_OFF:
-            setRGB(LOW, LOW, LOW);
-            break;
-          case RGB_OFF:
-          case RGB_ON:
-          case RGB_ALARM:
-          default:
-            break;
-        }
-      }
-    }
-  }
+  // TODO:
 }
-
-
 
 // MQTT data
 #define MQTT_BUFFER_SIZE 1024             // the maximum size for packets being published and received
@@ -324,40 +173,23 @@ String settingsTopic = "";
 
 JsonDocument statusDoc;
 
-volatile bool applyChanges = false;
-
 void updateStatusDoc() {
   statusDoc[F("macAddress")] = macAddress;
 
-  JsonObject lightSensor = statusDoc.createNestedObject(LIGHT_SENSOR_JSON_NAME);
-  lightSensor[SENSOR_VALUE_JSON_NAME] = lightValue;
-  lightSensor[STATUS_JSON_NAME] = lightStatus;
-  lightSensor[SENSOR_STATUS_JSON_NAME] = lightSensorStatus == LIGHT_SENSOR_ENABLED ? true : false;
-  lightSensor[SENSOR_READING_INTERVAL_JSON_NAME] = lightReadingInterval;
-  lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowLightTreshold;
-
-  JsonObject motionSensor = statusDoc.createNestedObject(MOTION_SENSOR_JSON_NAME);
-  motionSensor[SENSOR_VALUE_JSON_NAME] = motionStatus == MOTION_INIT || motionStatus == MOTION_NORMAL ? 0 : 1;
-  motionSensor[STATUS_JSON_NAME] = motionStatus;
-  motionSensor[SENSOR_STATUS_JSON_NAME] = motionSensorStatus == MOTION_SENSOR_ENABLED ? true : false;
-
   JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
-  flameSensor[SENSOR_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
   flameSensor[STATUS_JSON_NAME] = flameStatus;
   flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
   flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
 
   JsonObject rgbLed = statusDoc.createNestedObject(RGB_ACTUATOR_JSON_NAME);
-  rgbLed[SENSOR_VALUE_JSON_NAME] = rgbStatus;
   rgbLed[STATUS_JSON_NAME] = rgbStatus;
   rgbLed[SENSOR_STATUS_JSON_NAME] = rgbSensorStatus == RGB_SENSOR_ENABLED ? true : false;
 
   JsonObject alarm = statusDoc.createNestedObject(F("alarm"));
-  alarm[SENSOR_VALUE_JSON_NAME] = alarmStatus == ALARM_NORMAL ? false : true;
+  alarm[STATUS_JSON_NAME] = alarmStatus == ALARM_NORMAL ? false : true;
   alarm[SENSOR_STATUS_JSON_NAME] = alarmSystemStatus == ALARM_ENABLED ? true : false;
 
   statusDoc.shrinkToFit();
-
 }
 
 void connectToMQTTBroker() {
@@ -477,7 +309,7 @@ void setTopics(JsonDocument topicsDoc) {
   mqttClient.subscribe(controlTopic.c_str());
 #ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-    Serial.print(F("Status topic set to: "));alarmStatus
+    Serial.print(F("Status topic set to: "));
     Serial.println(statusTopic);
     Serial.print(F("Control topic set to: "));
     Serial.println(controlTopic);
@@ -489,16 +321,6 @@ void applyControlChanges(JsonDocument controlDoc) {
   JsonObject alarm = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
   alarmStatus = alarm[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
   alarmSystemStatus = alarm[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
-
-  JsonObject lightSensor = controlDoc[LIGHT_SENSOR_JSON_NAME].as<JsonObject>();
-  lightStatus = lightSensor[STATUS_JSON_NAME];
-  lightSensorStatus = lightSensor[SENSOR_STATUS_JSON_NAME] == true ? LIGHT_SENSOR_ENABLED : LIGHT_SENSOR_DISABLED;
-  lowLightTreshold = lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
-  lightReadingInterval = lightSensor[SENSOR_READING_INTERVAL_JSON_NAME];
-
-  JsonObject motionSensor = controlDoc[MOTION_SENSOR_JSON_NAME].as<JsonObject>();
-  motionStatus = motionSensor[STATUS_JSON_NAME];
-  motionSensorStatus = motionSensor[SENSOR_STATUS_JSON_NAME] == true ? MOTION_SENSOR_ENABLED : MOTION_SENSOR_DISABLED;
 
   JsonObject flameSensor = controlDoc[FLAME_SENSOR_JSON_NAME].as<JsonObject>();
   flameStatus = flameSensor[STATUS_JSON_NAME];
@@ -524,31 +346,24 @@ void commLoop() {
   mqttClient.loop();      // MQTT client loop
 }
 
-
 void setup() {
 #ifdef ENABLE_LOGS
   Serial.begin(115200);
 #endif
-  pinMode(LIGHT_SENSOR_PIN, INPUT);
 
   pinMode(RGB_RED_PIN, OUTPUT);
   pinMode(RGB_GREEN_PIN, OUTPUT);
   pinMode(RGB_BLUE_PIN, OUTPUT);
 
-  setRGBOff();
+  setRGBAvailable();
 
   pinMode(FLAME_SENSOR_PIN, INPUT);
 
-  pinMode(MOTION_SENSOR_PIN, INPUT);
-  motionStatus = MOTION_INIT;
-  motionInitTimer = millis();
   commSetup();
 }
 
 void loop() {
   readFlame();
-  readLight();
-  readMotion();
   commLoop();
   updateRGB();
 }
