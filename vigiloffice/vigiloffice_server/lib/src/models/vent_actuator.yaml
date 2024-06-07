@@ -1,0 +1,4 @@
+class: VentActuator
+
+fields:
+  enabled: bool

@@ -1,0 +1,12 @@
+class: Hvac
+
+table: hvacs
+
+fields:
+  macAddress: String
+
+  flameSensor: FlameSensor
+  tempSensor: TempSensor
+  ventActuator: VentActuator
+  alarm: Alarm
+  lastUpdate: DateTime?

@@ -6,6 +6,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:vigiloffice_server/src/endpoints/device_endpoint.dart';
 import 'package:vigiloffice_server/src/endpoints/lamps_endpoint.dart';
 
+import '../endpoints/hvacs_endpoint.dart';
 import '../generated/protocol.dart';
 
 /// A class that manages the MQTT connection and provides methods to handle events.
@@ -28,7 +29,7 @@ class MqttManager {
   static final int maxReconnectAttempts = 5;
   int timesConnected = 0;
   static final LampsEndpoint _lampsEndpoint = LampsEndpoint();
-  //static final HVACsEndpoint _hvacEndpoint = HVACsEndpoint();
+  static final HvacsEndpoint _hvacEndpoint = HvacsEndpoint();
   static final DeviceEndpoint _deviceEndpoint = DeviceEndpoint();
 
   MqttManager._internal();
@@ -107,9 +108,28 @@ class MqttManager {
 //=== END LAMP ===
 
 // === HVAC ===
+  /// Controls the specified [hvac].
+  ///
+  /// This method sends a control message to the specified [hvac] to control its state.
+  /// Throws an [Exception] if the MQTT client is not initialized.
+  void controlHvac(Hvac hvac) {
+    ensureInitialized();
+    // Handle the logic to control the hvac
+    MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+    builder.addString(jsonEncode(hvac.toJson()));
+    _client!.publishMessage(
+        "vigiloffice/${DeviceType.hvac}s/${hvac.macAddress}/control",
+        MqttQos.atLeastOnce,
+        builder.payload!);
+  }
 
-  void _handleHVACStatus(String macAddress, String payload) {
-    // Handle the HVAC status message
+  void _handleHvacStatus(String macAddress, String payload) async {
+    InternalSession session = await Serverpod.instance.createSession();
+    Map<String, dynamic> data = jsonDecode(payload);
+    Hvac hvac = Hvac.fromJson(data);
+    hvac.lastUpdate = DateTime.now();
+    await _hvacEndpoint.updateHvac(session, hvac);
+    session.close();
   }
 
 // === END HVAC ===
@@ -203,7 +223,7 @@ class MqttManager {
               _handleLampStatus(paths[2], payload);
               break;
             case DeviceType.hvac:
-              _handleHVACStatus(paths[2], payload);
+              _handleHvacStatus(paths[2], payload);
               break;
           }
         } else {

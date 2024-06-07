@@ -59,31 +59,30 @@
         </div>
     </nav>
     <div class='container py-5'>
-        <h1 class='mb-5 text-center'>Lamp {{lamp.macAddress}}</h1>
-        <p class="lead">Last update: {{lamp.lastUpdateString}}</p>
+        <h1 class='mb-5 text-center'>Hvac {{hvac.macAddress}}</h1>
+        <p class="lead">Last update: {{hvac.lastUpdateString}}</p>
         <form id='myForm' class='mx-auto'>
-            <input type='hidden' value='{{lamp.macAddress}}' name='macAddress' id='macAddress'>
-            <input type='hidden' value='{{lamp.id}}' name='id' id='id'>
-            <input type='hidden' value='{{lamp.lightSensor.value}}' name='lightValue' id='lightValue'>
-            <input type='hidden' value='{{lamp.flameSensor.value}}' name='flameValue' id='flameValue'>
-            <input type='hidden' value='{{lamp.motionSensor.value}}' name='motionValue' id='motionValue'>
-            <input type='hidden' value='{{lamp.rgbLed.value}}' name='rgbValue' id='rgbValue'>
-            <input type="hidden" value="{{lamp.lastUpdate}}" name="lastUpdate" id="lastUpdate">
+            <input type='hidden' value='{{hvac.macAddress}}' name='macAddress' id='macAddress'>
+            <input type='hidden' value='{{hvac.id}}' name='id' id='id'>
+            <input type='hidden' value='{{hvac.flameSensor.value}}' name='flameValue' id='flameValue'>
+            <input type='hidden' value='{{hvac.tempSensor.tempValue}}' name='tempValue' id='tempValue'>
+            <input type='hidden' value='{{hvac.tempSensor.humValue}}' name='humValue' id='humValue'>
+            <input type="hidden" value="{{hvac.lastUpdate}}" name="lastUpdate" id="lastUpdate">
             <div class='row'>
-                <div class='col'>
+                <div class='col-sm-3'>
                     <div class='sensor-group'>
                         <h2>Flame Sensor</h2>
                         <!-- Flame Sensor fields -->
                         <div class='form-group'>
                             <label for='flameIntervalSlider'>Flame reading interval</label>
                             <span id='flameIntervalSlider' class='d-block text-muted mb-2'>Current:
-                                {{lamp.flameSensor.interval}}</span>
+                                {{hvac.flameSensor.interval}}</span>
                             <input type='range' class='form-control-range mb-3' id='flameIntervalSlider'
                                 name='flameIntervalSlider' min='1000' max='60000' step='250'
-                                value='{{lamp.flameSensor.interval}}'>
+                                value='{{hvac.flameSensor.interval}}'>
                             <input type='number' class='form-control' id='flameIntervalSliderInput'
                                 name='flameIntervalSliderInput' min='1000' max='60000' step='250'
-                                value='{{lamp.flameSensor.interval}}'>
+                                value='{{hvac.flameSensor.interval}}'>
                             <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to 60000.
                             </div>
                         </div>
@@ -111,116 +110,116 @@
                         </div>
                     </div>
                 </div>
-                <div class='col'>
+                <div class="col-sm-6">
                     <div class='sensor-group'>
-                        <h2>Motion Detection</h2>
-                        <!-- Motion Detection fields -->
-                        <div class='form-group'>
-                            <label>Status</label>
-                            <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='motionStatus' id='motionEnabled'
-                                    value='true' {{#motionIsEnabled}} checked {{/motionIsEnabled}}>
-                                <label class='form-check-label' for='motionEnabled'>Enabled</label>
+                        <h2>Temperature Sensor</h2>
+                        <!-- Temperature Sensor fields -->
+                        <div class="row">
+                            <div class='col-8 col-sm-6'>
+
+                                <div class='form-group'>
+                                    <label for='tempLowThresholdSlider'>Low temperature threshold</label>
+                                    <span id='tempLowThresholdSliderValue' class='d-block text-muted mb-2'>Current:
+                                        {{hvac.tempSensor.tempValue}} / {{hvac.tempSensor.lowThreshold}}</span>
+                                    <input type='range' class='form-control-range mb-3' id='tempLowThresholdSlider'
+                                        name='tempLowThresholdSlider' min='15' max='40'
+                                        value='{{hvac.tempSensor.lowThreshold}}'>
+                                    <input type='number' class='form-control' id='tempLowThresholdSliderInput'
+                                        name='tempLowThresholdSliderInput' min='15' max='40'
+                                        value='{{hvac.tempSensor.lowThreshold}}'>
+                                    <div class='invalid-feedback'>Please adjust the slider within the range of 15 to 40.
+                                    </div>
+                                </div>
+                                <div class='form-group'>
+                                    <label for='tempHighThresholdSlider'>High temperature threshold</label>
+                                    <span id='tempHighThresholdSliderValue' class='d-block text-muted mb-2'>Current:
+                                        {{hvac.tempSensor.tempValue}} / {{hvac.tempSensor.highThreshold}}</span>
+                                    <input type='range' class='form-control-range mb-3' id='tempHighThresholdSlider'
+                                        name='tempHighThresholdSlider' min='15' max='40'
+                                        value='{{hvac.tempSensor.highThreshold}}'>
+                                    <input type='number' class='form-control' id='tempHighThresholdSliderInput'
+                                        name='tempHighThresholdSliderInput' min='15' max='40'
+                                        value='{{hvac.tempSensor.highThreshold}}'>
+                                    <div class='invalid-feedback'>Please adjust the slider within the range of 15 to 40.
+                                    </div>
+                                </div>
+                                <div class='form-group'>
+                                    <label for='tempTargetSlider'>Target temperature</label>
+                                    <span id='tempTargetSliderValue' class='d-block text-muted mb-2'>Current:
+                                        {{hvac.tempSensor.tempValue}} / {{hvac.tempSensor.target}}</span>
+                                    <input type='range' class='form-control-range mb-3' id='tempTargetSlider'
+                                        name='tempTargetSlider' min='15' max='40' value='{{hvac.tempSensor.target}}'>
+                                    <input type='number' class='form-control' id='tempTargetSliderInput'
+                                        name='tempTargetSliderInput' min='15' max='40'
+                                        value='{{hvac.tempSensor.target}}'>
+                                    <div class='invalid-feedback'>Please adjust the slider within the range of 15 to 40.
+                                    </div>
+                                </div>
                             </div>
-                            <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='motionStatus' id='motionDisabled'
-                                    value='false' {{^motionIsEnabled}} checked {{/motionIsEnabled}}>
-                                <label class='form-check-label' for='motionDisabled'>Disabled</label>
+                            <div class='col-8 col-sm-6'>
+                                <div class='form-group'>
+                                    <label for='tempIntervalSlider'>Temperature reading interval</label>
+                                    <span id='tempIntervalSliderValue' class='d-block text-muted mb-2'>Current:
+                                        {{hvac.tempSensor.interval}}</span>
+                                    <input type='range' class='form-control-range mb-3' id='tempIntervalSlider'
+                                        name='tempIntervalSlider' min='1000' max='60000' step='250'
+                                        value='{{hvac.tempSensor.interval}}'>
+                                    <input type='number' class='form-control' id='tempIntervalSliderInput'
+                                        name='tempIntervalSliderInput' min='1000' max='60000' step='250'
+                                        value='{{hvac.tempSensor.interval}}'>
+                                    <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to
+                                        60000.
+                                    </div>
+                                </div>
+                                <div class='form-group'>
+                                    <label>Status</label>
+                                    <div class='form-check'>
+                                        <input class='form-check-input' type='radio' name='tempStatus' id='tempEnabled'
+                                            value='true' {{#tempIsEnabled}} checked {{/tempIsEnabled}}>
+                                        <label class='form-check-label' for='tempEnabled'>Enabled</label>
+                                    </div>
+                                    <div class='form-check'>
+                                        <input class='form-check-input' type='radio' name='tempStatus' id='tempDisabled'
+                                            value='false' {{^tempIsEnabled}} checked {{/tempIsEnabled}}>
+                                        <label class='form-check-label' for='tempDisabled'>Disabled</label>
+                                    </div>
+                                    <div class='invalid-feedback'>Please select a status.</div>
+                                </div>
+                                <div class='form-group'>
+                                    <label for='tempDropdown'>State</label>
+                                    <select class='form-control' id='tempDropdown' name='tempDropdown'>
+                                        <option value='0' {{#tempStatus0}} selected {{/tempStatus0}}>NORMAL TEMPERATURE
+                                        </option>
+                                        <option value='1' {{#tempStatus1}} selected {{/tempStatus1}}>LOW TEMPERATURE
+                                        </option>
+                                        <option value='2' {{#tempStatus2}} selected {{/tempStatus2}}>HIGH TEMPERATURE
+                                        </option>
+                                    </select>
+                                    <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
+                                </div>
                             </div>
-                            <div class='invalid-feedback'>Please select a status.</div>
-                        </div>
-                        <div class='form-group'>
-                            <label for='motionDropdown'>Motion state</label>
-                            <select class='form-control' id='motionDropdown' name='motionDropdown'>
-                                <option value='0' {{#motionStatus0}} selected {{/motionStatus0}}>DETECTED</option>
-                                <option value='1' {{#motionStatus1}} selected {{/motionStatus1}}>STANDBY</option>
-                                <option value='2' {{#motionStatus2}} selected {{/motionStatus2}}>INITIALIZE</option>
-                            </select>
-                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
                         </div>
                     </div>
                 </div>
-                <div class='col'>
-                    <div class='sensor-group'>
-                        <h2>Light Sensor</h2>
-                        <!-- Light Sensor fields -->
-                        <div class='form-group'>
-                            <label for='lightSlider'>Low light threshold</label>
-                            <span id='lightSliderValue' class='d-block text-muted mb-2'>Current:
-                                {{lamp.lightSensor.value}} / {{lamp.lightSensor.lowThreshold}}</span>
-                            <input type='range' class='form-control-range mb-3' id='lightSlider' name='lightSlider'
-                                min='0' max='1000' value='{{lamp.lightSensor.lowThreshold}}'>
-                            <input type='number' class='form-control' id='lightSliderInput' name='lightSliderInput'
-                                min='0' max='1000' value='{{lamp.lightSensor.lowThreshold}}'>
-                            <div class='invalid-feedback'>Please adjust the slider within the range of 0 to 1000.</div>
-                        </div>
-                        <div class='form-group'>
-                            <label for='lightIntervalSlider'>Light reading interval</label>
-                            <span id='lightIntervalSliderValue' class='d-block text-muted mb-2'>Current:
-                                {{lamp.lightSensor.interval}}</span>
-                            <input type='range' class='form-control-range mb-3' id='lightIntervalSlider'
-                                name='lightIntervalSlider' min='1000' max='60000' step='250'
-                                value='{{lamp.lightSensor.interval}}'>
-                            <input type='number' class='form-control' id='lightIntervalSliderInput'
-                                name='lightIntervalSliderInput' min='1000' max='60000' step='250'
-                                value='{{lamp.lightSensor.interval}}'>
-                            <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to 60000.
-                            </div>
-                        </div>
-                        <div class='form-group'>
-                            <label>Status</label>
-                            <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='lightStatus' id='lightEnabled'
-                                    value='true' {{#lightIsEnabled}} checked {{/lightIsEnabled}}>
-                                <label class='form-check-label' for='lightEnabled'>Enabled</label>
-                            </div>
-                            <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='lightStatus' id='lightDisabled'
-                                    value='false' {{^lightIsEnabled}} checked {{/lightIsEnabled}}>
-                                <label class='form-check-label' for='lightDisabled'>Disabled</label>
-                            </div>
-                            <div class='invalid-feedback'>Please select a status.</div>
-                        </div>
-                        <div class='form-group'>
-                            <label for='lightDropdown'>State</label>
-                            <select class='form-control' id='lightDropdown' name='lightDropdown'>
-                                <option value='0' {{#lightStatus0}} selected {{/lightStatus0}}>NORMAL LIGHT</option>
-                                <option value='1' {{#lightStatus1}} selected {{/lightStatus1}}>LOW LIGHT</option>
-                            </select>
-                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-                        </div>
-                    </div>
-                </div>
-                <div class='col'>
+                <div class='col-sm-3'>
                     <div class='sensor-group'>
                         <h2>RGB LED</h2>
                         <!-- RGB LED fields -->
                         <div class='form-group'>
                             <label>Status</label>
                             <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='rgbStatus' id='rgbEnabled'
-                                    value='true' {{#rgbIsEnabled}} checked {{/rgbIsEnabled}}>
-                                <label class='form-check-label' for='rgbEnabled'>Enabled</label>
+                                <input class='form-check-input' type='radio' name='ventStatus' id='ventEnabled'
+                                    value='true' {{#ventIsEnabled}} checked {{/ventIsEnabled}}>
+                                <label class='form-check-label' for='ventEnabled'>Enabled</label>
                             </div>
                             <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='rgbStatus' id='rgbDisabled'
-                                    value='false' {{^rgbIsEnabled}} checked {{/rgbIsEnabled}}>
-                                <label class='form-check-label' for='rgbDisabled'>Disabled</label>
+                                <input class='form-check-input' type='radio' name='ventStatus' id='ventDisabled'
+                                    value='false' {{^ventIsEnabled}} checked {{/ventIsEnabled}}>
+                                <label class='form-check-label' for='ventDisabled'>Disabled</label>
                             </div>
                             <div class='invalid-feedback'>Please select a status.</div>
                         </div>
-                        <div class='form-group'>
-                            <label for='rgbDropdown'>RGB State</label>
-                            <select class='form-control' id='rgbDropdown' name='rgbDropdown'>
-                                <option value='0' {{#rgbStatus0}} selected {{/rgbStatus0}}>AUTO</option>
-                                <option value='3' {{#rgbStatus3}} selected {{/rgbStatus3}}>MANUAL ON</option>
-                                <option value='4' {{#rgbStatus4}} selected {{/rgbStatus4}}>MANUAL OFF</option>
-                            </select>
-                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-                        </div>
                     </div>
-                </div>
-                <div class='col'>
                     <div class='sensor-group'>
                         <h2>ALARM</h2>
                         <!-- ALARM fields -->
@@ -260,13 +259,25 @@
         crossorigin='anonymous'></script>
     <script>
         $(document).ready(function () {
-            $('#lightSlider, #lightSliderInput').on('input', function () {
+            $('#tempTargetSlider, #tempTargetSliderInput').on('input', function () {
                 var value = this.value;
-                $('#' + this.id + 'Value').html('Current: {{lamp.lightSensor.value}} / ' + value);
+                $('#' + this.id + 'Value').html('Current: {{hvac.tempSensor.tempValue}} / ' + value);
                 $('#' + this.id).val(value);
                 $('#' + this.id + 'Input').val(value);
             });
-            $('#lightIntervalSlider, #lightIntervalSliderInput').on('input', function () {
+            $('#tempLowThresholdSlider, #tempLowThresholdSliderInput').on('input', function () {
+                var value = this.value;
+                $('#' + this.id + 'Value').html('Current: {{hvac.tempSensor.tempValue}} / ' + value);
+                $('#' + this.id).val(value);
+                $('#' + this.id + 'Input').val(value);
+            });
+            $('#tempHighThresholdSlider, #tempHighThresholdSliderInput').on('input', function () {
+                var value = this.value;
+                $('#' + this.id + 'Value').html('Current: {{hvac.tempSensor.tempValue}} / ' + value);
+                $('#' + this.id).val(value);
+                $('#' + this.id + 'Input').val(value);
+            });
+            $('#tempIntervalSlider, #tempIntervalSliderInput').on('input', function () {
                 var value = this.value;
                 $('#' + this.id).val(value);
                 $('#' + this.id + 'Input').val(value);
@@ -278,7 +289,7 @@
             });
             $('#myForm').on('submit', function (e) {
                 e.preventDefault();
-                var sliderValues = ['lightSliderInput'];
+                var sliderValues = ['tempTargetSliderInput'];
                 sliderValues.forEach(function (sliderValue) {
                     var value = $('#' + sliderValue).val();
                     if (value < 0 || value > 1000) {
@@ -287,7 +298,7 @@
                         $('#' + sliderValue).removeClass('is-invalid');
                     }
                 });
-                var radioValues = ['flameStatus', 'motionStatus', 'lightStatus', 'rgbStatus', 'alarmStatus'];
+                var radioValues = ['flameStatus', 'tempStatus', 'ventStatus', 'alarmStatus'];
                 radioValues.forEach(function (radioValue) {
                     if (!$('input[name="' + radioValue + '"]:checked').val()) {
                         $('input[name="' + radioValue + '"]').addClass('is-invalid');
@@ -295,7 +306,7 @@
                         $('input[name="' + radioValue + '"]').removeClass('is-invalid');
                     }
                 });
-                var dropdDownValues = ['flameDropdown', 'motionDropdown', 'lightDropdown', 'rgbDropdown', 'alarmDropdown'];
+                var dropdDownValues = ['flameDropdown', 'tempDropdown', 'alarmDropdown'];
                 dropdDownValues.forEach(function (dropdown) {
                     if ($('#' + dropdown).val() == '') {
                         $('#' + dropdown).addClass('is-invalid');
@@ -312,7 +323,7 @@
                         data: $('#myForm').serialize(),
                         processData: false,
                         success: function (data, textStatus, jQxhr) {
-                            if(!alert('The new configuration has been sent to the device.')){window.location.reload();}
+                            if (!alert('The new configuration has been sent to the device.')) { window.location.reload(); }
                         },
                         error: function (jqXhr, textStatus, errorThrown) {
                             alert('Error: ' + textStatus + '. ' + errorThrown);

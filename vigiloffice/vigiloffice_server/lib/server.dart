@@ -1,13 +1,14 @@
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
-import 'package:vigiloffice_server/src/web/routes/lamps_route.dart';
-
-import 'package:vigiloffice_server/src/web/routes/root.dart';
-import 'package:vigiloffice_server/src/web/routes/single_lamp_route.dart';
 
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
+import 'src/mqtt/mqtt_manager.dart';
 import 'src/web/routes/devices_route.dart';
+import 'src/web/routes/hvacs_route.dart';
+import 'src/web/routes/lamps_route.dart';
+import 'src/web/routes/root.dart';
+import 'src/web/routes/single_hvac_route.dart';
+import 'src/web/routes/single_lamp_route.dart';
 
 // This is the starting point of your Serverpod server. In most cases, you will
 // only need to make additions to this file if you add future calls,  are
@@ -43,7 +44,8 @@ void run(List<String> args) async {
         singleRoute = SingleLampRoute();
         listRoute = LampsRoute();
       case DeviceType.hvac:
-      // TODO: Handle this case.
+        singleRoute = SingleHvacRoute();
+        listRoute = HvacsRoute();
     }
     pod.webServer.addRoute(listRoute, '/devices/${type.name}s');
     pod.webServer.addRoute(listRoute, '/devices/${type.name}s/');
