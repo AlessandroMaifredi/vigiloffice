@@ -1,0 +1,25 @@
+{
+    "macAddress": "6f:5e:4d:3c:2b:1a",
+    "tempSensor": {
+        "value": 22,
+        "status": 1,
+        "enabled": true,
+        "interval": 5000,
+        "highThreshold": 24,
+        "lowThreshold": 18,
+        "target": 22
+    },
+    "hvacSensor": {
+        "enabled": true
+    },
+    "flameSensor": {
+        "value": 0,
+        "status": 0,
+        "enabled": true,
+        "interval": 1000
+    },
+    "alarm": {
+        "status": false,
+        "enabled": true
+    }
+}

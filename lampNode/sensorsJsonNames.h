@@ -1,17 +1,12 @@
 #define ALARM_JSON_NAME "alarm"
-#define HVAC_JSON_NAME "hvac"
-#define TEMP_JSON_NAME "temp"
-
 #define LIGHT_SENSOR_JSON_NAME "lightSensor"
 #define MOTION_SENSOR_JSON_NAME "motionSensor"
 #define FLAME_SENSOR_JSON_NAME "flameSensor"
 #define RGB_ACTUATOR_JSON_NAME "rgbLed"
 
-#define SENSOR_NAME_JSON_NAME "name"
 #define SENSOR_STATUS_JSON_NAME "enabled"
 #define SENSOR_VALUE_JSON_NAME "value"
 #define STATUS_JSON_NAME "status"
 #define SENSOR_READING_INTERVAL_JSON_NAME "interval"
-#define SENSOR_HIGH_THRESHOLD_JSON_NAME "highThreshold"
 #define SENSOR_LOW_THRESHOLD_JSON_NAME "lowThreshold"
 #define SENSOR_TEMP_TARGET_JSON_NAME "target"
