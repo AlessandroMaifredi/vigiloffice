@@ -229,7 +229,7 @@ void updateStatusDoc() {
   tempSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowTempThreshold;
   tempSensor[SENSOR_TEMP_TARGET_JSON_NAME] = highTempThreshold;
 
-  JsonObject hvacSensor = statusDoc.createNestedObject(HVAC_SENSOR_JSON_NAME);
+  JsonObject hvacSensor = statusDoc.createNestedObject(VENT_ACTUATOR_JSON_NAME);
   hvacSensor[SENSOR_STATUS_JSON_NAME] = hvacSensorStatus == HVAC_SENSOR_ENABLED ? true : false;
 
   JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
@@ -383,7 +383,7 @@ void applyControlChanges(JsonDocument controlDoc) {
   lowTempThreshold = tempSensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
   tempTarget = tempSensor[SENSOR_TEMP_TARGET_JSON_NAME];
 
-  JsonObject hvacSensor = controlDoc[HVAC_SENSOR_JSON_NAME].as<JsonObject>();
+  JsonObject hvacSensor = controlDoc[VENT_ACTUATOR_JSON_NAME].as<JsonObject>();
   hvacSensorStatus = hvacSensor[SENSOR_STATUS_JSON_NAME] == true ? HVAC_SENSOR_ENABLED : HVAC_SENSOR_DISABLED;
 
   JsonObject flameSensor = controlDoc[FLAME_SENSOR_JSON_NAME].as<JsonObject>();
