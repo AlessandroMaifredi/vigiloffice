@@ -4,6 +4,7 @@
 #include <WiFiManager.h>
 #include <MQTT.h>
 #include <ArduinoJson.h>
+#include <DHT.h>
 #include "secrets.h"
 #include "sensorsJsonNames.h"
 
@@ -65,7 +66,12 @@ void deactivateAlarm() {
   }
 #endif
 }
+
 // === TEMP & HUM SENSOR ===
+
+#define DHTPIN D6
+#define DHTTYPE DHT11
+DHT dht = DHT(DHTPIN, DHTTYPE);
 
 enum TEMP_SENSOR_STATUS {
   TEMP_SENSOR_ENABLED,
@@ -98,7 +104,8 @@ void readTemp() {
   static unsigned long lastTempReading = millis();
   if (tempSensorStatus == TEMP_SENSOR_ENABLED) {
     if (millis() - lastTempReading > tempReadingInterval) {
-      temp = 23;  //TODO: READ FROM DHT11
+      temp = dht.readTemperature();
+      hum = dht.readHumidity();
       simulateHVAC();
       if (temp >= highTempThreshold) {
         tempStatus = TEMP_HIGH;
@@ -219,12 +226,10 @@ volatile bool applyChanges = false;
 
 void updateStatusDoc() {
   statusDoc[F("mac-address")] = macAddress;
-  statusDoc[F("type")] = DEVICE_TYPE;
-  JsonArray sensors = statusDoc.createNestedArray(F("sensors"));
 
-  JsonObject tempSensor = sensors.createNestedObject();
-  tempSensor[SENSOR_NAME_JSON_NAME] = TEMP_JSON_NAME;
-  tempSensor[SENSOR_VALUE_JSON_NAME] = temp;
+  JsonObject tempSensor = statusDoc.createNestedObject(TEMP_SENSOR_JSON_NAME);
+  tempSensor[SENSOR_TEMP_VALUE_JSON_NAME] = temp;
+  tempSensor[SENSOR_HUM_VALUE_JSON_NAME] = hum;
   tempSensor[STATUS_JSON_NAME] = tempStatus;
   tempSensor[SENSOR_STATUS_JSON_NAME] = tempSensorStatus == TEMP_SENSOR_ENABLED ? true : false;
   tempSensor[SENSOR_READING_INTERVAL_JSON_NAME] = tempReadingInterval;
@@ -232,13 +237,11 @@ void updateStatusDoc() {
   tempSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowTempThreshold;
   tempSensor[SENSOR_TEMP_TARGET_JSON_NAME] = highTempThreshold;
 
-  JsonObject hvacSensor = sensors.createNestedObject();
-  hvacSensor[SENSOR_NAME_JSON_NAME] = HVAC_JSON_NAME;
+  JsonObject hvacSensor = statusDoc.createNestedObject(VENT_ACTUATOR_JSON_NAME);
   hvacSensor[SENSOR_STATUS_JSON_NAME] = hvacSensorStatus == HVAC_SENSOR_ENABLED ? true : false;
 
-  JsonObject flameSensor = sensors.createNestedObject();
-  flameSensor[SENSOR_NAME_JSON_NAME] = FLAME_JSON_NAME;
-  flameSensor[SENSOR_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
+  JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
+  flameSensor[SENSOR_TEMP_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
   flameSensor[STATUS_JSON_NAME] = flameStatus;
   flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
   flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
@@ -375,29 +378,27 @@ void setTopics(JsonDocument topicsDoc) {
 }
 
 void applyControlChanges(JsonDocument controlDoc) {
-  JsonObject allarme = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
-  alarmStatus = allarme[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
-  alarmSystemStatus = allarme[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
-  JsonArray sensors = controlDoc[F("sensors")].as<JsonArray>();
-  for (JsonVariant v : sensors) {
-    JsonObject sensor = v.as<JsonObject>();
-    String nome = String(sensor[SENSOR_NAME_JSON_NAME]);
-    if (nome == FLAME_JSON_NAME) {
-      flameStatus = sensor[STATUS_JSON_NAME];
-      flameSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
-      flameReadingInterval = sensor[SENSOR_READING_INTERVAL_JSON_NAME];
-    } else if (nome == HVAC_JSON_NAME) {
-      hvacSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? HVAC_SENSOR_ENABLED : HVAC_SENSOR_DISABLED;
-    } else if (nome == TEMP_JSON_NAME) {
-      temp = sensor[SENSOR_VALUE_JSON_NAME];
-      tempStatus = sensor[STATUS_JSON_NAME];
-      tempSensorStatus = sensor[SENSOR_STATUS_JSON_NAME] == true ? TEMP_SENSOR_ENABLED : TEMP_SENSOR_DISABLED;
-      tempReadingInterval = sensor[SENSOR_READING_INTERVAL_JSON_NAME];
-      highTempThreshold = sensor[SENSOR_HIGH_THRESHOLD_JSON_NAME];
-      lowTempThreshold = sensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
-      highTempThreshold = sensor[SENSOR_TEMP_TARGET_JSON_NAME];
-    }
-  }
+  JsonObject alarm = controlDoc[ALARM_JSON_NAME].as<JsonObject>();
+  alarmStatus = alarm[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
+  alarmSystemStatus = alarm[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
+
+  JsonObject tempSensor = controlDoc[TEMP_SENSOR_JSON_NAME].as<JsonObject>();
+  temp = tempSensor[SENSOR_TEMP_VALUE_JSON_NAME];
+  hum = tempSensor[SENSOR_HUM_VALUE_JSON_NAME];
+  tempStatus = tempSensor[STATUS_JSON_NAME];
+  tempSensorStatus = tempSensor[SENSOR_STATUS_JSON_NAME] == true ? TEMP_SENSOR_ENABLED : TEMP_SENSOR_DISABLED;
+  tempReadingInterval = tempSensor[SENSOR_READING_INTERVAL_JSON_NAME];
+  highTempThreshold = tempSensor[SENSOR_HIGH_THRESHOLD_JSON_NAME];
+  lowTempThreshold = tempSensor[SENSOR_LOW_THRESHOLD_JSON_NAME];
+  tempTarget = tempSensor[SENSOR_TEMP_TARGET_JSON_NAME];
+
+  JsonObject hvacSensor = controlDoc[VENT_ACTUATOR_JSON_NAME].as<JsonObject>();
+  hvacSensorStatus = hvacSensor[SENSOR_STATUS_JSON_NAME] == true ? HVAC_SENSOR_ENABLED : HVAC_SENSOR_DISABLED;
+
+  JsonObject flameSensor = controlDoc[FLAME_SENSOR_JSON_NAME].as<JsonObject>();
+  flameStatus = flameSensor[STATUS_JSON_NAME];
+  flameSensorStatus = flameSensor[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
+  flameReadingInterval = flameSensor[SENSOR_READING_INTERVAL_JSON_NAME];
 }
 
 void commSetup() {
@@ -426,6 +427,8 @@ void setup() {
 
   setRGBOff();
   */
+
+  dht.begin();
 
   pinMode(FLAME_SENSOR_PIN, INPUT);
 
