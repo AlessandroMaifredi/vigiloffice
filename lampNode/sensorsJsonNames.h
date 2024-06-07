@@ -1,8 +1,4 @@
 #define ALARM_JSON_NAME "alarm"
-#define MOTION_JSON_NAME "motion"
-#define LIGHT_JSON_NAME "light"
-#define FLAME_JSON_NAME "flame"
-#define RGB_JSON_NAME "rgb"
 #define HVAC_JSON_NAME "hvac"
 #define TEMP_JSON_NAME "temp"
 
