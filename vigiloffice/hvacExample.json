@@ -1,7 +1,8 @@
 {
     "macAddress": "6f:5e:4d:3c:2b:1a",
     "tempSensor": {
-        "value": 22,
+        "tempValue": 22,
+        "humValue": 22,
         "status": 1,
         "enabled": true,
         "interval": 5000,

@@ -4,7 +4,8 @@
 #define FLAME_SENSOR_JSON_NAME "flameSensor"
 
 #define SENSOR_STATUS_JSON_NAME "enabled"
-#define SENSOR_VALUE_JSON_NAME "value"
+#define SENSOR_TEMP_VALUE_JSON_NAME "tempValue"
+#define SENSOR_HUM_VALUE_JSON_NAME "humValue"
 #define STATUS_JSON_NAME "status"
 #define SENSOR_READING_INTERVAL_JSON_NAME "interval"
 #define SENSOR_HIGH_THRESHOLD_JSON_NAME "highThreshold"

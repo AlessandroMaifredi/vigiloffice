@@ -4,6 +4,7 @@
 #include <WiFiManager.h>
 #include <MQTT.h>
 #include <ArduinoJson.h>
+#include <DHT.h>
 #include "secrets.h"
 #include "sensorsJsonNames.h"
 
@@ -65,7 +66,12 @@ void deactivateAlarm() {
   }
 #endif
 }
+
 // === TEMP & HUM SENSOR ===
+
+#define DHTPIN D6
+#define DHTTYPE DHT11
+DHT dht = DHT(DHTPIN, DHTTYPE);
 
 enum TEMP_SENSOR_STATUS {
   TEMP_SENSOR_ENABLED,
@@ -98,7 +104,8 @@ void readTemp() {
   static unsigned long lastTempReading = millis();
   if (tempSensorStatus == TEMP_SENSOR_ENABLED) {
     if (millis() - lastTempReading > tempReadingInterval) {
-      temp = 23;  //TODO: READ FROM DHT11
+      temp = dht.readTemperature();
+      hum = dht.readHumidity();
       simulateHVAC();
       if (temp >= highTempThreshold) {
         tempStatus = TEMP_HIGH;
@@ -221,7 +228,8 @@ void updateStatusDoc() {
   statusDoc[F("mac-address")] = macAddress;
 
   JsonObject tempSensor = statusDoc.createNestedObject(TEMP_SENSOR_JSON_NAME);
-  tempSensor[SENSOR_VALUE_JSON_NAME] = temp;
+  tempSensor[SENSOR_TEMP_VALUE_JSON_NAME] = temp;
+  tempSensor[SENSOR_HUM_VALUE_JSON_NAME] = hum;
   tempSensor[STATUS_JSON_NAME] = tempStatus;
   tempSensor[SENSOR_STATUS_JSON_NAME] = tempSensorStatus == TEMP_SENSOR_ENABLED ? true : false;
   tempSensor[SENSOR_READING_INTERVAL_JSON_NAME] = tempReadingInterval;
@@ -233,7 +241,7 @@ void updateStatusDoc() {
   hvacSensor[SENSOR_STATUS_JSON_NAME] = hvacSensorStatus == HVAC_SENSOR_ENABLED ? true : false;
 
   JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
-  flameSensor[SENSOR_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
+  flameSensor[SENSOR_TEMP_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
   flameSensor[STATUS_JSON_NAME] = flameStatus;
   flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
   flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
@@ -375,7 +383,8 @@ void applyControlChanges(JsonDocument controlDoc) {
   alarmSystemStatus = alarm[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
 
   JsonObject tempSensor = controlDoc[TEMP_SENSOR_JSON_NAME].as<JsonObject>();
-  temp = tempSensor[SENSOR_VALUE_JSON_NAME];
+  temp = tempSensor[SENSOR_TEMP_VALUE_JSON_NAME];
+  hum = tempSensor[SENSOR_HUM_VALUE_JSON_NAME];
   tempStatus = tempSensor[STATUS_JSON_NAME];
   tempSensorStatus = tempSensor[SENSOR_STATUS_JSON_NAME] == true ? TEMP_SENSOR_ENABLED : TEMP_SENSOR_DISABLED;
   tempReadingInterval = tempSensor[SENSOR_READING_INTERVAL_JSON_NAME];
@@ -418,6 +427,8 @@ void setup() {
 
   setRGBOff();
   */
+
+  dht.begin();
 
   pinMode(FLAME_SENSOR_PIN, INPUT);
 
