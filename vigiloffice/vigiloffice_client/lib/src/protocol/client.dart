@@ -93,7 +93,7 @@ class EndpointLamps extends _i1.EndpointRef {
 
   /// Updates an existing lamp on the database.
   ///
-  /// Does not update the lamp on the MQTT broker. See [controlLamp] for that.
+  /// Does not update the lamp on the MQTT broker. See [MqttManager.controlLamp] for that.
   ///
   /// Returns the updated lamp.
   _i2.Future<_i4.Lamp> updateLamp(_i4.Lamp lamp) =>

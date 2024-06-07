@@ -13,7 +13,6 @@ import 'package:serverpod/serverpod.dart' as _i1;
 abstract class LightSensor
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
   LightSensor._({
-    required this.name,
     required this.value,
     required this.status,
     required this.enabled,
@@ -22,7 +21,6 @@ abstract class LightSensor
   });
 
   factory LightSensor({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
@@ -32,7 +30,6 @@ abstract class LightSensor
 
   factory LightSensor.fromJson(Map<String, dynamic> jsonSerialization) {
     return LightSensor(
-      name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as int,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
@@ -40,8 +37,6 @@ abstract class LightSensor
       lowThreshold: jsonSerialization['lowThreshold'] as int,
     );
   }
-
-  String name;
 
   int value;
 
@@ -54,7 +49,6 @@ abstract class LightSensor
   int lowThreshold;
 
   LightSensor copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
@@ -64,7 +58,6 @@ abstract class LightSensor
   @override
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -76,7 +69,6 @@ abstract class LightSensor
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -93,14 +85,12 @@ abstract class LightSensor
 
 class _LightSensorImpl extends LightSensor {
   _LightSensorImpl({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
     required int interval,
     required int lowThreshold,
   }) : super._(
-          name: name,
           value: value,
           status: status,
           enabled: enabled,
@@ -110,7 +100,6 @@ class _LightSensorImpl extends LightSensor {
 
   @override
   LightSensor copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
@@ -118,7 +107,6 @@ class _LightSensorImpl extends LightSensor {
     int? lowThreshold,
   }) {
     return LightSensor(
-      name: name ?? this.name,
       value: value ?? this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,

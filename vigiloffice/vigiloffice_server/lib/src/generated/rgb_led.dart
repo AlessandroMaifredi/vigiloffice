@@ -13,14 +13,12 @@ import 'package:serverpod/serverpod.dart' as _i1;
 abstract class RGBLed
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
   RGBLed._({
-    required this.name,
     required this.value,
     required this.status,
     required this.enabled,
   });
 
   factory RGBLed({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
@@ -28,14 +26,11 @@ abstract class RGBLed
 
   factory RGBLed.fromJson(Map<String, dynamic> jsonSerialization) {
     return RGBLed(
-      name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as int,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
     );
   }
-
-  String name;
 
   int value;
 
@@ -44,7 +39,6 @@ abstract class RGBLed
   bool enabled;
 
   RGBLed copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
@@ -52,7 +46,6 @@ abstract class RGBLed
   @override
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -62,7 +55,6 @@ abstract class RGBLed
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -77,12 +69,10 @@ abstract class RGBLed
 
 class _RGBLedImpl extends RGBLed {
   _RGBLedImpl({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
   }) : super._(
-          name: name,
           value: value,
           status: status,
           enabled: enabled,
@@ -90,13 +80,11 @@ class _RGBLedImpl extends RGBLed {
 
   @override
   RGBLed copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
   }) {
     return RGBLed(
-      name: name ?? this.name,
       value: value ?? this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,

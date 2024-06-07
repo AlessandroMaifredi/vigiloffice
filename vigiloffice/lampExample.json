@@ -1,7 +1,6 @@
 {
     "macAddress": "1a:2b:3c:4d:5e:6f",
     "lightSensor": {
-        "name": "light",
         "value": 123,
         "status": 0,
         "enabled": true,
@@ -9,20 +8,17 @@
         "lowThreshold": 350
     },
     "motionSensor": {
-        "name": "motion",
         "value": 0,
         "status": 2,
         "enabled": false
     },
     "flameSensor": {
-        "name": "flame",
         "value": 0,
         "status": 0,
         "enabled": true,
         "interval": 1000
     },
     "rgbLed": {
-        "name": "rgbLed",
         "value": 0,
         "status": 0,
         "enabled": true

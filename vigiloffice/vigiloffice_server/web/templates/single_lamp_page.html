@@ -27,192 +27,232 @@
         }
     </style>
     <title>Bootstrap Form</title>
-    <script>
-        var currentLightValue = 125;
-    </script>
 </head>
 
 <body>
-    <div class='container py-5'></div>
-    <h1 class='mb-5 text-center'>Sensor Management</h1>
-    <form id='myForm' class='mx-auto'></form>
-    <input type='hidden' value='{{lamp.macAddress}}' name='mac' id='mac'>
-    <div class='row'>
-        <div class='col'>
-            <div class='sensor-group'></div>
-            <h2>Flame Sensor</h2>
-            <!-- Flame Sensor fields -->
-            <div class='form-group'></div>
-            <label for='flameIntervalSlider'>Flame reading interval</label>
-            <span id='flameIntervalSlider' class='d-block text-muted mb-2'>Current: {{lamp.flameSensor.interval}}</span>
-            <input type='range' class='form-control-range mb-3' id='flameIntervalSlider' name='flameIntervalSlider'
-                min='1000' max='60000' step='250' value='{{lamp.flameSensor.interval}}'>
-            <input type='number' class='form-control' id='flameIntervalSliderInput' name='flameIntervalSliderInput'
-                min='1000' max='60000' step='250' value='{{lamp.flameSensor.interval}}'>
-            <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to 60000.</div>
-        </div>
-        <div class='form-group'>
-            <label>Status</label>
-            <div class='form-check'></div>
-            <input class='form-check-input' type='radio' name='flameStatus' id='flameEnabled' value='true'
-                {{#flameIsEnabled}} checked {{/flameIsEnabled}}>
-            <label class='form-check-label' for='flameEnabled'>Enabled</label>
-        </div>
-        <div class='form-check'></div>
-        <input class='form-check-input' type='radio' name='flameStatus' id='flameDisabled' value='false'
-            {{^flameIsEnabled}} checked {{/flameIsEnabled}}>
-        <label class='form-check-label' for='flameDisabled'>Disabled</label>
-    </div>
-    <div class='invalid-feedback'>Please select a status.</div>
-    </div>
-    <div class='form-group'>
-        <label for='flameDropdown'>Flame state</label>
-        <select class='form-control' id='flameDropdown' name='flameDropdown'></select>
-        <option value='0' {{#flameStatus0}} selected {{/flameStatus0}}>PRESENT</option>
-        <option value='1' {{#flameStatus1}} selected {{/flameStatus1}}>ABSENT</option>
-        </select>
-        <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-    </div>
-    </div>
-    </div>
-    <div class='col'>
-        <div class='sensor-group'>
-            <h2>Motion Detection</h2>
-            <!-- Motion Detection fields -->
-            <div class='form-group'>
-                <label>Status</label>
-                <div class='form-check'></div>
-                <input class='form-check-input' type='radio' name='motionStatus' id='motionEnabled' value='true'
-                    {{#motionIsEnabled}} checked {{/motionIsEnabled}}>
-                <label class='form-check-label' for='motionEnabled'>Enabled</label>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">VigilOffice</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Manage Devices
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/devices/">All devices</a></li>
+                            {{#types}}
+                            <li><a class="dropdown-item" href="/devices/{{.}}s/">{{.}}s</a></li>
+                            {{/types}}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/alarm/">Manage Alarm</a>
+                    </li>
+                </ul>
             </div>
-            <div class='form-check'></div>
-            <input class='form-check-input' type='radio' name='motionStatus' id='motionDisabled' value='false'
-                {{^motionIsEnabled}} checked {{/motionIsEnabled}}>
-            <label class='form-check-label' for='motionDisabled'>Disabled</label>
         </div>
-        <div class='invalid-feedback'>Please select a status.</div>
-    </div>
-    <div class='form-group'></div>
-    <label for='motionDropdown'>Motion state</label>
-    <select class='form-control' id='motionDropdown' name='motionDropdown'></select>
-    <option value='0' {{#motionStatus0}} selected {{/motionStatus0}}>DETECTED</option>
-    <option value='1' {{#motionStatus1}} selected {{/motionStatus1}}>STANDBY</option>
-    <option value='2' {{#motionStatus2}} selected {{/motionStatus2}}>INITIALIZE</option>
-    </select>
-    <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-    </div>
-    </div>
-    </div>
-    <div class='col'>
-        <div class='sensor-group'></div>
-        <h2>Light Sensor</h2>
-        <!-- Light Sensor fields -->
-        <div class='form-group'></div>
-        <label for='lightSlider'>Low light threshold</label>
-        <span id='lightSliderValue' class='d-block text-muted mb-2'>Current:
-            {{lamp.lightSensor.value}}/{{lamp.lightSensor.lowThreshold}}</span>
-        <input type='range' class='form-control-range mb-3' id='lightSlider' name='lightSlider' min='0' max='1000'
-            value='{{lamp.lightSensor.lowThreshold}}'>
-        <input type='number' class='form-control' id='lightSliderInput' name='lightSliderInput' min='0' max='1000'
-            value='{{lamp.lightSensor.lowThreshold}}'>
-        <div class='invalid-feedback'>Please adjust the slider within the range of 0 to 1000.</div>
-    </div>
-    <div class='form-group'>
-        <label for='lightIntervalSlider'>Light reading interval</label>
-        <span id='lightIntervalSliderValue' class='d-block text-muted mb-2'>Current: {{lamp.lightSensor.interval}}</span>
-        <input type='range' class='form-control-range mb-3' id='lightIntervalSlider' name='lightIntervalSlider'
-            min='1000' max='60000' step='250' value='{{lamp.lightSensor.interval}}'>
-        <input type='number' class='form-control' id='lightIntervalSliderInput' name='lightIntervalSliderInput'
-            min='1000' max='60000' step='250' value='{{lamp.lightSensor.interval}}'>
-        <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to 60000.</div>
-    </div>
-    <div class='form-group'>
-        <label>Status</label>
-        <div class='form-check'></div>
-        <input class='form-check-input' type='radio' name='lightStatus' id='lightEnabled' value='true'
-            {{#lightIsEnabled}} checked {{/lightIsEnabled}}>
-        <label class='form-check-label' for='lightEnabled'>Enabled</label>
-    </div>
-    <div class='form-check'>
-        <input class='form-check-input' type='radio' name='lightStatus' id='lightDisabled' value='false'
-            {{^lightIsEnabled}} checked {{/lightIsEnabled}}>
-        <label class='form-check-label' for='lightDisabled'>Disabled</label>
-    </div>
-    <div class='invalid-feedback'>Please select a status.</div>
-    </div>
-    <div class='form-group'>
-        <label for='lightDropdown'>State</label>
-        <select class='form-control' id='lightDropdown' name='lightDropdown'>
-            <option value='0' {{#lightStatus0}} selected {{/lightStatus0}}>NORMAL LIGHT</option>
-            <option value='1' {{#lightStatus1}} selected {{/lightStatus1}}>LOW LIGHT</option>
-        </select>
-        <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-    </div>
-    </div>
-    </div>
-    <div class='col'>
-        <div class='sensor-group'>
-            <h2>RGB LED</h2>
-            <!-- RGB LED fields -->
-            <div class='form-group'>
-                <label>Status</label>
-                <div class='form-check'>
-                    <input class='form-check-input' type='radio' name='rgbStatus' id='rgbEnabled' value='true'
-                        {{#rgbIsEnabled}} checked {{/rgbIsEnabled}}>
-                    <label class='form-check-label' for='rgbEnabled'>Enabled</label>
+    </nav>
+    <div class='container py-5'>
+        <h1 class='mb-5 text-center'>Lamp {{lamp.macAddress}}</h1>
+        <p class="lead">Last update: {{lamp.lastUpdateString}}</p>
+        <form id='myForm' class='mx-auto'>
+            <input type='hidden' value='{{lamp.macAddress}}' name='macAddress' id='macAddress'>
+            <input type='hidden' value='{{lamp.id}}' name='id' id='id'>
+            <input type='hidden' value='{{lamp.lightSensor.value}}' name='lightValue' id='lightValue'>
+            <input type='hidden' value='{{lamp.flameSensor.value}}' name='flameValue' id='flameValue'>
+            <input type='hidden' value='{{lamp.motionSensor.value}}' name='motionValue' id='motionValue'>
+            <input type='hidden' value='{{lamp.rgbLed.value}}' name='rgbValue' id='rgbValue'>
+            <input type="hidden" value="{{lamp.lastUpdate}}" name="lastUpdate" id="lastUpdate">
+            <div class='row'>
+                <div class='col'>
+                    <div class='sensor-group'>
+                        <h2>Flame Sensor</h2>
+                        <!-- Flame Sensor fields -->
+                        <div class='form-group'>
+                            <label for='flameIntervalSlider'>Flame reading interval</label>
+                            <span id='flameIntervalSlider' class='d-block text-muted mb-2'>Current:
+                                {{lamp.flameSensor.interval}}</span>
+                            <input type='range' class='form-control-range mb-3' id='flameIntervalSlider'
+                                name='flameIntervalSlider' min='1000' max='60000' step='250'
+                                value='{{lamp.flameSensor.interval}}'>
+                            <input type='number' class='form-control' id='flameIntervalSliderInput'
+                                name='flameIntervalSliderInput' min='1000' max='60000' step='250'
+                                value='{{lamp.flameSensor.interval}}'>
+                            <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to 60000.
+                            </div>
+                        </div>
+                        <div class='form-group'>
+                            <label>Status</label>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='flameStatus' id='flameEnabled'
+                                    value='true' {{#flameIsEnabled}} checked {{/flameIsEnabled}}>
+                                <label class='form-check-label' for='flameEnabled'>Enabled</label>
+                            </div>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='flameStatus' id='flameDisabled'
+                                    value='false' {{^flameIsEnabled}} checked {{/flameIsEnabled}}>
+                                <label class='form-check-label' for='flameDisabled'>Disabled</label>
+                            </div>
+                            <div class='invalid-feedback'>Please select a status.</div>
+                        </div>
+                        <div class='form-group'>
+                            <label for='flameDropdown'>Flame state</label>
+                            <select class='form-control' id='flameDropdown' name='flameDropdown'>
+                                <option value='0' {{#flameStatus0}} selected {{/flameStatus0}}>PRESENT</option>
+                                <option value='1' {{#flameStatus1}} selected {{/flameStatus1}}>ABSENT</option>
+                            </select>
+                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
+                        </div>
+                    </div>
                 </div>
-                <div class='form-check'></div>
-                <input class='form-check-input' type='radio' name='rgbStatus' id='rgbDisabled' value='false'
-                    {{^rgbIsEnabled}} checked {{/rgbIsEnabled}}>
-                <label class='form-check-label' for='rgbDisabled'>Disabled</label>
-            </div>
-            <div class='invalid-feedback'>Please select a status.</div>
-        </div>
-        <div class='form-group'>
-            <label for='rgbDropdown'>RGB State</label>
-            <select class='form-control' id='rgbDropdown' name='rgbDropdown'></select>
-            <option value='0' {{#rgbStatus0}} checked {{/rgbStatus0}}>AUTO</option>
-            <option value='3' {{#rgbStatus3}} checked {{/rgbStatus3}}>MANUAL ON</option>
-            <option value='4' {{#rgbStatus4}} checked {{/rgbStatus4}}>MANUAL OFF</option>
-            </select>
-            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-        </div>
-    </div>
-    </div>
-    <div class='col'>
-        <div class='sensor-group'>
-            <h2>ALARM</h2>
-            <!-- ALARM fields -->
-            <div class='form-group'>
-                <label>The alarm is:</label>
-                <div class='form-check'>
-                    <input class='form-check-input' type='radio' name='alarmStatus' id='alarmEnabled' value='true'
-                        {{#alarmIsEnabled}} checked {{/alarmIsEnabled}}>
-                    <label class='form-check-label' for='alarmEnabled'>Enabled</label>
+                <div class='col'>
+                    <div class='sensor-group'>
+                        <h2>Motion Detection</h2>
+                        <!-- Motion Detection fields -->
+                        <div class='form-group'>
+                            <label>Status</label>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='motionStatus' id='motionEnabled'
+                                    value='true' {{#motionIsEnabled}} checked {{/motionIsEnabled}}>
+                                <label class='form-check-label' for='motionEnabled'>Enabled</label>
+                            </div>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='motionStatus' id='motionDisabled'
+                                    value='false' {{^motionIsEnabled}} checked {{/motionIsEnabled}}>
+                                <label class='form-check-label' for='motionDisabled'>Disabled</label>
+                            </div>
+                            <div class='invalid-feedback'>Please select a status.</div>
+                        </div>
+                        <div class='form-group'>
+                            <label for='motionDropdown'>Motion state</label>
+                            <select class='form-control' id='motionDropdown' name='motionDropdown'>
+                                <option value='0' {{#motionStatus0}} selected {{/motionStatus0}}>DETECTED</option>
+                                <option value='1' {{#motionStatus1}} selected {{/motionStatus1}}>STANDBY</option>
+                                <option value='2' {{#motionStatus2}} selected {{/motionStatus2}}>INITIALIZE</option>
+                            </select>
+                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
+                        </div>
+                    </div>
                 </div>
-                <div class='form-check'></div>
-                <input class='form-check-input' type='radio' name='alarmStatus' id='alarmDisabled' value='false'
-                    {{^alarmIsEnabled}} checked {{/alarmIsEnabled}}>
-                <label class='form-check-label' for='alarmDisabled'>Disabled</label>
+                <div class='col'>
+                    <div class='sensor-group'>
+                        <h2>Light Sensor</h2>
+                        <!-- Light Sensor fields -->
+                        <div class='form-group'>
+                            <label for='lightSlider'>Low light threshold</label>
+                            <span id='lightSliderValue' class='d-block text-muted mb-2'>Current:
+                                {{lamp.lightSensor.value}} / {{lamp.lightSensor.lowThreshold}}</span>
+                            <input type='range' class='form-control-range mb-3' id='lightSlider' name='lightSlider'
+                                min='0' max='1000' value='{{lamp.lightSensor.lowThreshold}}'>
+                            <input type='number' class='form-control' id='lightSliderInput' name='lightSliderInput'
+                                min='0' max='1000' value='{{lamp.lightSensor.lowThreshold}}'>
+                            <div class='invalid-feedback'>Please adjust the slider within the range of 0 to 1000.</div>
+                        </div>
+                        <div class='form-group'>
+                            <label for='lightIntervalSlider'>Light reading interval</label>
+                            <span id='lightIntervalSliderValue' class='d-block text-muted mb-2'>Current:
+                                {{lamp.lightSensor.interval}}</span>
+                            <input type='range' class='form-control-range mb-3' id='lightIntervalSlider'
+                                name='lightIntervalSlider' min='1000' max='60000' step='250'
+                                value='{{lamp.lightSensor.interval}}'>
+                            <input type='number' class='form-control' id='lightIntervalSliderInput'
+                                name='lightIntervalSliderInput' min='1000' max='60000' step='250'
+                                value='{{lamp.lightSensor.interval}}'>
+                            <div class='invalid-feedback'>Please adjust the slider within the range of 1000 to 60000.
+                            </div>
+                        </div>
+                        <div class='form-group'>
+                            <label>Status</label>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='lightStatus' id='lightEnabled'
+                                    value='true' {{#lightIsEnabled}} checked {{/lightIsEnabled}}>
+                                <label class='form-check-label' for='lightEnabled'>Enabled</label>
+                            </div>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='lightStatus' id='lightDisabled'
+                                    value='false' {{^lightIsEnabled}} checked {{/lightIsEnabled}}>
+                                <label class='form-check-label' for='lightDisabled'>Disabled</label>
+                            </div>
+                            <div class='invalid-feedback'>Please select a status.</div>
+                        </div>
+                        <div class='form-group'>
+                            <label for='lightDropdown'>State</label>
+                            <select class='form-control' id='lightDropdown' name='lightDropdown'>
+                                <option value='0' {{#lightStatus0}} selected {{/lightStatus0}}>NORMAL LIGHT</option>
+                                <option value='1' {{#lightStatus1}} selected {{/lightStatus1}}>LOW LIGHT</option>
+                            </select>
+                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class='col'>
+                    <div class='sensor-group'>
+                        <h2>RGB LED</h2>
+                        <!-- RGB LED fields -->
+                        <div class='form-group'>
+                            <label>Status</label>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='rgbStatus' id='rgbEnabled'
+                                    value='true' {{#rgbIsEnabled}} checked {{/rgbIsEnabled}}>
+                                <label class='form-check-label' for='rgbEnabled'>Enabled</label>
+                            </div>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='rgbStatus' id='rgbDisabled'
+                                    value='false' {{^rgbIsEnabled}} checked {{/rgbIsEnabled}}>
+                                <label class='form-check-label' for='rgbDisabled'>Disabled</label>
+                            </div>
+                            <div class='invalid-feedback'>Please select a status.</div>
+                        </div>
+                        <div class='form-group'>
+                            <label for='rgbDropdown'>RGB State</label>
+                            <select class='form-control' id='rgbDropdown' name='rgbDropdown'>
+                                <option value='0' {{#rgbStatus0}} selected {{/rgbStatus0}}>AUTO</option>
+                                <option value='3' {{#rgbStatus3}} selected {{/rgbStatus3}}>MANUAL ON</option>
+                                <option value='4' {{#rgbStatus4}} selected {{/rgbStatus4}}>MANUAL OFF</option>
+                            </select>
+                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class='col'>
+                    <div class='sensor-group'>
+                        <h2>ALARM</h2>
+                        <!-- ALARM fields -->
+                        <div class='form-group'>
+                            <label>The alarm is:</label>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='alarmStatus' id='alarmEnabled'
+                                    value='true' {{#alarmIsEnabled}} checked {{/alarmIsEnabled}}>
+                                <label class='form-check-label' for='alarmEnabled'>Enabled</label>
+                            </div>
+                            <div class='form-check'>
+                                <input class='form-check-input' type='radio' name='alarmStatus' id='alarmDisabled'
+                                    value='false' {{^alarmIsEnabled}} checked {{/alarmIsEnabled}}>
+                                <label class='form-check-label' for='alarmDisabled'>Disabled</label>
+                            </div>
+                            <div class='invalid-feedback'>Please select a status.</div>
+                        </div>
+                        <div class='form-group'>
+                            <label for='alarmDropdown'>State</label>
+                            <select class='form-control' id='alarmDropdown' name='alarmDropdown'>
+                                <option value='true' {{#alarmIsActive}} selected {{/alarmIsActive}}>ACTIVE</option>
+                                <option value='false' {{^alarmIsActive}} selected {{/alarmIsActive}}>STANDBY</option>
+                            </select>
+                            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class='row'>
+                    <button type='submit' class='btn btn-primary btn-block'>Submit</button>
+                </div>
             </div>
-            <div class='invalid-feedback'>Please select a status.</div>
-        </div>
-        <div class='form-group'>
-            <label for='alarmDropdown'>State</label>
-            <select class='form-control' id='alarmDropdown' name='alarmDropdown'>
-                <option value='true' {{#alarmIsActive}} selected {{/alarmIsActive}}>ACTIVE</option>
-                <option value='false' {{^alarmIsActive}} selected {{/alarmIsActive}}>STANDBY</option>
-            </select>
-            <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
-        </div>
-    </div>
-    </div>
-    </div>
-    <div class='row'>
-        <button type='submit' class='btn btn-primary btn-block'>Submit</button>
-    </div>
-    </form>
+        </form>
     </div>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'></script>
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js'
@@ -222,19 +262,17 @@
         $(document).ready(function () {
             $('#lightSlider, #lightSliderInput').on('input', function () {
                 var value = this.value;
-                $('#' + this.id + 'Value').html('Current: " + String(lightSensor[SENSOR_VALUE_JSON_NAME]) + "/' + value);
+                $('#' + this.id + 'Value').html('Current: {{lamp.lightSensor.value}} / ' + value);
                 $('#' + this.id).val(value);
                 $('#' + this.id + 'Input').val(value);
             });
             $('#lightIntervalSlider, #lightIntervalSliderInput').on('input', function () {
                 var value = this.value;
-                $('#' + this.id + 'Value').html('Current: " + String(lightSensor[SENSOR_READING_INTERVAL_JSON_NAME]) + "');
                 $('#' + this.id).val(value);
                 $('#' + this.id + 'Input').val(value);
             });
             $('#flameIntervalSlider, #flameIntervalSliderInput').on('input', function () {
                 var value = this.value;
-                $('#' + this.id + 'Value').html('Current: " + String(flameSensor[SENSOR_READING_INTERVAL_JSON_NAME]) + "');
                 $('#' + this.id).val(value);
                 $('#' + this.id + 'Input').val(value);
             });
@@ -274,7 +312,7 @@
                         data: $('#myForm').serialize(),
                         processData: false,
                         success: function (data, textStatus, jQxhr) {
-                            alert('The new configuration has been sent to the device.');
+                            if(!alert('The new configuration has been sent to the device.')){window.location.reload();}
                         },
                         error: function (jqXhr, textStatus, errorThrown) {
                             alert('Error: ' + textStatus + '. ' + errorThrown);

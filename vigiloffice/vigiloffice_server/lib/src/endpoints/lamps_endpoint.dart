@@ -10,18 +10,20 @@ class LampsEndpoint extends Endpoint {
   ///
   /// Returns the created lamp.
   Future<Lamp> createLamp(Session session, Lamp lamp) async {
+    lamp.lastUpdate = DateTime.now();
     return await Lamp.db.insertRow(session, lamp);
   }
 
   /// Reads a lamp by its MAC address.
   ///
   /// Returns the lamp with the specified MAC address, or `null` if not found.
-  Future<Lamp?> readLamp(Session session, int lampMac) async {
+  Future<Lamp?> readLamp(Session session, String lampMac) async {
     // Try to retrieve the object from the cache
     var lamp = await session.caches.local.get(
       '$lampCacheKeyPrefix$lampMac',
       CacheMissHandler(
-        () async => Lamp.db.findById(session, lampMac),
+        () async => Lamp.db
+            .findFirstRow(session, where: (o) => o.macAddress.equals(lampMac)),
         lifetime: Duration(minutes: 5),
       ),
     );
@@ -31,22 +33,24 @@ class LampsEndpoint extends Endpoint {
 
   /// Updates an existing lamp on the database.
   ///
-  /// Does not update the lamp on the MQTT broker. See [controlLamp] for that.
+  /// Does not update the lamp on the MQTT broker. See [MqttManager.controlLamp] for that.
   ///
   /// Returns the updated lamp.
   Future<Lamp> updateLamp(Session session, Lamp lamp) async {
-    var oldLamp = await session.caches.local.get(
-      '$lampCacheKeyPrefix${lamp.macAddress}',
-      CacheMissHandler(
-        () async => Lamp.db.findFirstRow(session,
-            where: (o) => o.macAddress.equals(lamp.macAddress)),
-        lifetime: Duration(minutes: 5),
-      ),
-    );
-    if (oldLamp == null) {
-      return createLamp(session, lamp);
+    if (lamp.id == null) {
+      var oldLamp = await session.caches.local.get(
+        '$lampCacheKeyPrefix${lamp.macAddress}',
+        CacheMissHandler(
+          () async => Lamp.db.findFirstRow(session,
+              where: (o) => o.macAddress.equals(lamp.macAddress)),
+          lifetime: Duration(minutes: 5),
+        ),
+      );
+      if (oldLamp == null) {
+        return createLamp(session, lamp);
+      }
+      lamp.id = oldLamp.id;
     }
-    lamp.id = oldLamp.id;
     return Lamp.db.updateRow(session, lamp);
   }
 
@@ -59,7 +63,7 @@ class LampsEndpoint extends Endpoint {
   }
 
   /// Updates the state of a lamp on the database and sends the new state to the MQTT broker.
-  /// 
+  ///
   /// See [updateLamp] for updating the lamp on the database without sending the new state to the MQTT broker.
   ///
   /// Returns the updated lamp.

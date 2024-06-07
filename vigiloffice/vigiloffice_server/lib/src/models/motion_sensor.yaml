@@ -1,7 +1,6 @@
 class: MotionSensor
 
 fields:
-  name: String
   value: int
   status: int
   enabled: bool

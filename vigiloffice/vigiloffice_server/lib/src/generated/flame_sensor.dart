@@ -13,7 +13,6 @@ import 'package:serverpod/serverpod.dart' as _i1;
 abstract class FlameSensor
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
   FlameSensor._({
-    required this.name,
     required this.value,
     required this.status,
     required this.enabled,
@@ -21,7 +20,6 @@ abstract class FlameSensor
   });
 
   factory FlameSensor({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
@@ -30,15 +28,12 @@ abstract class FlameSensor
 
   factory FlameSensor.fromJson(Map<String, dynamic> jsonSerialization) {
     return FlameSensor(
-      name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as int,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
       interval: jsonSerialization['interval'] as int,
     );
   }
-
-  String name;
 
   int value;
 
@@ -49,7 +44,6 @@ abstract class FlameSensor
   int interval;
 
   FlameSensor copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
@@ -58,7 +52,6 @@ abstract class FlameSensor
   @override
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -69,7 +62,6 @@ abstract class FlameSensor
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -85,13 +77,11 @@ abstract class FlameSensor
 
 class _FlameSensorImpl extends FlameSensor {
   _FlameSensorImpl({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
     required int interval,
   }) : super._(
-          name: name,
           value: value,
           status: status,
           enabled: enabled,
@@ -100,14 +90,12 @@ class _FlameSensorImpl extends FlameSensor {
 
   @override
   FlameSensor copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
     int? interval,
   }) {
     return FlameSensor(
-      name: name ?? this.name,
       value: value ?? this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,

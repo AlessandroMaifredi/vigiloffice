@@ -12,14 +12,12 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class MotionSensor implements _i1.SerializableModel {
   MotionSensor._({
-    required this.name,
     required this.value,
     required this.status,
     required this.enabled,
   });
 
   factory MotionSensor({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
@@ -27,14 +25,11 @@ abstract class MotionSensor implements _i1.SerializableModel {
 
   factory MotionSensor.fromJson(Map<String, dynamic> jsonSerialization) {
     return MotionSensor(
-      name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as int,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
     );
   }
-
-  String name;
 
   int value;
 
@@ -43,7 +38,6 @@ abstract class MotionSensor implements _i1.SerializableModel {
   bool enabled;
 
   MotionSensor copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
@@ -51,7 +45,6 @@ abstract class MotionSensor implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
       'value': value,
       'status': status,
       'enabled': enabled,
@@ -66,12 +59,10 @@ abstract class MotionSensor implements _i1.SerializableModel {
 
 class _MotionSensorImpl extends MotionSensor {
   _MotionSensorImpl({
-    required String name,
     required int value,
     required int status,
     required bool enabled,
   }) : super._(
-          name: name,
           value: value,
           status: status,
           enabled: enabled,
@@ -79,13 +70,11 @@ class _MotionSensorImpl extends MotionSensor {
 
   @override
   MotionSensor copyWith({
-    String? name,
     int? value,
     int? status,
     bool? enabled,
   }) {
     return MotionSensor(
-      name: name ?? this.name,
       value: value ?? this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,

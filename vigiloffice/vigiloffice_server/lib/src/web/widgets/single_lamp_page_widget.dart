@@ -4,8 +4,24 @@ import '../../generated/protocol.dart';
 
 class SingleLampPageWidget extends Widget {
   SingleLampPageWidget({required Lamp lamp}) : super(name: 'single_lamp_page') {
+    Map<String, dynamic> lampValues = lamp.toJson();
+    if (lamp.lastUpdate != null) {
+      final difference = DateTime.now().difference(lamp.lastUpdate!);
+      final hours = difference.inHours;
+      final minutes = difference.inMinutes.remainder(60);
+      final seconds = difference.inSeconds.remainder(60);
+
+      final timeAgo = '${hours}h : ${minutes}m : ${seconds}s ago';
+
+      lampValues['lastUpdateString'] = timeAgo;
+    } else {
+      lampValues['lastUpdateString'] = 'Unknown';
+      lampValues['lastUpdate'] = 'null';
+    }
+
     values = {
-      "lamp": lamp.toJson(),
+      "types": DeviceType.values.map((e) => e.name).toList(),
+      "lamp": lampValues,
       if (lamp.flameSensor.enabled) "flameIsEnabled": true,
       if (!lamp.flameSensor.enabled) "flameIsEnabled": false,
       if (lamp.flameSensor.status == 0) "flameStatus0": true,
