@@ -225,7 +225,7 @@ JsonDocument statusDoc;
 volatile bool applyChanges = false;
 
 void updateStatusDoc() {
-  statusDoc[F("mac-address")] = macAddress;
+  statusDoc[F("macAddress")] = macAddress;
 
   JsonObject tempSensor = statusDoc.createNestedObject(TEMP_SENSOR_JSON_NAME);
   tempSensor[SENSOR_TEMP_VALUE_JSON_NAME] = temp;

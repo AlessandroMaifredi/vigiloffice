@@ -455,7 +455,7 @@ void setRegisterTopic(JsonDocument doc) {
   }
 #endif
   JsonDocument settingsDoc;
-  settingsDoc[F("mac-address")] = macAddress;
+  settingsDoc[F("macAddress")] = macAddress;
   settingsDoc[F("type")] = DEVICE_TYPE;
   char buffer[512];
   size_t n = serializeJson(settingsDoc, buffer);
