@@ -18,7 +18,7 @@ enum LOG_LEVEL {
   LOG_OFF,
 };
 
-LOG_LEVEL logLevel = LOG_COMM;
+LOG_LEVEL logLevel = LOG_ALL;
 #endif
 
 // === ALARM ===
@@ -108,6 +108,49 @@ void readFlame() {
   }
 }
 
+// === FLOODING ===
+#define FLOODING_SENSOR_PIN A0
+
+enum FLOODING_SENSOR_STATUS {
+  FLOODING_SENSOR_ENABLED,
+  FLOODING_SENSOR_DISABLED
+};
+
+enum FLOODING_STATUS {
+  FLOODING_PRESENT,
+  FLOODING_ABSENT
+};
+
+FLOODING_SENSOR_STATUS floodingSensorStatus = FLOODING_SENSOR_ENABLED;
+volatile FLOODING_STATUS floodingStatus = FLOODING_ABSENT;
+unsigned int floodingHighThreshold = 90;
+unsigned long floodingReadingInterval = 1000;
+
+void readFlooding() {
+  static unsigned long lastFloodingReading = millis();
+  if (floodingSensorStatus == FLOODING_SENSOR_ENABLED) {
+    if (millis() - lastFloodingReading >= floodingReadingInterval) {
+      if (analogRead(FLOODING_SENSOR_PIN) > floodingHighThreshold) {
+        floodingStatus = FLOODING_PRESENT;
+#ifdef ENABLE_LOGS
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set FLOODING to FLOODING_PRESENT"));
+        }
+#endif
+        activateAlarm();
+      } else {
+        floodingStatus = FLOODING_ABSENT;
+#ifdef ENABLE_LOGS
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set FLOODING to FLOODING_ABSENT"));
+        }
+#endif
+      }
+      lastFloodingReading = millis();
+    }
+  }
+}
+
 // === RGB ===
 #define RGB_RED_PIN D2
 #define RGB_GREEN_PIN D1
@@ -188,6 +231,12 @@ JsonDocument statusDoc;
 
 void updateStatusDoc() {
   statusDoc[F("macAddress")] = macAddress;
+
+  JsonObject floodingSensor = statusDoc.createNestedObject(FLOODING_SENSOR_JSON_NAME);
+  floodingSensor[STATUS_JSON_NAME] = flameStatus;
+  floodingSensor[SENSOR_STATUS_JSON_NAME] = floodingSensorStatus == FLOODING_SENSOR_ENABLED ? true : false;
+  floodingSensor[SENSOR_HIGH_THRESHOLD_JSON_NAME] = floodingHighThreshold;
+  floodingSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
 
   JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
   flameSensor[STATUS_JSON_NAME] = flameStatus;
@@ -335,6 +384,12 @@ void applyControlChanges(JsonDocument controlDoc) {
   alarmStatus = alarm[STATUS_JSON_NAME] == true ? ALARM_ACTIVE : ALARM_NORMAL;
   alarmSystemStatus = alarm[SENSOR_STATUS_JSON_NAME] == true ? ALARM_ENABLED : ALARM_DISABLED;
 
+  JsonObject floodingSensor = controlDoc[FLOODING_SENSOR_JSON_NAME].as<JsonObject>();
+  floodingStatus = floodingSensor[STATUS_JSON_NAME];
+  floodingSensorStatus = floodingSensor[SENSOR_STATUS_JSON_NAME] == true ? FLOODING_SENSOR_ENABLED : FLOODING_SENSOR_DISABLED;
+  floodingHighThreshold = floodingSensor[SENSOR_HIGH_THRESHOLD_JSON_NAME];
+  floodingReadingInterval = floodingSensor[SENSOR_READING_INTERVAL_JSON_NAME];
+
   JsonObject flameSensor = controlDoc[FLAME_SENSOR_JSON_NAME].as<JsonObject>();
   flameStatus = flameSensor[STATUS_JSON_NAME];
   flameSensorStatus = flameSensor[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
@@ -377,6 +432,7 @@ void setup() {
 
 void loop() {
   readFlame();
+  readFlooding();
   commLoop();
   updateRGB();
 }

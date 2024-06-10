@@ -3,7 +3,7 @@
     "floodingSensor": {
         "status": 0,
         "enabled": true,
-        "lowThreshold": 100,
+        "highThreshold": 100,
         "interval": 1000
     },
     "flameSensor": {
