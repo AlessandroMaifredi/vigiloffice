@@ -151,6 +151,48 @@ void readFlooding() {
   }
 }
 
+// === AVOIDANCE ===
+#define AVOIDANCE_SENSOR_PIN D5
+
+enum AVOIDANCE_SENSOR_STATUS {
+  AVOIDANCE_SENSOR_ENABLED,
+  AVOIDANCE_SENSOR_DISABLED
+};
+
+enum AVOIDANCE_STATUS {
+  AVOIDANCE_PRESENT,
+  AVOIDANCE_ABSENT
+};
+
+AVOIDANCE_SENSOR_STATUS avoidanceSensorStatus = AVOIDANCE_SENSOR_ENABLED;
+volatile AVOIDANCE_STATUS avoidanceStatus = AVOIDANCE_ABSENT;
+unsigned long avoidanceReadingInterval = 1000;
+
+void readAvoidance() {
+  static unsigned long lastAvoidanceReading = millis();
+  if (avoidanceSensorStatus == AVOIDANCE_SENSOR_ENABLED) {
+    if (millis() - lastAvoidanceReading >= avoidanceReadingInterval) {
+      avoidanceStatus = analogRead(AVOIDANCE_SENSOR_PIN) == LOW ? AVOIDANCE_PRESENT : AVOIDANCE_ABSENT;
+      if (avoidanceStatus == AVOIDANCE_PRESENT) {
+        setRGBOccupied();
+#ifdef ENABLE_LOGS
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set AVOIDANCE to AVOIDANCE_PRESENT"));
+        }
+#endif
+      } else {
+        setRGBAvailable();
+#ifdef ENABLE_LOGS
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set AVOIDANCE to AVOIDANCE_ABSENT"));
+        }
+#endif
+      }
+      lastAvoidanceReading = millis();
+    }
+  }
+}
+
 // === RGB ===
 #define RGB_RED_PIN D2
 #define RGB_GREEN_PIN D1
@@ -242,6 +284,10 @@ void updateStatusDoc() {
   flameSensor[STATUS_JSON_NAME] = flameStatus;
   flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
   flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
+
+  JsonObject avoidanceSensor = statusDoc.createNestedObject(AVOIDANCE_SENSOR_JSON_NAME);
+  avoidanceSensor[STATUS_JSON_NAME] = avoidanceStatus;
+  avoidanceSensor[SENSOR_STATUS_JSON_NAME] = avoidanceSensorStatus == AVOIDANCE_SENSOR_ENABLED ? true : false;
 
   JsonObject rgbLed = statusDoc.createNestedObject(RGB_ACTUATOR_JSON_NAME);
   rgbLed[STATUS_JSON_NAME] = rgbStatus;
@@ -395,6 +441,10 @@ void applyControlChanges(JsonDocument controlDoc) {
   flameSensorStatus = flameSensor[SENSOR_STATUS_JSON_NAME] == true ? FLAME_SENSOR_ENABLED : FLAME_SENSOR_DISABLED;
   flameReadingInterval = flameSensor[SENSOR_READING_INTERVAL_JSON_NAME];
 
+  JsonObject avoidanceSensor = controlDoc[AVOIDANCE_SENSOR_JSON_NAME].as<JsonObject>();
+  avoidanceStatus = avoidanceSensor[STATUS_JSON_NAME];
+  avoidanceSensorStatus = avoidanceSensor[SENSOR_STATUS_JSON_NAME] == true ? AVOIDANCE_SENSOR_ENABLED : AVOIDANCE_SENSOR_DISABLED;
+
   JsonObject rgbActuator = controlDoc[RGB_ACTUATOR_JSON_NAME].as<JsonObject>();
   rgbStatus = rgbActuator[STATUS_JSON_NAME];
   rgbSensorStatus = rgbActuator[RGB_ACTUATOR_JSON_NAME] == true ? RGB_SENSOR_ENABLED : RGB_SENSOR_DISABLED;
@@ -433,6 +483,7 @@ void setup() {
 void loop() {
   readFlame();
   readFlooding();
+  readAvoidance();
   commLoop();
   updateRGB();
 }
