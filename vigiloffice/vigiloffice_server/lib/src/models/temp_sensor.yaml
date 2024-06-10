@@ -1,0 +1,11 @@
+class: TempSensor
+
+fields:
+  tempValue: int
+  humValue: int
+  status: int
+  enabled: bool
+  interval: int
+  lowThreshold: int
+  highThreshold: int
+  target: int

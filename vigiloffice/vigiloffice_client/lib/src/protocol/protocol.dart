@@ -14,18 +14,24 @@ import 'alarm.dart' as _i2;
 import 'device.dart' as _i3;
 import 'device_type.dart' as _i4;
 import 'flame_sensor.dart' as _i5;
-import 'lamp.dart' as _i6;
-import 'light_sensor.dart' as _i7;
-import 'motion_sensor.dart' as _i8;
-import 'rgb_led.dart' as _i9;
+import 'hvac.dart' as _i6;
+import 'lamp.dart' as _i7;
+import 'light_sensor.dart' as _i8;
+import 'motion_sensor.dart' as _i9;
+import 'rgb_led.dart' as _i10;
+import 'temp_sensor.dart' as _i11;
+import 'vent_actuator.dart' as _i12;
 export 'alarm.dart';
 export 'device.dart';
 export 'device_type.dart';
 export 'flame_sensor.dart';
+export 'hvac.dart';
 export 'lamp.dart';
 export 'light_sensor.dart';
 export 'motion_sensor.dart';
 export 'rgb_led.dart';
+export 'temp_sensor.dart';
+export 'vent_actuator.dart';
 export 'client.dart';
 
 class Protocol extends _i1.SerializationManager {
@@ -53,17 +59,26 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i5.FlameSensor) {
       return _i5.FlameSensor.fromJson(data) as T;
     }
-    if (t == _i6.Lamp) {
-      return _i6.Lamp.fromJson(data) as T;
+    if (t == _i6.Hvac) {
+      return _i6.Hvac.fromJson(data) as T;
     }
-    if (t == _i7.LightSensor) {
-      return _i7.LightSensor.fromJson(data) as T;
+    if (t == _i7.Lamp) {
+      return _i7.Lamp.fromJson(data) as T;
     }
-    if (t == _i8.MotionSensor) {
-      return _i8.MotionSensor.fromJson(data) as T;
+    if (t == _i8.LightSensor) {
+      return _i8.LightSensor.fromJson(data) as T;
     }
-    if (t == _i9.RGBLed) {
-      return _i9.RGBLed.fromJson(data) as T;
+    if (t == _i9.MotionSensor) {
+      return _i9.MotionSensor.fromJson(data) as T;
+    }
+    if (t == _i10.RGBLed) {
+      return _i10.RGBLed.fromJson(data) as T;
+    }
+    if (t == _i11.TempSensor) {
+      return _i11.TempSensor.fromJson(data) as T;
+    }
+    if (t == _i12.VentActuator) {
+      return _i12.VentActuator.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.Alarm?>()) {
       return (data != null ? _i2.Alarm.fromJson(data) : null) as T;
@@ -77,17 +92,26 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i5.FlameSensor?>()) {
       return (data != null ? _i5.FlameSensor.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i6.Lamp?>()) {
-      return (data != null ? _i6.Lamp.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i6.Hvac?>()) {
+      return (data != null ? _i6.Hvac.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.LightSensor?>()) {
-      return (data != null ? _i7.LightSensor.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.Lamp?>()) {
+      return (data != null ? _i7.Lamp.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.MotionSensor?>()) {
-      return (data != null ? _i8.MotionSensor.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.LightSensor?>()) {
+      return (data != null ? _i8.LightSensor.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i9.RGBLed?>()) {
-      return (data != null ? _i9.RGBLed.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i9.MotionSensor?>()) {
+      return (data != null ? _i9.MotionSensor.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i10.RGBLed?>()) {
+      return (data != null ? _i10.RGBLed.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i11.TempSensor?>()) {
+      return (data != null ? _i11.TempSensor.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i12.VentActuator?>()) {
+      return (data != null ? _i12.VentActuator.fromJson(data) : null) as T;
     }
     return super.deserialize<T>(data, t);
   }
@@ -106,17 +130,26 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i5.FlameSensor) {
       return 'FlameSensor';
     }
-    if (data is _i6.Lamp) {
+    if (data is _i6.Hvac) {
+      return 'Hvac';
+    }
+    if (data is _i7.Lamp) {
       return 'Lamp';
     }
-    if (data is _i7.LightSensor) {
+    if (data is _i8.LightSensor) {
       return 'LightSensor';
     }
-    if (data is _i8.MotionSensor) {
+    if (data is _i9.MotionSensor) {
       return 'MotionSensor';
     }
-    if (data is _i9.RGBLed) {
+    if (data is _i10.RGBLed) {
       return 'RGBLed';
+    }
+    if (data is _i11.TempSensor) {
+      return 'TempSensor';
+    }
+    if (data is _i12.VentActuator) {
+      return 'VentActuator';
     }
     return super.getClassNameForObject(data);
   }
@@ -135,17 +168,26 @@ class Protocol extends _i1.SerializationManager {
     if (data['className'] == 'FlameSensor') {
       return deserialize<_i5.FlameSensor>(data['data']);
     }
+    if (data['className'] == 'Hvac') {
+      return deserialize<_i6.Hvac>(data['data']);
+    }
     if (data['className'] == 'Lamp') {
-      return deserialize<_i6.Lamp>(data['data']);
+      return deserialize<_i7.Lamp>(data['data']);
     }
     if (data['className'] == 'LightSensor') {
-      return deserialize<_i7.LightSensor>(data['data']);
+      return deserialize<_i8.LightSensor>(data['data']);
     }
     if (data['className'] == 'MotionSensor') {
-      return deserialize<_i8.MotionSensor>(data['data']);
+      return deserialize<_i9.MotionSensor>(data['data']);
     }
     if (data['className'] == 'RGBLed') {
-      return deserialize<_i9.RGBLed>(data['data']);
+      return deserialize<_i10.RGBLed>(data['data']);
+    }
+    if (data['className'] == 'TempSensor') {
+      return deserialize<_i11.TempSensor>(data['data']);
+    }
+    if (data['className'] == 'VentActuator') {
+      return deserialize<_i12.VentActuator>(data['data']);
     }
     return super.deserializeByClassName(data);
   }

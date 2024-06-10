@@ -3,6 +3,12 @@ device:
   - readDevice:
   - updateDevice:
   - deleteDevice:
+hvacs:
+  - createHvac:
+  - readHvac:
+  - updateHvac:
+  - deleteHvac:
+  - controlHvac:
 lamps:
   - createLamp:
   - readLamp:

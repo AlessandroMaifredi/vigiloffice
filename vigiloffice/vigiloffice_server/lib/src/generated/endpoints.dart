@@ -10,9 +10,11 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../endpoints/device_endpoint.dart' as _i2;
-import '../endpoints/lamps_endpoint.dart' as _i3;
-import 'package:vigiloffice_server/src/generated/device.dart' as _i4;
-import 'package:vigiloffice_server/src/generated/lamp.dart' as _i5;
+import '../endpoints/hvacs_endpoint.dart' as _i3;
+import '../endpoints/lamps_endpoint.dart' as _i4;
+import 'package:vigiloffice_server/src/generated/device.dart' as _i5;
+import 'package:vigiloffice_server/src/generated/hvac.dart' as _i6;
+import 'package:vigiloffice_server/src/generated/lamp.dart' as _i7;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -24,7 +26,13 @@ class Endpoints extends _i1.EndpointDispatch {
           'device',
           null,
         ),
-      'lamps': _i3.LampsEndpoint()
+      'hvacs': _i3.HvacsEndpoint()
+        ..initialize(
+          server,
+          'hvacs',
+          null,
+        ),
+      'lamps': _i4.LampsEndpoint()
         ..initialize(
           server,
           'lamps',
@@ -40,7 +48,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'device': _i1.ParameterDescription(
               name: 'device',
-              type: _i1.getType<_i4.Device>(),
+              type: _i1.getType<_i5.Device>(),
               nullable: false,
             )
           },
@@ -76,7 +84,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'device': _i1.ParameterDescription(
               name: 'device',
-              type: _i1.getType<_i4.Device>(),
+              type: _i1.getType<_i5.Device>(),
               nullable: false,
             )
           },
@@ -94,7 +102,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'device': _i1.ParameterDescription(
               name: 'device',
-              type: _i1.getType<_i4.Device>(),
+              type: _i1.getType<_i5.Device>(),
               nullable: false,
             )
           },
@@ -109,6 +117,102 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['hvacs'] = _i1.EndpointConnector(
+      name: 'hvacs',
+      endpoint: endpoints['hvacs']!,
+      methodConnectors: {
+        'createHvac': _i1.MethodConnector(
+          name: 'createHvac',
+          params: {
+            'hvac': _i1.ParameterDescription(
+              name: 'hvac',
+              type: _i1.getType<_i6.Hvac>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['hvacs'] as _i3.HvacsEndpoint).createHvac(
+            session,
+            params['hvac'],
+          ),
+        ),
+        'readHvac': _i1.MethodConnector(
+          name: 'readHvac',
+          params: {
+            'hvacMac': _i1.ParameterDescription(
+              name: 'hvacMac',
+              type: _i1.getType<String>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['hvacs'] as _i3.HvacsEndpoint).readHvac(
+            session,
+            params['hvacMac'],
+          ),
+        ),
+        'updateHvac': _i1.MethodConnector(
+          name: 'updateHvac',
+          params: {
+            'hvac': _i1.ParameterDescription(
+              name: 'hvac',
+              type: _i1.getType<_i6.Hvac>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['hvacs'] as _i3.HvacsEndpoint).updateHvac(
+            session,
+            params['hvac'],
+          ),
+        ),
+        'deleteHvac': _i1.MethodConnector(
+          name: 'deleteHvac',
+          params: {
+            'hvac': _i1.ParameterDescription(
+              name: 'hvac',
+              type: _i1.getType<_i6.Hvac>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['hvacs'] as _i3.HvacsEndpoint).deleteHvac(
+            session,
+            params['hvac'],
+          ),
+        ),
+        'controlHvac': _i1.MethodConnector(
+          name: 'controlHvac',
+          params: {
+            'hvac': _i1.ParameterDescription(
+              name: 'hvac',
+              type: _i1.getType<_i6.Hvac>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['hvacs'] as _i3.HvacsEndpoint).controlHvac(
+            session,
+            params['hvac'],
+          ),
+        ),
+      },
+    );
     connectors['lamps'] = _i1.EndpointConnector(
       name: 'lamps',
       endpoint: endpoints['lamps']!,
@@ -118,7 +222,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i5.Lamp>(),
+              type: _i1.getType<_i7.Lamp>(),
               nullable: false,
             )
           },
@@ -126,7 +230,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['lamps'] as _i3.LampsEndpoint).createLamp(
+              (endpoints['lamps'] as _i4.LampsEndpoint).createLamp(
             session,
             params['lamp'],
           ),
@@ -136,7 +240,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lampMac': _i1.ParameterDescription(
               name: 'lampMac',
-              type: _i1.getType<int>(),
+              type: _i1.getType<String>(),
               nullable: false,
             )
           },
@@ -144,7 +248,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['lamps'] as _i3.LampsEndpoint).readLamp(
+              (endpoints['lamps'] as _i4.LampsEndpoint).readLamp(
             session,
             params['lampMac'],
           ),
@@ -154,7 +258,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i5.Lamp>(),
+              type: _i1.getType<_i7.Lamp>(),
               nullable: false,
             )
           },
@@ -162,7 +266,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['lamps'] as _i3.LampsEndpoint).updateLamp(
+              (endpoints['lamps'] as _i4.LampsEndpoint).updateLamp(
             session,
             params['lamp'],
           ),
@@ -172,7 +276,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i5.Lamp>(),
+              type: _i1.getType<_i7.Lamp>(),
               nullable: false,
             )
           },
@@ -180,7 +284,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['lamps'] as _i3.LampsEndpoint).deleteLamp(
+              (endpoints['lamps'] as _i4.LampsEndpoint).deleteLamp(
             session,
             params['lamp'],
           ),
@@ -190,7 +294,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i5.Lamp>(),
+              type: _i1.getType<_i7.Lamp>(),
               nullable: false,
             )
           },
@@ -198,7 +302,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['lamps'] as _i3.LampsEndpoint).controlLamp(
+              (endpoints['lamps'] as _i4.LampsEndpoint).controlLamp(
             session,
             params['lamp'],
           ),

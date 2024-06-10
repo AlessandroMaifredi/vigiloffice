@@ -2,16 +2,18 @@ import 'package:serverpod/relic.dart';
 
 import '../../generated/protocol.dart';
 
-class LampsPageWidget extends Widget {
-  LampsPageWidget({required List<Lamp> lamps}) : super(name: 'single_type_page') {
+class HvacsPageWidget extends Widget {
+  HvacsPageWidget({required List<Hvac> hvacs})
+      : super(name: 'single_type_page') {
     final now = DateTime.now();
     values = {
       "types": DeviceType.values.map((e) => e.name).toList(),
-      'type': DeviceType.lamp.name,
-      'Type': DeviceType.lamp.name[0].toUpperCase() + DeviceType.lamp.name.substring(1),
-      'devices': lamps.map((lamp) => lamp.toJson()).map((lamp) {
-        if (lamp['lastUpdate'] != null) {
-          final lastUpdate = DateTime.parse(lamp['lastUpdate']);
+      'type': DeviceType.hvac.name,
+      'Type': DeviceType.hvac.name[0].toUpperCase() +
+          DeviceType.hvac.name.substring(1),
+      'devices': hvacs.map((hvac) => hvac.toJson()).map((hvac) {
+        if (hvac['lastUpdate'] != null) {
+          final lastUpdate = DateTime.parse(hvac['lastUpdate']);
           final difference = now.difference(lastUpdate);
           final hours = difference.inHours;
           final minutes = difference.inMinutes.remainder(60);
@@ -19,11 +21,11 @@ class LampsPageWidget extends Widget {
 
           final timeAgo = '${hours}h : ${minutes}m : ${seconds}s ago';
 
-          lamp['lastUpdate'] = timeAgo;
+          hvac['lastUpdate'] = timeAgo;
         } else {
-          lamp['lastUpdate'] = 'Unknown';
+          hvac['lastUpdate'] = 'Unknown';
         }
-        return lamp;
+        return hvac;
       }).toList(),
     };
   }
