@@ -3,6 +3,24 @@ import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
 
+class InfluxDBConnectionParameters {
+  String url;
+  String token;
+  String org;
+  String bucket;
+
+  InfluxDBConnectionParameters(
+      {required this.url,
+      required this.token,
+      required this.org,
+      required this.bucket});
+
+  @override
+  String toString() {
+    return 'InfluxDBConnectionParameters(url: $url, token: $token, org: $org, bucket: $bucket)';
+  }
+}
+
 class InfluxDBManager {
   static final InfluxDBManager _instance = InfluxDBManager._();
 
@@ -80,13 +98,13 @@ class InfluxDBManager {
       Point? point;
       switch (type) {
         case DeviceType.lamp:
-          point = _createLampPoint(data as Lamp);
+          point = (data as Lamp).toPoint();
           break;
         case DeviceType.hvac:
-          point = _createHvacPoint(data as Hvac);
+          point = (data as Hvac).toPoint();
           break;
         case DeviceType.parking:
-          point = _createParkingPoint(data as Parking);
+          point = (data as Parking).toPoint();
           break;
       }
       await writeApi.write(point);
@@ -100,40 +118,68 @@ class InfluxDBManager {
     return false;
   }
 
-  Point _createLampPoint(Lamp lamp) {
-    //TODO add all fields as in lampNode.ino
-    return Point('lamp')..addTag('macAddress', lamp.macAddress);
-  }
-
-  Point _createHvacPoint(Hvac hvac) {
-    //TODO add all fields as in hvacNode.ino
-    return Point('hvac')..addTag('macAddress', hvac.macAddress);
-  }
-
-  Point _createParkingPoint(Parking parking) {
-    //TODO add all fields as in parkingNode.ino
-    return Point('parking')..addTag('macAddress', parking.macAddress);
-  }
-
   void disconnect() {
     _client?.close();
   }
 }
 
-class InfluxDBConnectionParameters {
-  String url;
-  String token;
-  String org;
-  String bucket;
+extension on Lamp {
+  Point toPoint() {
+    return Point('lamp')
+      ..addTag('macAddress', macAddress)
+      ..addField('lightValue', lightSensor.value)
+      ..addField('lightStatus', lightSensor.status)
+      ..addField('lightLowThreshold', lightSensor.lowThreshold)
+      ..addField('ligthEnabled', lightSensor.enabled)
+      ..addField('motionValue', motionSensor.value)
+      ..addField('motionStatus', motionSensor.status)
+      ..addField('motionEnabled', motionSensor.enabled)
+      ..addField('flameValue', flameSensor.value)
+      ..addField('flameStatus', flameSensor.status)
+      ..addField('flameEnabled', flameSensor.enabled)
+      ..addField('rgbValue', rgbLed.value)
+      ..addField('rgbStatus', rgbLed.status)
+      ..addField('rgbEnabled', rgbLed.enabled)
+      ..addField('alarmStatus', alarm.status)
+      ..addField('alarmEnabled', alarm.enabled);
+  }
+}
 
-  InfluxDBConnectionParameters(
-      {required this.url,
-      required this.token,
-      required this.org,
-      required this.bucket});
+extension on Hvac{
+  Point toPoint(){
+    return Point('hvac')
+      ..addTag('macAddress', macAddress)
+      ..addField('flameValue', flameSensor.value)
+      ..addField('flameStatus', flameSensor.status)
+      ..addField('flameEnabled', flameSensor.enabled)
+      ..addField('temperatureValue', tempSensor.tempValue)
+      ..addField('humidityValue', tempSensor.humValue)
+      ..addField('temperatureStatus', tempSensor.status)
+      ..addField('temperatureEnabled', tempSensor.enabled)
+      ..addField('temperatureLowThreshold', tempSensor.lowThreshold)
+      ..addField('temperatureHighThreshold', tempSensor.highThreshold)
+      ..addField('temperatureTarget', tempSensor.target)
+      ..addField('ventActuatorEnabled', ventActuator.enabled)
+      ..addField('alarmStatus', alarm.status)
+      ..addField('alarmEnabled', alarm.enabled);
+  }
+}
 
-  @override
-  String toString() {
-    return 'InfluxDBConnectionParameters(url: $url, token: $token, org: $org, bucket: $bucket)';
+extension on Parking{
+  Point toPoint(){
+    return Point('parking')
+      ..addTag('macAddress', macAddress)
+      ..addField('flameValue', flameSensor.value)
+      ..addField('flameStatus', flameSensor.status)
+      ..addField('flameEnabled', flameSensor.enabled)
+      ..addField('floodingStatus', floodingSensor.status)
+      ..addField('floodingEnabled', floodingSensor.enabled)
+      ..addField('floodingHighThreshold', floodingSensor.highThreshold)
+      ..addField('avoidanceStatus', avoidanceSensor.status)
+      ..addField('avoidanceEnabled', avoidanceSensor.enabled)
+      ..addField('rgbStatus', rgbLed.status)
+      ..addField('rgbEnabled', rgbLed.enabled)
+      ..addField('alarmStatus', alarm.status)
+      ..addField('alarmEnabled', alarm.enabled);
   }
 }
