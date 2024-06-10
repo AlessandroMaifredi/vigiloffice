@@ -1,0 +1,5 @@
+class: AvoidanceSensor
+
+fields:
+  status: int
+  enabled: bool

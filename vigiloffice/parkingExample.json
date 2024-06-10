@@ -3,6 +3,7 @@
     "floodingSensor": {
         "status": 0,
         "enabled": true,
+        "lowThreshold": 100,
         "interval": 1000
     },
     "flameSensor": {
@@ -10,7 +11,7 @@
         "enabled": true,
         "interval": 1000
     },
-    "proximitySensor": {
+    "avoidanceSensor": {
         "status": 0,
         "enabled": true
     },

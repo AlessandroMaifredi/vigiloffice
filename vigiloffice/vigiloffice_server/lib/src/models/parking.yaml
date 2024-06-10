@@ -1,0 +1,12 @@
+class: Parking
+
+table: parkings
+
+fields:
+  macAddress: String
+  floodingSensor: FloodingSensor
+  flameSensor: FlameSensor
+  avoidanceSensor: AvoidanceSensor
+  rgbLed: RGBLed
+  alarm: Alarm
+  lastUpdate: DateTime?

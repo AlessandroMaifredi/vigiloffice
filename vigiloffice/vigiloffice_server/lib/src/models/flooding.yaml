@@ -1,0 +1,7 @@
+class: FloodingSensor
+
+fields:
+  status: int
+  enabled: bool
+  interval: int
+  lowThreshold: int
