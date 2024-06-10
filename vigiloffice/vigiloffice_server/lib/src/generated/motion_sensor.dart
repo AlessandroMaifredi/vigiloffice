@@ -13,26 +13,26 @@ import 'package:serverpod/serverpod.dart' as _i1;
 abstract class MotionSensor
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
   MotionSensor._({
-    required this.value,
+    this.value,
     required this.status,
     required this.enabled,
   });
 
   factory MotionSensor({
-    required int value,
+    int? value,
     required int status,
     required bool enabled,
   }) = _MotionSensorImpl;
 
   factory MotionSensor.fromJson(Map<String, dynamic> jsonSerialization) {
     return MotionSensor(
-      value: jsonSerialization['value'] as int,
+      value: jsonSerialization['value'] as int?,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
     );
   }
 
-  int value;
+  int? value;
 
   int status;
 
@@ -46,7 +46,7 @@ abstract class MotionSensor
   @override
   Map<String, dynamic> toJson() {
     return {
-      'value': value,
+      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
     };
@@ -55,7 +55,7 @@ abstract class MotionSensor
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      'value': value,
+      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
     };
@@ -67,9 +67,11 @@ abstract class MotionSensor
   }
 }
 
+class _Undefined {}
+
 class _MotionSensorImpl extends MotionSensor {
   _MotionSensorImpl({
-    required int value,
+    int? value,
     required int status,
     required bool enabled,
   }) : super._(
@@ -80,12 +82,12 @@ class _MotionSensorImpl extends MotionSensor {
 
   @override
   MotionSensor copyWith({
-    int? value,
+    Object? value = _Undefined,
     int? status,
     bool? enabled,
   }) {
     return MotionSensor(
-      value: value ?? this.value,
+      value: value is int? ? value : this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,
     );

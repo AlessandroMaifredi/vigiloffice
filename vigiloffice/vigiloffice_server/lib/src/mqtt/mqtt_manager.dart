@@ -6,6 +6,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:vigiloffice_server/src/endpoints/device_endpoint.dart';
 import 'package:vigiloffice_server/src/endpoints/lamps_endpoint.dart';
 
+import '../endpoints/parkings_endpoint.dart';
 import '../endpoints/hvacs_endpoint.dart';
 import '../generated/protocol.dart';
 
@@ -30,6 +31,7 @@ class MqttManager {
   int timesConnected = 0;
   static final LampsEndpoint _lampsEndpoint = LampsEndpoint();
   static final HvacsEndpoint _hvacEndpoint = HvacsEndpoint();
+  static final ParkingsEndpoint _parkingEndopoint = ParkingsEndpoint();
   static final DeviceEndpoint _deviceEndpoint = DeviceEndpoint();
 
   MqttManager._internal();
@@ -55,27 +57,31 @@ class MqttManager {
   ///
   /// Throws an [MqttException] if the connection fails.
   Future<void> connect(String username, String password) async {
-    if (_client != null &&
-        _client?.connectionStatus != null &&
-        _client!.connectionStatus!.state == MqttConnectionState.connected) {
-      return;
-    }
-    _client = _client ?? MqttServerClient(_brokerUrl, _clientId);
-    _client!.logging(on: false);
-    _client!.onConnected = _onConnected;
-    _client!.onSubscribeFail = _onSubscribeFail;
-    _client!.onAutoReconnected = _onAutoReconnected;
-    _client!.autoReconnect = true;
-
     try {
-      await _client!.connect(username, password);
-    } catch (e) {
-      timesConnected++;
-      if (timesConnected < maxReconnectAttempts) {
-        await connect(username, password);
-      } else {
-        rethrow;
+      if (_client != null &&
+          _client?.connectionStatus != null &&
+          _client!.connectionStatus!.state == MqttConnectionState.connected) {
+        return;
       }
+      _client = _client ?? MqttServerClient(_brokerUrl, _clientId);
+      _client!.logging(on: false);
+      _client!.onConnected = _onConnected;
+      _client!.onSubscribeFail = _onSubscribeFail;
+      _client!.onAutoReconnected = _onAutoReconnected;
+      _client!.autoReconnect = true;
+
+      try {
+        await _client!.connect(username, password);
+      } catch (e) {
+        timesConnected++;
+        if (timesConnected < maxReconnectAttempts) {
+          await connect(username, password);
+        } else {
+          rethrow;
+        }
+      }
+    } catch (e) {
+      throw MqttManagerException(message: e.toString());
     }
   }
 
@@ -134,6 +140,33 @@ class MqttManager {
 
 // === END HVAC ===
 
+// === PARKING ===
+  /// Controls the specified [parking].
+  ///
+  /// This method sends a control message to the specified [parking] to control its state.
+  /// Throws an [Exception] if the MQTT client is not initialized.
+  void controlParking(Parking parking) {
+    ensureInitialized();
+    // Handle the logic to control the hvac
+    MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+    builder.addString(jsonEncode(parking.toJson()));
+    _client!.publishMessage(
+        "vigiloffice/${DeviceType.hvac}s/${parking.macAddress}/control",
+        MqttQos.atLeastOnce,
+        builder.payload!);
+  }
+
+  void _handleParkingStatus(String macAddress, String payload) async {
+    InternalSession session = await Serverpod.instance.createSession();
+    Map<String, dynamic> data = jsonDecode(payload);
+    Parking parking = Parking.fromJson(data);
+    parking.lastUpdate = DateTime.now();
+    await _parkingEndopoint.updateParking(session, parking);
+    session.close();
+  }
+
+// === END PARKING ===
+
   void _handleRegisterMessage(String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
     Map<String, dynamic> data = jsonDecode(payload);
@@ -159,29 +192,34 @@ class MqttManager {
   void _onConnected() async {
     InternalSession session = await Serverpod.instance.createSession();
     // Handle the logic when the connection to the broker is established
+    try {
+      session.log('Connected to the MQTT broker.');
 
-    session.log('Connected to the MQTT broker.');
+      _setupConnection();
+      session.log("Subscribed to topics");
 
-    _setupConnection();
-    session.log("Subscribed to topics");
+      //TODO: move message configuration to a dedicated endpoint
+      final Map<String, dynamic> welcomeMessage = {
+        "apiServer":
+            "${Serverpod.instance.config.apiServer.publicHost}:${Serverpod.instance.config.apiServer.publicPort}",
+        "webServer":
+            "${Serverpod.instance.config.webServer!.publicHost}:${Serverpod.instance.config.webServer!.publicPort}",
+        "registerTopic": "vigiloffice/register",
+      };
+      final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+      builder.addString(jsonEncode(welcomeMessage));
+      _client!.publishMessage(
+          "vigiloffice/welcome", MqttQos.atLeastOnce, builder.payload!,
+          retain: true);
 
-    //TODO: move message configuration to a dedicated endpoint
-    final Map<String, dynamic> welcomeMessage = {
-      "apiServer":
-          "${Serverpod.instance.config.apiServer.publicHost}:${Serverpod.instance.config.apiServer.publicPort}",
-      "webServer":
-          "${Serverpod.instance.config.webServer!.publicHost}:${Serverpod.instance.config.webServer!.publicPort}",
-      "registerTopic": "vigiloffice/register",
-    };
-    final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
-    builder.addString(jsonEncode(welcomeMessage));
-    _client!.publishMessage(
-        "vigiloffice/welcome", MqttQos.atLeastOnce, builder.payload!,
-        retain: true);
+      session.log("Welcome message published.");
 
-    session.log("Welcome message published.");
-
-    session.close();
+      session.close();
+    } catch (e, s) {
+      session.log('Error: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+      throw MqttManagerException(message: e.toString());
+    }
   }
 
   void _setupConnection() {
@@ -196,42 +234,51 @@ class MqttManager {
     _client!.updates!
         .listen((List<MqttReceivedMessage<MqttMessage>> messages) async {
       InternalSession msgSession = await Serverpod.instance.createSession();
-      for (MqttReceivedMessage<MqttMessage> message in messages) {
-        final MqttPublishMessage receivedMessage =
-            message.payload as MqttPublishMessage;
-        final String topic = message.topic;
-        final String payload = MqttPublishPayload.bytesToStringAsString(
-            receivedMessage.payload.message);
-        final List<String> paths = topic.split('/');
+      try {
+        for (MqttReceivedMessage<MqttMessage> message in messages) {
+          final MqttPublishMessage receivedMessage =
+              message.payload as MqttPublishMessage;
+          final String topic = message.topic;
+          final String payload = MqttPublishPayload.bytesToStringAsString(
+              receivedMessage.payload.message);
+          final List<String> paths = topic.split('/');
 
-        // Handle the incoming message logic here
-        if (topic == 'vigiloffice/welcome') {
-          msgSession.log('Received welcome message: $payload');
-        } else if (topic == "vigiloffice/register") {
-          msgSession.log('Received generic register message: $payload');
-          _handleRegisterMessage(payload);
-        } else if (topic.startsWith("vigiloffice/register/")) {
-          final String macAddress = paths[2];
-          msgSession
-              .log('Received device ($macAddress) register message: $payload');
-        } else if (topic.endsWith("/status")) {
-          msgSession.log('Received status message: $payload');
-          DeviceType type =
-              DeviceType.fromJson(paths[1].substring(0, paths[1].length - 1));
-          switch (type) {
-            case DeviceType.lamp:
-              _handleLampStatus(paths[2], payload);
-              break;
-            case DeviceType.hvac:
-              _handleHvacStatus(paths[2], payload);
-              break;
+          // Handle the incoming message logic here
+          if (topic == 'vigiloffice/welcome') {
+            msgSession.log('Received welcome message: $payload');
+          } else if (topic == "vigiloffice/register") {
+            msgSession.log('Received generic register message: $payload');
+            _handleRegisterMessage(payload);
+          } else if (topic.startsWith("vigiloffice/register/")) {
+            final String macAddress = paths[2];
+            msgSession.log(
+                'Received device ($macAddress) register message: $payload');
+          } else if (topic.endsWith("/status")) {
+            msgSession.log('Received status message: $payload');
+            DeviceType type =
+                DeviceType.fromJson(paths[1].substring(0, paths[1].length - 1));
+            String macAddress = paths[2];
+            switch (type) {
+              case DeviceType.lamp:
+                _handleLampStatus(macAddress, payload);
+                break;
+              case DeviceType.hvac:
+                _handleHvacStatus(macAddress, payload);
+                break;
+              case DeviceType.parking:
+                _handleParkingStatus(macAddress, payload);
+            }
+          } else {
+            // Handle unknown topic
+            print('Unknown topic: $topic');
           }
-        } else {
-          // Handle unknown topic
-          print('Unknown topic: $topic');
         }
+        msgSession.close();
+      } catch (e, s) {
+        msgSession.log('Error: $e',
+            level: LogLevel.error, exception: e, stackTrace: s);
+        throw MqttManagerException(message: e.toString());
       }
-      msgSession.close();
     });
   }
 

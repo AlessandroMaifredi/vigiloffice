@@ -9,7 +9,7 @@
 # Configuration for the main API server.
 apiServer:
   port: 8080
-  publicHost: "192.168.1.114"
+  publicHost: "149.132.182.225"
   publicPort: 8080
   publicScheme: http
 
@@ -23,7 +23,7 @@ insightsServer:
 # Configuration for the web server.
 webServer:
   port: 8082
-  publicHost: "192.168.1.114"
+  publicHost: "149.132.182.225"
   publicPort: 8082
   publicScheme: http
 

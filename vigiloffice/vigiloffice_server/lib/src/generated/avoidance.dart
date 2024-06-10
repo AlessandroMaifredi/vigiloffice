@@ -10,43 +10,36 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 
-abstract class RGBLed
+abstract class AvoidanceSensor
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
-  RGBLed._({
-    this.value,
+  AvoidanceSensor._({
     required this.status,
     required this.enabled,
   });
 
-  factory RGBLed({
-    int? value,
+  factory AvoidanceSensor({
     required int status,
     required bool enabled,
-  }) = _RGBLedImpl;
+  }) = _AvoidanceSensorImpl;
 
-  factory RGBLed.fromJson(Map<String, dynamic> jsonSerialization) {
-    return RGBLed(
-      value: jsonSerialization['value'] as int?,
+  factory AvoidanceSensor.fromJson(Map<String, dynamic> jsonSerialization) {
+    return AvoidanceSensor(
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
     );
   }
 
-  int? value;
-
   int status;
 
   bool enabled;
 
-  RGBLed copyWith({
-    int? value,
+  AvoidanceSensor copyWith({
     int? status,
     bool? enabled,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
-      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
     };
@@ -55,7 +48,6 @@ abstract class RGBLed
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
     };
@@ -67,27 +59,21 @@ abstract class RGBLed
   }
 }
 
-class _Undefined {}
-
-class _RGBLedImpl extends RGBLed {
-  _RGBLedImpl({
-    int? value,
+class _AvoidanceSensorImpl extends AvoidanceSensor {
+  _AvoidanceSensorImpl({
     required int status,
     required bool enabled,
   }) : super._(
-          value: value,
           status: status,
           enabled: enabled,
         );
 
   @override
-  RGBLed copyWith({
-    Object? value = _Undefined,
+  AvoidanceSensor copyWith({
     int? status,
     bool? enabled,
   }) {
-    return RGBLed(
-      value: value is int? ? value : this.value,
+    return AvoidanceSensor(
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,
     );

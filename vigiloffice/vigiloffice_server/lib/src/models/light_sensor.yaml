@@ -1,7 +1,7 @@
 class: LightSensor
 
 fields:
-  value: int
+  value: int?
   status: int
   enabled: bool
   interval: int

@@ -12,9 +12,11 @@ import 'package:serverpod/serverpod.dart' as _i1;
 import '../endpoints/device_endpoint.dart' as _i2;
 import '../endpoints/hvacs_endpoint.dart' as _i3;
 import '../endpoints/lamps_endpoint.dart' as _i4;
-import 'package:vigiloffice_server/src/generated/device.dart' as _i5;
-import 'package:vigiloffice_server/src/generated/hvac.dart' as _i6;
-import 'package:vigiloffice_server/src/generated/lamp.dart' as _i7;
+import '../endpoints/parkings_endpoint.dart' as _i5;
+import 'package:vigiloffice_server/src/generated/device.dart' as _i6;
+import 'package:vigiloffice_server/src/generated/hvac.dart' as _i7;
+import 'package:vigiloffice_server/src/generated/lamp.dart' as _i8;
+import 'package:vigiloffice_server/src/generated/parking.dart' as _i9;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -38,6 +40,12 @@ class Endpoints extends _i1.EndpointDispatch {
           'lamps',
           null,
         ),
+      'parkings': _i5.ParkingsEndpoint()
+        ..initialize(
+          server,
+          'parkings',
+          null,
+        ),
     };
     connectors['device'] = _i1.EndpointConnector(
       name: 'device',
@@ -48,7 +56,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'device': _i1.ParameterDescription(
               name: 'device',
-              type: _i1.getType<_i5.Device>(),
+              type: _i1.getType<_i6.Device>(),
               nullable: false,
             )
           },
@@ -84,7 +92,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'device': _i1.ParameterDescription(
               name: 'device',
-              type: _i1.getType<_i5.Device>(),
+              type: _i1.getType<_i6.Device>(),
               nullable: false,
             )
           },
@@ -102,7 +110,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'device': _i1.ParameterDescription(
               name: 'device',
-              type: _i1.getType<_i5.Device>(),
+              type: _i1.getType<_i6.Device>(),
               nullable: false,
             )
           },
@@ -126,7 +134,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'hvac': _i1.ParameterDescription(
               name: 'hvac',
-              type: _i1.getType<_i6.Hvac>(),
+              type: _i1.getType<_i7.Hvac>(),
               nullable: false,
             )
           },
@@ -162,7 +170,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'hvac': _i1.ParameterDescription(
               name: 'hvac',
-              type: _i1.getType<_i6.Hvac>(),
+              type: _i1.getType<_i7.Hvac>(),
               nullable: false,
             )
           },
@@ -180,7 +188,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'hvac': _i1.ParameterDescription(
               name: 'hvac',
-              type: _i1.getType<_i6.Hvac>(),
+              type: _i1.getType<_i7.Hvac>(),
               nullable: false,
             )
           },
@@ -198,7 +206,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'hvac': _i1.ParameterDescription(
               name: 'hvac',
-              type: _i1.getType<_i6.Hvac>(),
+              type: _i1.getType<_i7.Hvac>(),
               nullable: false,
             )
           },
@@ -222,7 +230,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i7.Lamp>(),
+              type: _i1.getType<_i8.Lamp>(),
               nullable: false,
             )
           },
@@ -258,7 +266,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i7.Lamp>(),
+              type: _i1.getType<_i8.Lamp>(),
               nullable: false,
             )
           },
@@ -276,7 +284,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i7.Lamp>(),
+              type: _i1.getType<_i8.Lamp>(),
               nullable: false,
             )
           },
@@ -294,7 +302,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'lamp': _i1.ParameterDescription(
               name: 'lamp',
-              type: _i1.getType<_i7.Lamp>(),
+              type: _i1.getType<_i8.Lamp>(),
               nullable: false,
             )
           },
@@ -305,6 +313,102 @@ class Endpoints extends _i1.EndpointDispatch {
               (endpoints['lamps'] as _i4.LampsEndpoint).controlLamp(
             session,
             params['lamp'],
+          ),
+        ),
+      },
+    );
+    connectors['parkings'] = _i1.EndpointConnector(
+      name: 'parkings',
+      endpoint: endpoints['parkings']!,
+      methodConnectors: {
+        'createParking': _i1.MethodConnector(
+          name: 'createParking',
+          params: {
+            'parking': _i1.ParameterDescription(
+              name: 'parking',
+              type: _i1.getType<_i9.Parking>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['parkings'] as _i5.ParkingsEndpoint).createParking(
+            session,
+            params['parking'],
+          ),
+        ),
+        'readParking': _i1.MethodConnector(
+          name: 'readParking',
+          params: {
+            'parkingMac': _i1.ParameterDescription(
+              name: 'parkingMac',
+              type: _i1.getType<String>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['parkings'] as _i5.ParkingsEndpoint).readParking(
+            session,
+            params['parkingMac'],
+          ),
+        ),
+        'updateParking': _i1.MethodConnector(
+          name: 'updateParking',
+          params: {
+            'parking': _i1.ParameterDescription(
+              name: 'parking',
+              type: _i1.getType<_i9.Parking>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['parkings'] as _i5.ParkingsEndpoint).updateParking(
+            session,
+            params['parking'],
+          ),
+        ),
+        'deleteParking': _i1.MethodConnector(
+          name: 'deleteParking',
+          params: {
+            'parking': _i1.ParameterDescription(
+              name: 'parking',
+              type: _i1.getType<_i9.Parking>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['parkings'] as _i5.ParkingsEndpoint).deleteParking(
+            session,
+            params['parking'],
+          ),
+        ),
+        'controlParking': _i1.MethodConnector(
+          name: 'controlParking',
+          params: {
+            'parking': _i1.ParameterDescription(
+              name: 'parking',
+              type: _i1.getType<_i9.Parking>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['parkings'] as _i5.ParkingsEndpoint).controlParking(
+            session,
+            params['parking'],
           ),
         ),
       },

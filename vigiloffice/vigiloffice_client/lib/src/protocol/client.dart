@@ -13,7 +13,8 @@ import 'dart:async' as _i2;
 import 'package:vigiloffice_client/src/protocol/device.dart' as _i3;
 import 'package:vigiloffice_client/src/protocol/hvac.dart' as _i4;
 import 'package:vigiloffice_client/src/protocol/lamp.dart' as _i5;
-import 'protocol.dart' as _i6;
+import 'package:vigiloffice_client/src/protocol/parking.dart' as _i6;
+import 'protocol.dart' as _i7;
 
 /// Endpoint for managing devices.
 /// {@category Endpoint}
@@ -190,6 +191,69 @@ class EndpointLamps extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for managing parkings.
+/// {@category Endpoint}
+class EndpointParkings extends _i1.EndpointRef {
+  EndpointParkings(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'parkings';
+
+  /// Creates a new parking.
+  ///
+  /// Returns the created parking.
+  _i2.Future<_i6.Parking> createParking(_i6.Parking parking) =>
+      caller.callServerEndpoint<_i6.Parking>(
+        'parkings',
+        'createParking',
+        {'parking': parking},
+      );
+
+  /// Reads a parking by its MAC address.
+  ///
+  /// Returns the parking with the specified MAC address, or `null` if not found.
+  _i2.Future<_i6.Parking?> readParking(String parkingMac) =>
+      caller.callServerEndpoint<_i6.Parking?>(
+        'parkings',
+        'readParking',
+        {'parkingMac': parkingMac},
+      );
+
+  /// Updates an existing parking on the database.
+  ///
+  /// Does not update the parking on the MQTT broker. See [MqttManager.controlParking] for that.
+  ///
+  /// Returns the updated parking.
+  _i2.Future<_i6.Parking> updateParking(_i6.Parking parking) =>
+      caller.callServerEndpoint<_i6.Parking>(
+        'parkings',
+        'updateParking',
+        {'parking': parking},
+      );
+
+  /// Deletes a parking.
+  ///
+  /// Returns the deleted parking.
+  _i2.Future<_i6.Parking> deleteParking(_i6.Parking parking) =>
+      caller.callServerEndpoint<_i6.Parking>(
+        'parkings',
+        'deleteParking',
+        {'parking': parking},
+      );
+
+  /// Updates the state of a parking on the database and sends the new state to the MQTT broker.
+  ///
+  /// See [updateParking] for updating the parking on the database without sending the new state to the MQTT broker.
+  ///
+  /// Returns the updated parking.
+  _i2.Future<_i6.Parking> controlParking(_i6.Parking parking) =>
+      caller.callServerEndpoint<_i6.Parking>(
+        'parkings',
+        'controlParking',
+        {'parking': parking},
+      );
+}
+
 class Client extends _i1.ServerpodClient {
   Client(
     String host, {
@@ -205,7 +269,7 @@ class Client extends _i1.ServerpodClient {
     Function(_i1.MethodCallContext)? onSucceededCall,
   }) : super(
           host,
-          _i6.Protocol(),
+          _i7.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -216,6 +280,7 @@ class Client extends _i1.ServerpodClient {
     device = EndpointDevice(this);
     hvacs = EndpointHvacs(this);
     lamps = EndpointLamps(this);
+    parkings = EndpointParkings(this);
   }
 
   late final EndpointDevice device;
@@ -224,11 +289,14 @@ class Client extends _i1.ServerpodClient {
 
   late final EndpointLamps lamps;
 
+  late final EndpointParkings parkings;
+
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
         'device': device,
         'hvacs': hvacs,
         'lamps': lamps,
+        'parkings': parkings,
       };
 
   @override

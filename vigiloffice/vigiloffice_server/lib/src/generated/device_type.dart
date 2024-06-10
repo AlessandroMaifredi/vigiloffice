@@ -12,7 +12,8 @@ import 'package:serverpod/serverpod.dart' as _i1;
 
 enum DeviceType implements _i1.SerializableModel {
   lamp,
-  hvac;
+  hvac,
+  parking;
 
   static DeviceType fromJson(String name) {
     switch (name) {
@@ -20,6 +21,8 @@ enum DeviceType implements _i1.SerializableModel {
         return lamp;
       case 'hvac':
         return hvac;
+      case 'parking':
+        return parking;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DeviceType"');

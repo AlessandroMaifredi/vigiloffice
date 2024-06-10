@@ -8,56 +8,53 @@
 // ignore_for_file: type_literal_in_constant_pattern
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod/serverpod.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class RGBLed
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
-  RGBLed._({
-    this.value,
+abstract class FloodingSensor implements _i1.SerializableModel {
+  FloodingSensor._({
     required this.status,
     required this.enabled,
+    required this.interval,
+    required this.highThreshold,
   });
 
-  factory RGBLed({
-    int? value,
+  factory FloodingSensor({
     required int status,
     required bool enabled,
-  }) = _RGBLedImpl;
+    required int interval,
+    required int highThreshold,
+  }) = _FloodingSensorImpl;
 
-  factory RGBLed.fromJson(Map<String, dynamic> jsonSerialization) {
-    return RGBLed(
-      value: jsonSerialization['value'] as int?,
+  factory FloodingSensor.fromJson(Map<String, dynamic> jsonSerialization) {
+    return FloodingSensor(
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
+      interval: jsonSerialization['interval'] as int,
+      highThreshold: jsonSerialization['highThreshold'] as int,
     );
   }
-
-  int? value;
 
   int status;
 
   bool enabled;
 
-  RGBLed copyWith({
-    int? value,
+  int interval;
+
+  int highThreshold;
+
+  FloodingSensor copyWith({
     int? status,
     bool? enabled,
+    int? interval,
+    int? highThreshold,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
-      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
-    };
-  }
-
-  @override
-  Map<String, dynamic> toJsonForProtocol() {
-    return {
-      if (value != null) 'value': value,
-      'status': status,
-      'enabled': enabled,
+      'interval': interval,
+      'highThreshold': highThreshold,
     };
   }
 
@@ -67,29 +64,31 @@ abstract class RGBLed
   }
 }
 
-class _Undefined {}
-
-class _RGBLedImpl extends RGBLed {
-  _RGBLedImpl({
-    int? value,
+class _FloodingSensorImpl extends FloodingSensor {
+  _FloodingSensorImpl({
     required int status,
     required bool enabled,
+    required int interval,
+    required int highThreshold,
   }) : super._(
-          value: value,
           status: status,
           enabled: enabled,
+          interval: interval,
+          highThreshold: highThreshold,
         );
 
   @override
-  RGBLed copyWith({
-    Object? value = _Undefined,
+  FloodingSensor copyWith({
     int? status,
     bool? enabled,
+    int? interval,
+    int? highThreshold,
   }) {
-    return RGBLed(
-      value: value is int? ? value : this.value,
+    return FloodingSensor(
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,
+      interval: interval ?? this.interval,
+      highThreshold: highThreshold ?? this.highThreshold,
     );
   }
 }

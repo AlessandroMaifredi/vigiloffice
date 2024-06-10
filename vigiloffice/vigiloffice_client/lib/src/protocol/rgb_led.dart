@@ -12,26 +12,26 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class RGBLed implements _i1.SerializableModel {
   RGBLed._({
-    required this.value,
+    this.value,
     required this.status,
     required this.enabled,
   });
 
   factory RGBLed({
-    required int value,
+    int? value,
     required int status,
     required bool enabled,
   }) = _RGBLedImpl;
 
   factory RGBLed.fromJson(Map<String, dynamic> jsonSerialization) {
     return RGBLed(
-      value: jsonSerialization['value'] as int,
+      value: jsonSerialization['value'] as int?,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
     );
   }
 
-  int value;
+  int? value;
 
   int status;
 
@@ -45,7 +45,7 @@ abstract class RGBLed implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'value': value,
+      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
     };
@@ -57,9 +57,11 @@ abstract class RGBLed implements _i1.SerializableModel {
   }
 }
 
+class _Undefined {}
+
 class _RGBLedImpl extends RGBLed {
   _RGBLedImpl({
-    required int value,
+    int? value,
     required int status,
     required bool enabled,
   }) : super._(
@@ -70,12 +72,12 @@ class _RGBLedImpl extends RGBLed {
 
   @override
   RGBLed copyWith({
-    int? value,
+    Object? value = _Undefined,
     int? status,
     bool? enabled,
   }) {
     return RGBLed(
-      value: value ?? this.value,
+      value: value is int? ? value : this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,
     );

@@ -12,14 +12,14 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class FlameSensor implements _i1.SerializableModel {
   FlameSensor._({
-    required this.value,
+    this.value,
     required this.status,
     required this.enabled,
     required this.interval,
   });
 
   factory FlameSensor({
-    required int value,
+    int? value,
     required int status,
     required bool enabled,
     required int interval,
@@ -27,14 +27,14 @@ abstract class FlameSensor implements _i1.SerializableModel {
 
   factory FlameSensor.fromJson(Map<String, dynamic> jsonSerialization) {
     return FlameSensor(
-      value: jsonSerialization['value'] as int,
+      value: jsonSerialization['value'] as int?,
       status: jsonSerialization['status'] as int,
       enabled: jsonSerialization['enabled'] as bool,
       interval: jsonSerialization['interval'] as int,
     );
   }
 
-  int value;
+  int? value;
 
   int status;
 
@@ -51,7 +51,7 @@ abstract class FlameSensor implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'value': value,
+      if (value != null) 'value': value,
       'status': status,
       'enabled': enabled,
       'interval': interval,
@@ -64,9 +64,11 @@ abstract class FlameSensor implements _i1.SerializableModel {
   }
 }
 
+class _Undefined {}
+
 class _FlameSensorImpl extends FlameSensor {
   _FlameSensorImpl({
-    required int value,
+    int? value,
     required int status,
     required bool enabled,
     required int interval,
@@ -79,13 +81,13 @@ class _FlameSensorImpl extends FlameSensor {
 
   @override
   FlameSensor copyWith({
-    int? value,
+    Object? value = _Undefined,
     int? status,
     bool? enabled,
     int? interval,
   }) {
     return FlameSensor(
-      value: value ?? this.value,
+      value: value is int? ? value : this.value,
       status: status ?? this.status,
       enabled: enabled ?? this.enabled,
       interval: interval ?? this.interval,

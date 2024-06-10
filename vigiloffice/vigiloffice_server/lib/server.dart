@@ -1,5 +1,4 @@
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/constants.dart';
 
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
@@ -7,9 +6,11 @@ import 'src/mqtt/mqtt_manager.dart';
 import 'src/web/routes/devices_route.dart';
 import 'src/web/routes/hvacs_route.dart';
 import 'src/web/routes/lamps_route.dart';
+import 'src/web/routes/parkings_route.dart';
 import 'src/web/routes/root.dart';
 import 'src/web/routes/single_hvac_route.dart';
 import 'src/web/routes/single_lamp_route.dart';
+import 'src/web/routes/single_parking_route.dart';
 
 // This is the starting point of your Serverpod server. In most cases, you will
 // only need to make additions to this file if you add future calls,  are
@@ -17,9 +18,6 @@ import 'src/web/routes/single_lamp_route.dart';
 
 void run(List<String> args) async {
   // Initialize Serverpod and connect it with your generated code.
-  for (String arg in args) {
-    print(arg);
-  }
   final pod = Serverpod(
     args,
     Protocol(),
@@ -49,6 +47,9 @@ void run(List<String> args) async {
       case DeviceType.hvac:
         singleRoute = SingleHvacRoute();
         listRoute = HvacsRoute();
+      case DeviceType.parking:
+        singleRoute = SingleParkingRoute();
+        listRoute = ParkingsRoute();
     }
     pod.webServer.addRoute(listRoute, '/devices/${type.name}s');
     pod.webServer.addRoute(listRoute, '/devices/${type.name}s/');
@@ -63,10 +64,14 @@ void run(List<String> args) async {
   try {
     await mqttManager.connect(
         pod.getPassword('mqttUsername')!, pod.getPassword('mqttPassword')!);
-  } catch (e) {
-    print('Failed to connect to the broker.');
+    // Start the server.
+    await pod.start();
+  } catch (e, s) {
+    pod.createSession().then((value) async {
+      value.log("MQTT connection failed",
+          exception: e, level: LogLevel.fatal, stackTrace: s);
+      await value.close();
+      await pod.shutdown();
+    });
   }
-
-  // Start the server.
-  await pod.start();
 }
