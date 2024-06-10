@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/influxdb/influxdb_manager.dart';
 import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
 
 import '../constants.dart';
@@ -57,6 +58,7 @@ class ParkingsEndpoint extends Endpoint {
       }
       parking.id = oldParking.id;
     }
+    InfluxDBManager().writeStatus(data: parking, type: DeviceType.parking);
     return Parking.db.updateRow(session, parking);
   }
 

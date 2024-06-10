@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:vigiloffice_server/src/constants.dart';
+import 'package:vigiloffice_server/src/influxdb/influxdb_manager.dart';
 import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
 
 import '../generated/protocol.dart';
@@ -57,6 +58,7 @@ class LampsEndpoint extends Endpoint {
       }
       lamp.id = oldLamp.id;
     }
+    InfluxDBManager().writeStatus(data: lamp, type: DeviceType.lamp);
     return Lamp.db.updateRow(session, lamp);
   }
 

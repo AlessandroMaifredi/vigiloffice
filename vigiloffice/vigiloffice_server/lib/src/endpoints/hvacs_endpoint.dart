@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/influxdb/influxdb_manager.dart';
 import 'package:vigiloffice_server/src/mqtt/mqtt_manager.dart';
 
 import '../constants.dart';
@@ -57,6 +58,7 @@ class HvacsEndpoint extends Endpoint {
       }
       hvac.id = oldHvac.id;
     }
+    InfluxDBManager().writeStatus(data: hvac, type: DeviceType.hvac);
     return Hvac.db.updateRow(session, hvac);
   }
 

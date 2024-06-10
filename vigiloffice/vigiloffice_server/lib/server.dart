@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/influxdb/influxdb_manager.dart';
 import 'package:vigiloffice_server/src/web/routes/mtm/mtm_devices_route.dart';
 import 'package:vigiloffice_server/src/web/routes/mtm/mtm_hvacs_route.dart';
 
@@ -33,6 +34,9 @@ void run(List<String> args) async {
   );
 
   final MqttManager mqttManager = MqttManager();
+
+  final InfluxDBManager influxDBManager = InfluxDBManager();
+
   // If you are using any future calls, they need to be registered here.
   // pod.registerFutureCall(ExampleFutureCall(), 'exampleFutureCall');
 
@@ -104,6 +108,20 @@ void run(List<String> args) async {
   try {
     await mqttManager.connect(
         pod.getPassword('mqttUsername')!, pod.getPassword('mqttPassword')!);
+    try{
+    await influxDBManager.connect(InfluxDBConnectionParameters(
+      url: pod.getPassword('influxDbUrl')!,
+      token: pod.getPassword('influxDbToken')!,
+      org: pod.getPassword('influxDbOrg')!,
+      bucket: pod.getPassword('influxDbBucket')!,
+    ));
+    } catch (e, s) {
+      pod.createSession().then((value) async {
+        value.log('Failed to connect to InfluxDB: $e',
+            level: LogLevel.error, exception: e, stackTrace: s);
+        await value.close();
+      });
+    }
     // Start the server.
     await pod.start();
   } catch (e, s) {
