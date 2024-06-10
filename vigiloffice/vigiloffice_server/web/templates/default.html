@@ -21,12 +21,23 @@
         <ul class="navbar-nav ml-auto">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Manage Devices
+              Devices
             </a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="/devices/">All devices</a></li>
               {{#types}}
               <li><a class="dropdown-item" href="/devices/{{.}}s/">{{.}}s</a></li>
+              {{/types}}
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Status
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/status/">All status</a></li>
+              {{#types}}
+              <li><a class="dropdown-item" href="/status/{{.}}s/">{{.}}s</a></li>
               {{/types}}
             </ul>
           </li>
@@ -41,8 +52,8 @@
     <h1>VigilOffice</h1>
     <p class="lead">Welcome to VigilOffice</p>
     <div class="text-center">
-      <a class="btn btn-primary" href="/devices/">Manage Devices</a>
-      <a class="btn btn-secondary" href="/alarm/">Manage Alarm</a>
+      <a class="btn btn-primary" href="/devices/">Devices</a>
+      <a class="btn btn-secondary" href="/status/">Nodes status</a> <!-- TODO: add all status page -->
     </div>
   </div>
   <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'></script>

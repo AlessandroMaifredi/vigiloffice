@@ -1,25 +1,27 @@
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/influxdb/influxdb_manager.dart';
-import 'package:vigiloffice_server/src/web/routes/mtm/mtm_devices_route.dart';
-import 'package:vigiloffice_server/src/web/routes/mtm/mtm_hvacs_route.dart';
 
 import 'src/constants.dart';
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
+import 'src/influxdb/influxdb_manager.dart';
 import 'src/mqtt/mqtt_manager.dart';
 import 'src/web/routes/devices_route.dart';
 import 'src/web/routes/hvacs_route.dart';
 import 'src/web/routes/lamps_route.dart';
+import 'src/web/routes/mtm/mtm_devices_route.dart';
+import 'src/web/routes/mtm/mtm_hvacs_route.dart';
 import 'src/web/routes/mtm/mtm_lamps_route.dart';
 import 'src/web/routes/mtm/mtm_parkings_route.dart';
 import 'src/web/routes/mtm/mtm_single_hvac_route.dart';
 import 'src/web/routes/mtm/mtm_single_lamp_route.dart';
 import 'src/web/routes/mtm/mtm_single_parking_route.dart';
+import 'src/web/routes/mtm/mtm_status_route.dart';
 import 'src/web/routes/parkings_route.dart';
 import 'src/web/routes/root.dart';
 import 'src/web/routes/single_hvac_route.dart';
 import 'src/web/routes/single_lamp_route.dart';
 import 'src/web/routes/single_parking_route.dart';
+import 'src/web/routes/status_route.dart';
 
 // This is the starting point of your Serverpod server. In most cases, you will
 // only need to make additions to this file if you add future calls,  are
@@ -45,6 +47,8 @@ void run(List<String> args) async {
   // Devices routes
   pod.webServer.addRoute(JsonDevicesRoute(), '$mtmPrefix/devices');
   pod.webServer.addRoute(JsonDevicesRoute(), '$mtmPrefix/devices/');
+  pod.webServer.addRoute(JsonStatusRoute(), '$mtmPrefix/status');
+  pod.webServer.addRoute(JsonStatusRoute(), '$mtmPrefix/status/');
   for (DeviceType type in DeviceType.values) {
     WidgetRoute statusListRoute = JsonDevicesRoute();
     WidgetRoute singleRoute = JsonDevicesRoute();
@@ -76,6 +80,8 @@ void run(List<String> args) async {
   pod.webServer.addRoute(RouteRoot(), '/index.html');
   pod.webServer.addRoute(DevicesRoute(), '/devices/');
   pod.webServer.addRoute(DevicesRoute(), '/devices');
+  pod.webServer.addRoute(StatusRoute(), '/status');
+  pod.webServer.addRoute(StatusRoute(), '/status/');
   for (DeviceType type in DeviceType.values) {
     WidgetRoute listRoute = DevicesRoute();
     WidgetRoute singleRoute = DevicesRoute();

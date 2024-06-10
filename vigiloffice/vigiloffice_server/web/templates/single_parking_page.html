@@ -42,7 +42,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
-                            Manage Devices
+                            Devices
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/devices/">All devices</a></li>
@@ -51,9 +51,19 @@
                             {{/types}}
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/alarm/">Manage Alarm</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Status
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/status/">All status</a></li>
+                            {{#types}}
+                            <li><a class="dropdown-item" href="/status/{{.}}s/">{{.}}s</a></li>
+                            {{/types}}
+                        </ul>
                     </li>
+                    
                 </ul>
             </div>
         </div>
@@ -112,13 +122,15 @@
                         <div class='form-group'>
                             <label>Status</label>
                             <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='avoidanceStatus' id='avoidanceEnabled'
-                                    value='true' {{#avoidanceIsEnabled}} checked {{/avoidanceIsEnabled}}>
+                                <input class='form-check-input' type='radio' name='avoidanceStatus'
+                                    id='avoidanceEnabled' value='true' {{#avoidanceIsEnabled}} checked
+                                    {{/avoidanceIsEnabled}}>
                                 <label class='form-check-label' for='avoidanceEnabled'>Enabled</label>
                             </div>
                             <div class='form-check'>
-                                <input class='form-check-input' type='radio' name='avoidanceStatus' id='avoidanceDisabled'
-                                    value='false' {{^avoidanceIsEnabled}} checked {{/avoidanceIsEnabled}}>
+                                <input class='form-check-input' type='radio' name='avoidanceStatus'
+                                    id='avoidanceDisabled' value='false' {{^avoidanceIsEnabled}} checked
+                                    {{/avoidanceIsEnabled}}>
                                 <label class='form-check-label' for='avoidanceDisabled'>Disabled</label>
                             </div>
                             <div class='invalid-feedback'>Please select a status.</div>
@@ -153,11 +165,14 @@
                         </div>
                         <div class='form-group'>
                             <label for='floodingSlider'>High water threshold</label>
-                            <span id='floodingSliderValue' class='d-block text-muted mb-2'>Current: {{parking.floodingSensor.highThreshold}}</span>
-                            <input type='range' class='form-control-range mb-3' id='floodingSlider' name='floodingSlider'
-                                min='0' max='100' value='{{parking.floodingSensor.highThreshold}}'>
-                            <input type='number' class='form-control' id='floodingSliderInput' name='floodingSliderInput'
-                                min='0' max='100' value='{{parking.floodingSensor.highThreshold}}'>
+                            <span id='floodingSliderValue' class='d-block text-muted mb-2'>Current:
+                                {{parking.floodingSensor.highThreshold}}</span>
+                            <input type='range' class='form-control-range mb-3' id='floodingSlider'
+                                name='floodingSlider' min='0' max='100'
+                                value='{{parking.floodingSensor.highThreshold}}'>
+                            <input type='number' class='form-control' id='floodingSliderInput'
+                                name='floodingSliderInput' min='0' max='100'
+                                value='{{parking.floodingSensor.highThreshold}}'>
                             <div class='invalid-feedback'>Please adjust the slider within the range of 0 to 100.</div>
                         </div>
                         <div class='form-group'>
@@ -275,7 +290,7 @@
                         $('input[name="' + radioValue + '"]').removeClass('is-invalid');
                     }
                 });
-                var dropdDownValues = ['flameDropdown', 'floodingStatus', 'avoidanceDropdown','rgbDropdown', 'alarmDropdown'];
+                var dropdDownValues = ['flameDropdown', 'floodingStatus', 'avoidanceDropdown', 'rgbDropdown', 'alarmDropdown'];
                 dropdDownValues.forEach(function (dropdown) {
                     if ($('#' + dropdown).val() == '') {
                         $('#' + dropdown).addClass('is-invalid');

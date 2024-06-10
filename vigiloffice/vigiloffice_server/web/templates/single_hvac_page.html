@@ -42,7 +42,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
-                            Manage Devices
+                            Devices
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/devices/">All devices</a></li>
@@ -51,9 +51,19 @@
                             {{/types}}
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/alarm/">Manage Alarm</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Status
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/status/">All status</a></li>
+                            {{#types}}
+                            <li><a class="dropdown-item" href="/status/{{.}}s/">{{.}}s</a></li>
+                            {{/types}}
+                        </ul>
                     </li>
+                    
                 </ul>
             </div>
         </div>

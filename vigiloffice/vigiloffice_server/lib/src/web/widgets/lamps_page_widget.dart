@@ -3,7 +3,7 @@ import 'package:serverpod/relic.dart';
 import '../../generated/protocol.dart';
 
 class LampsPageWidget extends Widget {
-  LampsPageWidget({required List<Lamp> lamps}) : super(name: 'single_type_page') {
+  LampsPageWidget({required List<Lamp> lamps}) : super(name: 'status_page') {
     final now = DateTime.now();
     values = {
       "types": DeviceType.values.map((e) => e.name).toList(),

@@ -4,7 +4,7 @@ import '../../generated/protocol.dart';
 
 class HvacsPageWidget extends Widget {
   HvacsPageWidget({required List<Hvac> hvacs})
-      : super(name: 'single_type_page') {
+      : super(name: 'status_page') {
     final now = DateTime.now();
     values = {
       "types": DeviceType.values.map((e) => e.name).toList(),
