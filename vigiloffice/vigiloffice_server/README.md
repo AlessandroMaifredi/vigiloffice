@@ -4,16 +4,16 @@
 
 To install Serverpod follow these steps:
 
-#### 1 Install Docker
+### 1 Install Docker
 
  Start by installing Docker on your machine. Docker is required to run Postgres and Redis. You can download Docker from the official website and follow the installation instructions for your operating system.
- See https://docs.docker.com/get-docker/
+ See <https://docs.docker.com/get-docker/>
 
-#### 2 Install Flutter
+### 2 Install Flutter
 
 To install Flutter, follow these steps:
 
-1. Start by downloading the Flutter SDK from the official website. Choose the version that matches your operating system. You will need Flutter version 3.7 or later. https://flutter.dev/docs/get-started/install
+1. Start by downloading the Flutter SDK from the official website. Choose the version that matches your operating system. You will need Flutter version 3.7 or later. <https://flutter.dev/docs/get-started/install>
 
 2. Extract the downloaded file to a location on your machine.
 
@@ -22,7 +22,7 @@ To install Flutter, follow these steps:
 4. Open a terminal or command prompt and run the following command to verify that Flutter is correctly installed:
 
     ```shell
-    $ flutter doctor
+    flutter doctor
     ```
 
     This command will check for any missing dependencies and provide guidance on how to install them.
@@ -33,7 +33,7 @@ To install Flutter, follow these steps:
 
 7. You are now ready to create and run Flutter applications on your machine.
 
-#### 3 Install Serverpod
+### 3 Install Serverpod
 
 To install Serverpod follow these steps:
 
@@ -42,18 +42,21 @@ To install Serverpod follow these steps:
 2. Run the following command to install Serverpod CLI using Dart Pub:
 
     ```shell
-    $ dart pub global activate serverpod_cli
+    dart pub global activate serverpod_cli
     ```
+
     This command will install the Serverpod CLI globally on your machine.
 
 3. Now test the installation by running:
 
     ```shell
-    $ serverpod 
+    serverpod 
     ```
+
     If everything is correctly configured, the help for the serverpod command is now displayed.
 
-#### 4 (Optional) Install VSCode Extension
+### 4 (Optional) Install VSCode Extension
+
 The Serverpod VS Code extension makes it easy to work with your Serverpod projects. It provides real-time diagnostics and syntax highlighting for model files in your project.
 
 Install the extension from the VS Code Marketplace: [Serverpod extension](https://marketplace.visualstudio.com/items?itemName=serverpod.serverpod)
@@ -66,7 +69,9 @@ Install the extension from the VS Code Marketplace: [Serverpod extension](https:
 
 3. Start Docker containers with `docker compose up --build --detach`.
 
-4. Run the server with `dart bin/main.dart --apply-migrations`.
+4. **Warning: Before continuing, ensure that you have the `passwords.yaml` file in the config folder. Failure to have this file will result in server shutting down.**
+
+5. Run the server with `dart bin/main.dart --apply-migrations`.
 
 ## Generate code after editing files
 
