@@ -30,3 +30,9 @@ class HvacsPageWidget extends Widget {
     };
   }
 }
+
+
+class JsonHvacsWidget extends WidgetJson {
+  JsonHvacsWidget({required List<Hvac> hvacs})
+      : super(object: hvacs.map((e) => e.toJson()).toList());
+}

@@ -1,11 +1,19 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/web/routes/mtm/mtm_devices_route.dart';
+import 'package:vigiloffice_server/src/web/routes/mtm/mtm_hvacs_route.dart';
 
+import 'src/constants.dart';
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
 import 'src/mqtt/mqtt_manager.dart';
 import 'src/web/routes/devices_route.dart';
 import 'src/web/routes/hvacs_route.dart';
 import 'src/web/routes/lamps_route.dart';
+import 'src/web/routes/mtm/mtm_lamps_route.dart';
+import 'src/web/routes/mtm/mtm_parkings_route.dart';
+import 'src/web/routes/mtm/mtm_single_hvac_route.dart';
+import 'src/web/routes/mtm/mtm_single_lamp_route.dart';
+import 'src/web/routes/mtm/mtm_single_parking_route.dart';
 import 'src/web/routes/parkings_route.dart';
 import 'src/web/routes/root.dart';
 import 'src/web/routes/single_hvac_route.dart';
@@ -28,11 +36,38 @@ void run(List<String> args) async {
   // If you are using any future calls, they need to be registered here.
   // pod.registerFutureCall(ExampleFutureCall(), 'exampleFutureCall');
 
-  //TODO: IMPLEMENT MTM API
-  //pod.webServer.addRoute(JsonDevicesRoot(), '$mtmPrefix/devices');
-  //pod.webServer.addRoute(JsonDevicesRoot(), '$mtmPrefix/devices/');
+  // Machine to machine (MTM) routes.
 
-  // Setup a default page at the web root.
+  // Devices routes
+  pod.webServer.addRoute(JsonDevicesRoute(), '$mtmPrefix/devices');
+  pod.webServer.addRoute(JsonDevicesRoute(), '$mtmPrefix/devices/');
+  for (DeviceType type in DeviceType.values) {
+    WidgetRoute statusListRoute = JsonDevicesRoute();
+    WidgetRoute singleRoute = JsonDevicesRoute();
+    switch (type) {
+      case DeviceType.lamp:
+        singleRoute = JsonSingleLampRoute();
+        statusListRoute = JsonLampsRoute();
+        break;
+      case DeviceType.hvac:
+        singleRoute = JsonSingleHvacRoute();
+        statusListRoute = JsonHvacsRoute();
+        break;
+      case DeviceType.parking:
+        singleRoute = JsonSingleParkingRoute();
+        statusListRoute = JsonParkingsRoute();
+        break;
+    }
+    pod.webServer.addRoute(statusListRoute, '$mtmPrefix/status/${type.name}s');
+    pod.webServer.addRoute(statusListRoute, '$mtmPrefix/status/${type.name}s/');
+    pod.webServer.addRoute(singleRoute, '$mtmPrefix/status/${type.name}s/*');
+    pod.webServer.addRoute(
+        JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s');
+    pod.webServer.addRoute(
+        JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s/');
+  }
+
+  // Human to machine (HTM) routes.
   pod.webServer.addRoute(RouteRoot(), '/');
   pod.webServer.addRoute(RouteRoot(), '/index.html');
   pod.webServer.addRoute(DevicesRoute(), '/devices/');
@@ -44,16 +79,21 @@ void run(List<String> args) async {
       case DeviceType.lamp:
         singleRoute = SingleLampRoute();
         listRoute = LampsRoute();
+        break;
       case DeviceType.hvac:
         singleRoute = SingleHvacRoute();
         listRoute = HvacsRoute();
+        break;
       case DeviceType.parking:
         singleRoute = SingleParkingRoute();
         listRoute = ParkingsRoute();
+        break;
     }
-    pod.webServer.addRoute(listRoute, '/devices/${type.name}s');
-    pod.webServer.addRoute(listRoute, '/devices/${type.name}s/');
-    pod.webServer.addRoute(singleRoute, '/devices/${type.name}s/*');
+    pod.webServer.addRoute(listRoute, '/status/${type.name}s');
+    pod.webServer.addRoute(listRoute, '/status/${type.name}s/');
+    pod.webServer.addRoute(singleRoute, '/status/${type.name}s/*');
+    pod.webServer.addRoute(DevicesRoute(type: type), '/devices/${type.name}s');
+    pod.webServer.addRoute(DevicesRoute(type: type), '/devices/${type.name}s/');
   }
   // Serve all files in the /static directory.
   pod.webServer.addRoute(

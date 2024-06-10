@@ -30,14 +30,14 @@ class SingleParkingRoute extends WidgetRoute {
         await ParkingsEndpoint().controlParking(session, parkingToUpdate);
         session.log('Updated parking: ${parkingToUpdate.macAddress}',
             level: LogLevel.debug);
-      } catch (e) {
+      } catch (e, s) {
         session.log('Failed to update parking: ${parking.macAddress}',
             level: LogLevel.error,
             exception: e,
-            stackTrace: StackTrace.current);
+            stackTrace: s);
       }
     } else if (request.method == 'DELETE') {
-      await DeviceEndpoint().deleteDevice(
+      await DevicesEndpoint().deleteDevice(
           session, Device(type: DeviceType.parking, macAddress: macAddress));
       await ParkingsEndpoint().deleteParking(session, parking);
       session.log('Deleted parking: ${parking.macAddress}',
@@ -64,26 +64,26 @@ extension ParkingUrlParser on Parking {
     Map<String, dynamic> params = _paramsMapFromEncodedUrl(unparsedParams);
     return Parking(
       macAddress: params['macAddress'],
-      id: int.tryParse(params['id']),
+      id: int.tryParse(params['id'] ?? ""),
       lastUpdate: params['lastUpdate'] != "null"
           ? DateTime.tryParse(params['lastUpdate'])
           : null,
       flameSensor: FlameSensor(
         enabled: params['flameStatus'] == 'true',
         status: int.parse(params['flameDropdown']),
-        value: int.parse(params['flameValue']),
+        value: int.tryParse(params['flameValue'] ?? ""),
         interval: int.parse(params['flameIntervalSliderInput']),
       ),
       rgbLed: RGBLed(
         enabled: params['rgbStatus'] == 'true',
         status: int.parse(params['rgbDropdown']),
-        value: int.parse(params['rgbValue']),
+        value: int.tryParse(params['rgbValue'] ?? ""),
       ),
       floodingSensor: FloodingSensor(
         enabled: params['floodingStatus'] == 'true',
         status: int.parse(params['floodingDropdown']),
         interval: int.parse(params['floodingIntervalSliderInput']),
-        highThreshold: int.parse(params['floodingHighThresholdSliderInput']),
+        highThreshold: int.parse(params['floodingSliderInput']),
       ),
       avoidanceSensor: AvoidanceSensor(
         enabled: params['avoidanceStatus'] == 'true',

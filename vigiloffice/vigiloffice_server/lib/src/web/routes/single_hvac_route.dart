@@ -53,14 +53,14 @@ extension HvacUrlParser on Hvac {
     Map<String, dynamic> params = _paramsMapFromEncodedUrl(unparsedParams);
     return Hvac(
       macAddress: params['macAddress'],
-      id: int.tryParse(params['id']),
+      id: int.tryParse(params['id'] ?? ""),
       lastUpdate: params['lastUpdate'] != "null"
           ? DateTime.tryParse(params['lastUpdate'])
           : null,
       flameSensor: FlameSensor(
         enabled: params['flameStatus'] == 'true',
         status: int.parse(params['flameDropdown']),
-        value: int.parse(params['flameValue']),
+        value: int.tryParse(params['flameValue'] ?? ""),
         interval: int.parse(params['flameIntervalSliderInput']),
       ),
       alarm: Alarm(

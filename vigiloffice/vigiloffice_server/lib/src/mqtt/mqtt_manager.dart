@@ -32,7 +32,7 @@ class MqttManager {
   static final LampsEndpoint _lampsEndpoint = LampsEndpoint();
   static final HvacsEndpoint _hvacEndpoint = HvacsEndpoint();
   static final ParkingsEndpoint _parkingEndopoint = ParkingsEndpoint();
-  static final DeviceEndpoint _deviceEndpoint = DeviceEndpoint();
+  static final DevicesEndpoint _deviceEndpoint = DevicesEndpoint();
 
   MqttManager._internal();
 

@@ -11,24 +11,30 @@ class HvacsEndpoint extends Endpoint {
   /// Returns the created hvac.
   Future<Hvac> createHvac(Session session, Hvac hvac) async {
     hvac.lastUpdate = DateTime.now();
-    return await Hvac.db.insertRow(session, hvac);
+    Hvac? existingHvac = await readHvac(session, hvac);
+    return existingHvac ?? await Hvac.db.insertRow(session, hvac);
   }
 
   /// Reads a hvac by its MAC address.
   ///
   /// Returns the hvac with the specified MAC address, or `null` if not found.
-  Future<Hvac?> readHvac(Session session, String hvacMac) async {
+  Future<Hvac?> readHvac(Session session, Hvac hvac) async {
     // Try to retrieve the object from the cache
-    var hvac = await session.caches.local.get(
-      '$hvacCacheKeyPrefix$hvacMac',
+    var res = await session.caches.local.get(
+      '$hvacCacheKeyPrefix${hvac.macAddress}',
       CacheMissHandler(
-        () async => Hvac.db
-            .findFirstRow(session, where: (o) => o.macAddress.equals(hvacMac)),
+        () async {
+          if (hvac.id != null) {
+            return Hvac.db.findById(session, hvac.id!);
+          }
+          return Hvac.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(hvac.macAddress));
+        },
         lifetime: Duration(minutes: 5),
       ),
     );
 
-    return hvac;
+    return res;
   }
 
   /// Updates an existing hvac on the database.

@@ -30,3 +30,8 @@ class ParkingsPageWidget extends Widget {
     };
   }
 }
+
+class JsonParkingsWidget extends WidgetJson {
+  JsonParkingsWidget({required List<Parking> parkings})
+      : super(object: parkings.map((e) => e.toJson()).toList());
+}

@@ -4,28 +4,35 @@ import 'package:vigiloffice_server/src/constants.dart';
 import '../generated/protocol.dart';
 
 /// Endpoint for managing devices.
-class DeviceEndpoint extends Endpoint {
+class DevicesEndpoint extends Endpoint {
   /// Creates a new device.
   ///
   /// Returns the created device.
   Future<Device> createDevice(Session session, Device device) async {
-    return await Device.db.insertRow(session, device);
+    Device? existingDevice = await readDevice(session, device);
+    return existingDevice ?? await Device.db.insertRow(session, device);
   }
 
   /// Reads a device by its MAC address.
   ///
   /// Returns the device with the specified MAC address, or `null` if not found.
-  Future<Device?> readDevice(Session session, int deviceMac) async {
+  Future<Device?> readDevice(Session session, Device device) async {
     // Try to retrieve the object from the cache
-    var device = await session.caches.local.get(
-      '$deviceCacheKeyPrefix$deviceMac',
+    var oldDevice = await session.caches.local.get(
+      '$deviceCacheKeyPrefix${device.macAddress}',
       CacheMissHandler(
-        () async => Device.db.findById(session, deviceMac),
+        () async {
+          if (device.id != null) {
+            return Device.db.findById(session, device.id!);
+          }
+          return Device.db.findFirstRow(session,
+              where: (o) => o.macAddress.equals(device.macAddress));
+        },
         lifetime: Duration(minutes: 5),
       ),
     );
 
-    return device;
+    return oldDevice;
   }
 
   /// Updates an existing device.

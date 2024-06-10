@@ -28,11 +28,11 @@ class SingleLampRoute extends WidgetRoute {
         await LampsEndpoint().controlLamp(session, lampToUpdate);
         session.log('Updated lamp: ${lampToUpdate.macAddress}',
             level: LogLevel.debug);
-      } catch (e) {
+      } catch (e, s) {
         session.log('Failed to update lamp: ${lamp.macAddress}',
             level: LogLevel.error,
             exception: e,
-            stackTrace: StackTrace.current);
+            stackTrace: s);
       }
     }
     return SingleLampPageWidget(lamp: lamp);
@@ -55,32 +55,32 @@ extension LampUrlParser on Lamp {
     Map<String, dynamic> params = _paramsMapFromEncodedUrl(unparsedParams);
     return Lamp(
       macAddress: params['macAddress'],
-      id: int.tryParse(params['id']),
+      id: int.tryParse(params['id'] ?? ""),
       lastUpdate: params['lastUpdate'] != "null"
           ? DateTime.tryParse(params['lastUpdate'])
           : null,
       flameSensor: FlameSensor(
         enabled: params['flameStatus'] == 'true',
         status: int.parse(params['flameDropdown']),
-        value: int.parse(params['flameValue']),
+        value: int.tryParse(params['flameValue'] ?? ""),
         interval: int.parse(params['flameIntervalSliderInput']),
       ),
       lightSensor: LightSensor(
         enabled: params['lightStatus'] == 'true',
         status: int.parse(params['lightDropdown']),
-        value: int.parse(params['lightValue']),
+        value: int.tryParse(params['lightValue'] ?? ""),
         interval: int.parse(params['lightIntervalSliderInput']),
         lowThreshold: int.parse(params['lightSliderInput']),
       ),
       motionSensor: MotionSensor(
         enabled: params['motionStatus'] == 'true',
         status: int.parse(params['motionDropdown']),
-        value: int.parse(params['motionValue']),
+        value: int.tryParse(params['motionValue'] ?? ""),
       ),
       rgbLed: RGBLed(
         enabled: params['rgbStatus'] == 'true',
         status: int.parse(params['rgbDropdown']),
-        value: int.parse(params['rgbValue']),
+        value: int.tryParse(params['rgbValue'] ?? ""),
       ),
       alarm: Alarm(
         enabled: params['alarmStatus'] == 'true',

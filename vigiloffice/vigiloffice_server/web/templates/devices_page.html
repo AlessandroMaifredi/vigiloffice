@@ -42,6 +42,7 @@
     </nav>
     <div class="container">
         <h1>Device list</h1>
+        <p class="lead"> Device type showed: <strong>{{filter}}</strong></p>
         <table class='table table-striped table-hover'>
             <caption>Last update: <span id="lastUpdate">now</span>
                 <script>
@@ -58,16 +59,14 @@
                     <th scope='col'>#</th>
                     <th scope='col'>Device type</th>
                     <th scope='col'>Device MAC</th>
-                    <th scope='col'>Device status</th>
                 </tr>
             </thead>
             <tbody>
                 {{#devices}}
-                <tr style="cursor: pointer;" onclick="location.href = '/devices/{{type}}s/{{macAddress}}'">
+                <tr style="cursor: pointer;" onclick="location.href = '/status/{{type}}s/{{macAddress}}'">
                     <td>{{id}}</td>
                     <td>{{type}}</td>
                     <td>{{macAddress}}</td>
-                    <td></td>
                 </tr>
                 {{/devices}}
             </tbody>

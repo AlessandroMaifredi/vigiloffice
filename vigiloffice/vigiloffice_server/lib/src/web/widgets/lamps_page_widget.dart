@@ -28,3 +28,9 @@ class LampsPageWidget extends Widget {
     };
   }
 }
+
+
+class JsonLampsWidget extends WidgetJson {
+  JsonLampsWidget({required List<Lamp> lamps})
+      : super(object: lamps.map((e) => e.toJson()).toList());
+}

@@ -51,7 +51,7 @@ class MyHomePageState extends State<MyHomePage> {
   // is successful.
   void _callHello() async {
     try {
-      final result = await client.device.createDevice(Device(
+      final result = await client.devices.createDevice(Device(
         type: DeviceType.lamp,
         macAddress: "1a:2b:3c:4d:5e:6f",
       ));

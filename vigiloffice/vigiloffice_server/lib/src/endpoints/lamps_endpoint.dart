@@ -11,24 +11,30 @@ class LampsEndpoint extends Endpoint {
   /// Returns the created lamp.
   Future<Lamp> createLamp(Session session, Lamp lamp) async {
     lamp.lastUpdate = DateTime.now();
-    return await Lamp.db.insertRow(session, lamp);
+    Lamp? existingLamp = await readLamp(session, lamp);
+    return existingLamp ?? await Lamp.db.insertRow(session, lamp);
   }
 
   /// Reads a lamp by its MAC address.
   ///
   /// Returns the lamp with the specified MAC address, or `null` if not found.
-  Future<Lamp?> readLamp(Session session, String lampMac) async {
+  Future<Lamp?> readLamp(Session session, Lamp lamp) async {
     // Try to retrieve the object from the cache
-    var lamp = await session.caches.local.get(
-      '$lampCacheKeyPrefix$lampMac',
+    var res = await session.caches.local.get(
+      '$lampCacheKeyPrefix${lamp.macAddress}',
       CacheMissHandler(
-        () async => Lamp.db
-            .findFirstRow(session, where: (o) => o.macAddress.equals(lampMac)),
+        () async {
+          if (lamp.id != null) {
+            return Lamp.db.findById(session, lamp.id!);
+          }
+          return Lamp.db.findFirstRow(session,
+              where: (o) => o.macAddress.equals(lamp.macAddress));
+        },
         lifetime: Duration(minutes: 5),
       ),
     );
 
-    return lamp;
+    return res;
   }
 
   /// Updates an existing lamp on the database.

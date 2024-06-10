@@ -11,24 +11,30 @@ class ParkingsEndpoint extends Endpoint {
   /// Returns the created parking.
   Future<Parking> createParking(Session session, Parking parking) async {
     parking.lastUpdate = DateTime.now();
-    return await Parking.db.insertRow(session, parking);
+    Parking? existingParking = await readParking(session, parking);
+    return existingParking ?? await Parking.db.insertRow(session, parking);
   }
 
   /// Reads a parking by its MAC address.
   ///
   /// Returns the parking with the specified MAC address, or `null` if not found.
-  Future<Parking?> readParking(Session session, String parkingMac) async {
+  Future<Parking?> readParking(Session session, Parking parking) async {
     // Try to retrieve the object from the cache
-    var parking = await session.caches.local.get(
-      '$parkingCacheKeyPrefix$parkingMac',
+    var res = await session.caches.local.get(
+      '$parkingCacheKeyPrefix${parking.macAddress}',
       CacheMissHandler(
-        () async => Parking.db.findFirstRow(session,
-            where: (o) => o.macAddress.equals(parkingMac)),
+        () async {
+          if (parking.id != null) {
+            return Parking.db.findById(session, parking.id!);
+          }
+          return Parking.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(parking.macAddress));
+        },
         lifetime: Duration(minutes: 5),
       ),
     );
 
-    return parking;
+    return res;
   }
 
   /// Updates an existing parking on the database.

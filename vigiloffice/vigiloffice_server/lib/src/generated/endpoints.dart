@@ -22,10 +22,10 @@ class Endpoints extends _i1.EndpointDispatch {
   @override
   void initializeEndpoints(_i1.Server server) {
     var endpoints = <String, _i1.Endpoint>{
-      'device': _i2.DeviceEndpoint()
+      'devices': _i2.DevicesEndpoint()
         ..initialize(
           server,
-          'device',
+          'devices',
           null,
         ),
       'hvacs': _i3.HvacsEndpoint()
@@ -47,9 +47,9 @@ class Endpoints extends _i1.EndpointDispatch {
           null,
         ),
     };
-    connectors['device'] = _i1.EndpointConnector(
-      name: 'device',
-      endpoint: endpoints['device']!,
+    connectors['devices'] = _i1.EndpointConnector(
+      name: 'devices',
+      endpoint: endpoints['devices']!,
       methodConnectors: {
         'createDevice': _i1.MethodConnector(
           name: 'createDevice',
@@ -64,7 +64,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['device'] as _i2.DeviceEndpoint).createDevice(
+              (endpoints['devices'] as _i2.DevicesEndpoint).createDevice(
             session,
             params['device'],
           ),
@@ -72,9 +72,9 @@ class Endpoints extends _i1.EndpointDispatch {
         'readDevice': _i1.MethodConnector(
           name: 'readDevice',
           params: {
-            'deviceMac': _i1.ParameterDescription(
-              name: 'deviceMac',
-              type: _i1.getType<int>(),
+            'device': _i1.ParameterDescription(
+              name: 'device',
+              type: _i1.getType<_i6.Device>(),
               nullable: false,
             )
           },
@@ -82,9 +82,9 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['device'] as _i2.DeviceEndpoint).readDevice(
+              (endpoints['devices'] as _i2.DevicesEndpoint).readDevice(
             session,
-            params['deviceMac'],
+            params['device'],
           ),
         ),
         'updateDevice': _i1.MethodConnector(
@@ -100,7 +100,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['device'] as _i2.DeviceEndpoint).updateDevice(
+              (endpoints['devices'] as _i2.DevicesEndpoint).updateDevice(
             session,
             params['device'],
           ),
@@ -118,7 +118,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['device'] as _i2.DeviceEndpoint).deleteDevice(
+              (endpoints['devices'] as _i2.DevicesEndpoint).deleteDevice(
             session,
             params['device'],
           ),
@@ -150,9 +150,9 @@ class Endpoints extends _i1.EndpointDispatch {
         'readHvac': _i1.MethodConnector(
           name: 'readHvac',
           params: {
-            'hvacMac': _i1.ParameterDescription(
-              name: 'hvacMac',
-              type: _i1.getType<String>(),
+            'hvac': _i1.ParameterDescription(
+              name: 'hvac',
+              type: _i1.getType<_i7.Hvac>(),
               nullable: false,
             )
           },
@@ -162,7 +162,7 @@ class Endpoints extends _i1.EndpointDispatch {
           ) async =>
               (endpoints['hvacs'] as _i3.HvacsEndpoint).readHvac(
             session,
-            params['hvacMac'],
+            params['hvac'],
           ),
         ),
         'updateHvac': _i1.MethodConnector(
@@ -246,9 +246,9 @@ class Endpoints extends _i1.EndpointDispatch {
         'readLamp': _i1.MethodConnector(
           name: 'readLamp',
           params: {
-            'lampMac': _i1.ParameterDescription(
-              name: 'lampMac',
-              type: _i1.getType<String>(),
+            'lamp': _i1.ParameterDescription(
+              name: 'lamp',
+              type: _i1.getType<_i8.Lamp>(),
               nullable: false,
             )
           },
@@ -258,7 +258,7 @@ class Endpoints extends _i1.EndpointDispatch {
           ) async =>
               (endpoints['lamps'] as _i4.LampsEndpoint).readLamp(
             session,
-            params['lampMac'],
+            params['lamp'],
           ),
         ),
         'updateLamp': _i1.MethodConnector(
@@ -342,9 +342,9 @@ class Endpoints extends _i1.EndpointDispatch {
         'readParking': _i1.MethodConnector(
           name: 'readParking',
           params: {
-            'parkingMac': _i1.ParameterDescription(
-              name: 'parkingMac',
-              type: _i1.getType<String>(),
+            'parking': _i1.ParameterDescription(
+              name: 'parking',
+              type: _i1.getType<_i9.Parking>(),
               nullable: false,
             )
           },
@@ -354,7 +354,7 @@ class Endpoints extends _i1.EndpointDispatch {
           ) async =>
               (endpoints['parkings'] as _i5.ParkingsEndpoint).readParking(
             session,
-            params['parkingMac'],
+            params['parking'],
           ),
         ),
         'updateParking': _i1.MethodConnector(

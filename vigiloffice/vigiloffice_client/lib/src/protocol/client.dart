@@ -18,18 +18,18 @@ import 'protocol.dart' as _i7;
 
 /// Endpoint for managing devices.
 /// {@category Endpoint}
-class EndpointDevice extends _i1.EndpointRef {
-  EndpointDevice(_i1.EndpointCaller caller) : super(caller);
+class EndpointDevices extends _i1.EndpointRef {
+  EndpointDevices(_i1.EndpointCaller caller) : super(caller);
 
   @override
-  String get name => 'device';
+  String get name => 'devices';
 
   /// Creates a new device.
   ///
   /// Returns the created device.
   _i2.Future<_i3.Device> createDevice(_i3.Device device) =>
       caller.callServerEndpoint<_i3.Device>(
-        'device',
+        'devices',
         'createDevice',
         {'device': device},
       );
@@ -37,11 +37,11 @@ class EndpointDevice extends _i1.EndpointRef {
   /// Reads a device by its MAC address.
   ///
   /// Returns the device with the specified MAC address, or `null` if not found.
-  _i2.Future<_i3.Device?> readDevice(int deviceMac) =>
+  _i2.Future<_i3.Device?> readDevice(_i3.Device device) =>
       caller.callServerEndpoint<_i3.Device?>(
-        'device',
+        'devices',
         'readDevice',
-        {'deviceMac': deviceMac},
+        {'device': device},
       );
 
   /// Updates an existing device.
@@ -49,7 +49,7 @@ class EndpointDevice extends _i1.EndpointRef {
   /// Returns the updated device.
   _i2.Future<_i3.Device> updateDevice(_i3.Device device) =>
       caller.callServerEndpoint<_i3.Device>(
-        'device',
+        'devices',
         'updateDevice',
         {'device': device},
       );
@@ -59,7 +59,7 @@ class EndpointDevice extends _i1.EndpointRef {
   /// Returns the deleted device.
   _i2.Future<_i3.Device?> deleteDevice(_i3.Device device) =>
       caller.callServerEndpoint<_i3.Device?>(
-        'device',
+        'devices',
         'deleteDevice',
         {'device': device},
       );
@@ -86,11 +86,11 @@ class EndpointHvacs extends _i1.EndpointRef {
   /// Reads a hvac by its MAC address.
   ///
   /// Returns the hvac with the specified MAC address, or `null` if not found.
-  _i2.Future<_i4.Hvac?> readHvac(String hvacMac) =>
+  _i2.Future<_i4.Hvac?> readHvac(_i4.Hvac hvac) =>
       caller.callServerEndpoint<_i4.Hvac?>(
         'hvacs',
         'readHvac',
-        {'hvacMac': hvacMac},
+        {'hvac': hvac},
       );
 
   /// Updates an existing hvac on the database.
@@ -149,11 +149,11 @@ class EndpointLamps extends _i1.EndpointRef {
   /// Reads a lamp by its MAC address.
   ///
   /// Returns the lamp with the specified MAC address, or `null` if not found.
-  _i2.Future<_i5.Lamp?> readLamp(String lampMac) =>
+  _i2.Future<_i5.Lamp?> readLamp(_i5.Lamp lamp) =>
       caller.callServerEndpoint<_i5.Lamp?>(
         'lamps',
         'readLamp',
-        {'lampMac': lampMac},
+        {'lamp': lamp},
       );
 
   /// Updates an existing lamp on the database.
@@ -212,11 +212,11 @@ class EndpointParkings extends _i1.EndpointRef {
   /// Reads a parking by its MAC address.
   ///
   /// Returns the parking with the specified MAC address, or `null` if not found.
-  _i2.Future<_i6.Parking?> readParking(String parkingMac) =>
+  _i2.Future<_i6.Parking?> readParking(_i6.Parking parking) =>
       caller.callServerEndpoint<_i6.Parking?>(
         'parkings',
         'readParking',
-        {'parkingMac': parkingMac},
+        {'parking': parking},
       );
 
   /// Updates an existing parking on the database.
@@ -277,13 +277,13 @@ class Client extends _i1.ServerpodClient {
           onFailedCall: onFailedCall,
           onSucceededCall: onSucceededCall,
         ) {
-    device = EndpointDevice(this);
+    devices = EndpointDevices(this);
     hvacs = EndpointHvacs(this);
     lamps = EndpointLamps(this);
     parkings = EndpointParkings(this);
   }
 
-  late final EndpointDevice device;
+  late final EndpointDevices devices;
 
   late final EndpointHvacs hvacs;
 
@@ -293,7 +293,7 @@ class Client extends _i1.ServerpodClient {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
-        'device': device,
+        'devices': devices,
         'hvacs': hvacs,
         'lamps': lamps,
         'parkings': parkings,
