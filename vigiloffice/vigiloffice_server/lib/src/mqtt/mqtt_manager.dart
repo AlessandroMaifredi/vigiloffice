@@ -188,6 +188,35 @@ class MqttManager {
         */
   }
 
+  void _handleLwtMessage(String payload) async {
+    InternalSession session = await Serverpod.instance.createSession();
+    try {
+      Map<String, dynamic> data = jsonDecode(payload);
+      DeviceType type = DeviceType.fromJson(data['type']);
+      Device device = Device(
+          macAddress: data['macAddress'],
+          type: type,
+          status: DeviceStatus.disconnected);
+      switch (type) {
+        case DeviceType.lamp:
+          _handleLampStatus(data['macAddress'], payload);
+          break;
+        case DeviceType.hvac:
+          _handleHvacStatus(data['macAddress'], payload);
+          break;
+        case DeviceType.parking:
+          _handleParkingStatus(data['macAddress'], payload);
+          break;
+      }
+      device = await _deviceEndpoint.updateDevice(session, device);
+      session.log("Device LWT: ${device.id} (${device.macAddress})");
+    } catch (e, s) {
+      session.log('Error while handling LWT message: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+    }
+    session.close();
+  }
+
   /// Handles the logic when the connection to the broker is established.
   void _onConnected() async {
     InternalSession session = await Serverpod.instance.createSession();
@@ -225,6 +254,7 @@ class MqttManager {
   void _setupConnection() {
     _client!.subscribe("vigiloffice/register", MqttQos.atLeastOnce);
     _client!.subscribe("vigiloffice/register/#", MqttQos.atLeastOnce);
+    _client!.subscribe("vigiloffice/lwt/#", MqttQos.atLeastOnce);
 
     for (DeviceType type in DeviceType.values) {
       _client!
@@ -253,6 +283,9 @@ class MqttManager {
             final String macAddress = paths[2];
             msgSession.log(
                 'Received device ($macAddress) register message: $payload');
+          } else if (topic.startsWith("vigiloffice/lwt/")) {
+            msgSession.log('Received LWT message: $payload');
+            _handleLwtMessage(payload);
           } else if (topic.endsWith("/status")) {
             msgSession.log('Received status message: $payload');
             DeviceType type =

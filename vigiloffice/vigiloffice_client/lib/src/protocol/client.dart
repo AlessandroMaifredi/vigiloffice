@@ -108,8 +108,8 @@ class EndpointHvacs extends _i1.EndpointRef {
   /// Deletes a hvac.
   ///
   /// Returns the deleted hvac.
-  _i2.Future<_i4.Hvac> deleteHvac(_i4.Hvac hvac) =>
-      caller.callServerEndpoint<_i4.Hvac>(
+  _i2.Future<_i4.Hvac?> deleteHvac(_i4.Hvac hvac) =>
+      caller.callServerEndpoint<_i4.Hvac?>(
         'hvacs',
         'deleteHvac',
         {'hvac': hvac},
@@ -171,8 +171,8 @@ class EndpointLamps extends _i1.EndpointRef {
   /// Deletes a lamp.
   ///
   /// Returns the deleted lamp.
-  _i2.Future<_i5.Lamp> deleteLamp(_i5.Lamp lamp) =>
-      caller.callServerEndpoint<_i5.Lamp>(
+  _i2.Future<_i5.Lamp?> deleteLamp(_i5.Lamp lamp) =>
+      caller.callServerEndpoint<_i5.Lamp?>(
         'lamps',
         'deleteLamp',
         {'lamp': lamp},
@@ -234,8 +234,8 @@ class EndpointParkings extends _i1.EndpointRef {
   /// Deletes a parking.
   ///
   /// Returns the deleted parking.
-  _i2.Future<_i6.Parking> deleteParking(_i6.Parking parking) =>
-      caller.callServerEndpoint<_i6.Parking>(
+  _i2.Future<_i6.Parking?> deleteParking(_i6.Parking parking) =>
+      caller.callServerEndpoint<_i6.Parking?>(
         'parkings',
         'deleteParking',
         {'parking': parking},

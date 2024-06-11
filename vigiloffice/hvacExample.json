@@ -1,4 +1,5 @@
 {
+    "type": "hvac",
     "macAddress": "6f:5e:4d:3c:2b:1a",
     "tempSensor": {
         "tempValue": 22,

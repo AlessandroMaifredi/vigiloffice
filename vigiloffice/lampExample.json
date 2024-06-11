@@ -1,4 +1,5 @@
 {
+    "type": "lamp",
     "macAddress": "1a:2b:3c:4d:5e:6f",
     "lightSensor": {
         "value": 123,

@@ -56,7 +56,7 @@ class DevicesEndpoint extends Endpoint {
       return createDevice(session, device);
     }
     device.id = oldDevice.id;
-    device.status = DeviceStatus.connected;
+    device.status = device.status ?? DeviceStatus.connected;
     return Device.db.updateRow(session, device);
   }
 
