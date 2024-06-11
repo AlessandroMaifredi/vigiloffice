@@ -65,9 +65,20 @@ class ParkingsEndpoint extends Endpoint {
   /// Deletes a parking.
   ///
   /// Returns the deleted parking.
-  Future<Parking> deleteParking(Session session, Parking parking) async {
+  Future<Parking?> deleteParking(Session session, Parking parking) async {
+    var id = (await session.caches.local.get(
+      '$deviceCacheKeyPrefix${parking.macAddress}',
+      CacheMissHandler(
+        () async => Parking.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(parking.macAddress)),
+        lifetime: Duration(minutes: 5),
+      ),
+    ))
+        ?.id;
+    if (id == null) return null;
+    parking.id = id;
     session.caches.local
-        .invalidateKey('$parkingCacheKeyPrefix${parking.macAddress}');
+        .invalidateKey('$deviceCacheKeyPrefix${parking.macAddress}');
     return await Parking.db.deleteRow(session, parking);
   }
 

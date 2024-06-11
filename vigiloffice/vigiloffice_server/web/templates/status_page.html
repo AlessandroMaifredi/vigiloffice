@@ -56,7 +56,6 @@
                             {{/types}}
                         </ul>
                     </li>
-                    
                 </ul>
             </div>
         </div>
@@ -91,7 +90,7 @@
                     <td>{{lastUpdate}}</td>
                     <td>
                         <a href='/status/{{type}}s/{{macAddress}}' class='btn btn-primary'>View</a>
-                        <a onclick="deleteDevice({{macAddress}},{{type}});" class='btn btn-danger'>Delete</a>
+                        <a onclick='deleteDevice("{{macAddress}}","{{type}}");' class='btn btn-danger'>Delete</a>
                 </tr>
                 {{/devices}}
             </tbody>

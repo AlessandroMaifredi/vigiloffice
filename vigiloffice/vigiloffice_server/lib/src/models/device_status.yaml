@@ -1,0 +1,5 @@
+enum: DeviceStatus
+serialized: byName
+values:
+  - connected
+  - disconnected

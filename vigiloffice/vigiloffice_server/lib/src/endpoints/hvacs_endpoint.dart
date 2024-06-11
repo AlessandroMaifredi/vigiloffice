@@ -65,8 +65,20 @@ class HvacsEndpoint extends Endpoint {
   /// Deletes a hvac.
   ///
   /// Returns the deleted hvac.
-  Future<Hvac> deleteHvac(Session session, Hvac hvac) async {
-    session.caches.local.invalidateKey('$hvacCacheKeyPrefix${hvac.macAddress}');
+  Future<Hvac?> deleteHvac(Session session, Hvac hvac) async {
+    var id = (await session.caches.local.get(
+      '$deviceCacheKeyPrefix${hvac.macAddress}',
+      CacheMissHandler(
+        () async => Hvac.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(hvac.macAddress)),
+        lifetime: Duration(minutes: 5),
+      ),
+    ))
+        ?.id;
+    if (id == null) return null;
+    hvac.id = id;
+    session.caches.local
+        .invalidateKey('$deviceCacheKeyPrefix${hvac.macAddress}');
     return await Hvac.db.deleteRow(session, hvac);
   }
 

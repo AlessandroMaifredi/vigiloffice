@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/endpoints/hvacs_endpoint.dart';
 
+import '../../../endpoints/device_endpoint.dart';
 import '../../../generated/protocol.dart';
 
-class JsonSingleHvacRoute extends WidgetRoute {
+class JsonSingleDeviceRoute extends WidgetRoute {
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -22,16 +22,16 @@ class JsonSingleHvacRoute extends WidgetRoute {
     if (!(request.headers.contentType?.mimeType.contains('application/json') ??
         true)) {
       session.log(
-          'MTM | Invalid content type (${request.headers.contentType}). Please provide a hvac using application/json.',
+          'MTM | Invalid content type (${request.headers.contentType}). Please provide a device using application/json.',
           level: LogLevel.debug);
       request.response.statusCode = HttpStatus.badRequest;
       request.response.reasonPhrase =
-          'Invalid content type. Please provide a hvac using application/json.';
+          'Invalid content type. Please provide a device using application/json.';
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
       return WidgetJson(object: {
         'error':
-            'Invalid content type. Please provide a hvac using application/json.'
+            'Invalid content type. Please provide a device using application/json.'
       });
     }
     String uri = request.uri.toString();
@@ -39,25 +39,25 @@ class JsonSingleHvacRoute extends WidgetRoute {
       uri = uri.substring(0, uri.length - 1);
     }
     String macAddress = uri.split("/").last;
-    Hvac? hvac = await Hvac.db
+    Device? device = await Device.db
         .findFirstRow(session, where: (o) => o.macAddress.equals(macAddress));
-    if (hvac == null) {
-      session.log('Hvac not found: $macAddress', level: LogLevel.warning);
+    if (device == null) {
+      session.log('Device not found: $macAddress', level: LogLevel.warning);
       request.response.statusCode = HttpStatus.notFound;
-      request.response.reasonPhrase = 'Hvac $macAddress not found';
+      request.response.reasonPhrase = 'Device $macAddress not found';
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
-      return WidgetJson(object: {'error': 'Hvac $macAddress not found'});
+      return WidgetJson(object: {'error': 'Device $macAddress not found'});
     }
     switch (request.method) {
       case 'GET':
-        return _get(session, request, hvac);
+        return _get(session, request, device);
       case 'PUT':
-        return _put(session, request, hvac);
+        return _put(session, request, device);
       case 'DELETE':
-        return _delete(session, request, hvac);
+        return _delete(session, request, device);
       case 'OPTIONS':
-        return _options(session, request, hvac);
+        return _options(session, request, device);
       default:
         request.response.statusCode = HttpStatus.methodNotAllowed;
         request.response.reasonPhrase = 'Method not allowed';
@@ -67,7 +67,7 @@ class JsonSingleHvacRoute extends WidgetRoute {
     }
   }
 
-  WidgetJson _options(Session session, HttpRequest request, Hvac hvac) {
+  WidgetJson _options(Session session, HttpRequest request, Device device) {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.json;
     request.response.headers.add('Allow', 'GET, PUT, DELETE, OPTIONS');
@@ -75,67 +75,63 @@ class JsonSingleHvacRoute extends WidgetRoute {
     return WidgetJson(object: {'options': 'GET, PUT, DELETE, OPTIONS'});
   }
 
-  WidgetJson _get(Session session, HttpRequest request, Hvac hvac) {
+  WidgetJson _get(Session session, HttpRequest request, Device device) {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.json;
     setHeaders(request.response.headers);
-    return WidgetJson(object: hvac.toJson());
+    return WidgetJson(object: device.toJson());
   }
 
   Future<WidgetJson> _put(
-      Session session, HttpRequest request, Hvac hvac) async {
+      Session session, HttpRequest request, Device device) async {
     try {
       String content = await utf8.decoder.bind(request).join();
-      Hvac newHvac = Hvac.fromJson(json.decode(content));
-      hvac = hvac.copyWith(
-        flameSensor: newHvac.flameSensor,
-        tempSensor: newHvac.tempSensor,
-        ventActuator: newHvac.ventActuator,
-        alarm: newHvac.alarm,
-        lastUpdate: newHvac.lastUpdate,
+      Device newDevice = Device.fromJson(json.decode(content));
+      device = device.copyWith(
+        type: newDevice.type,
+        macAddress: newDevice.macAddress,
+        status: newDevice.status,
       );
-      hvac = await HvacsEndpoint().updateHvac(session, hvac);
+      device = await DevicesEndpoint().updateDevice(session, device);
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
-      return WidgetJson(object: hvac.toJson());
+      return WidgetJson(object: device.toJson());
     } catch (e, s) {
-      session.log('Failed to update hvac: ${hvac.macAddress}',
+      session.log('Failed to update device: ${device.macAddress}',
           level: LogLevel.error, exception: e, stackTrace: s);
       request.response.statusCode = HttpStatus.badRequest;
-      request.response.reasonPhrase = 'Failed to update hvac';
+      request.response.reasonPhrase = 'Failed to update device';
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
-      return WidgetJson(object: {'error': 'Failed to update hvac. $e'});
+      return WidgetJson(object: {'error': 'Failed to update device. $e'});
     }
   }
 
   Future<WidgetJson> _delete(
-      Session session, HttpRequest request, Hvac hvac) async {
+      Session session, HttpRequest request, Device device) async {
     try {
-      Hvac? deletedHvac = await HvacsEndpoint().deleteHvac(session, hvac);
-      if (deletedHvac == null) {
-        session.log('Failed to delete hvac ${hvac.macAddress}: not found',
-            level: LogLevel.warning);
+      Device? deletedDevice = await DevicesEndpoint().deleteDevice(session, device);
+      if(deletedDevice == null){
+        session.log('Failed to delete device ${device.macAddress}: not found', level: LogLevel.warning);
         request.response.statusCode = HttpStatus.notFound;
-        request.response.reasonPhrase = 'Hvac ${hvac.macAddress} not found';
+        request.response.reasonPhrase = 'Device ${device.macAddress} not found';
         request.response.headers.contentType = ContentType.json;
         setHeaders(request.response.headers);
-        return WidgetJson(
-            object: {'error': 'Hvac ${hvac.macAddress} not found'});
+        return WidgetJson(object: {'error': 'Device ${device.macAddress} not found'});
       }
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
-      return WidgetJson(object: deletedHvac.toJson());
+      return WidgetJson(object: device.toJson());
     } catch (e, s) {
-      session.log('Failed to delete hvac: ${hvac.macAddress}',
+      session.log('Failed to delete device: ${device.macAddress}',
           level: LogLevel.error, exception: e, stackTrace: s);
       request.response.statusCode = HttpStatus.badRequest;
-      request.response.reasonPhrase = 'Failed to delete hvac';
+      request.response.reasonPhrase = 'Failed to delete device';
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
-      return WidgetJson(object: {'error': 'Failed to delete hvac. $e'});
+      return WidgetJson(object: {'error': 'Failed to delete device. $e'});
     }
   }
 }

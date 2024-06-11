@@ -6,13 +6,17 @@ import 'package:serverpod/serverpod.dart';
 import '../../endpoints/hvacs_endpoint.dart';
 import '../../generated/protocol.dart';
 import '../widgets/default_page_widget.dart';
-import '../widgets/device_not_found_page_widget.dart';
 import '../widgets/single_hvac_page_widget.dart';
+import '../widgets/status_not_found_page_widget.dart';
 
 class SingleHvacRoute extends WidgetRoute {
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
-    String macAddress = request.uri.toString().split("/").last;
+    String uri = request.uri.toString();
+    if (uri.endsWith('/')) {
+      uri = uri.substring(0, uri.length - 1);
+    }
+    String macAddress = uri.split("/").last;
     Hvac? hvac = await Hvac.db
         .findFirstRow(session, where: (o) => o.macAddress.equals(macAddress));
     if (hvac == null) {
@@ -20,7 +24,7 @@ class SingleHvacRoute extends WidgetRoute {
       request.response.headers.contentType = ContentType.html;
       request.response.statusCode = HttpStatus.notFound;
       setHeaders(request.response.headers);
-      return DeviceNotFoundPageWidget(
+      return StatusNotFoundPageWidget(
           type: DeviceType.hvac, macAddress: macAddress);
     }
     if(request.method == 'OPTIONS'){

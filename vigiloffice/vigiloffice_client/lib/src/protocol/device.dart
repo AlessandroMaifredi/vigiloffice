@@ -16,12 +16,14 @@ abstract class Device implements _i1.SerializableModel {
     this.id,
     required this.type,
     required this.macAddress,
+    this.status,
   });
 
   factory Device({
     int? id,
     required _i2.DeviceType type,
     required String macAddress,
+    _i2.DeviceStatus? status,
   }) = _DeviceImpl;
 
   factory Device.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -29,6 +31,9 @@ abstract class Device implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       macAddress: jsonSerialization['macAddress'] as String,
+      status: jsonSerialization['status'] == null
+          ? null
+          : _i2.DeviceStatus.fromJson((jsonSerialization['status'] as String)),
     );
   }
 
@@ -41,10 +46,13 @@ abstract class Device implements _i1.SerializableModel {
 
   String macAddress;
 
+  _i2.DeviceStatus? status;
+
   Device copyWith({
     int? id,
     _i2.DeviceType? type,
     String? macAddress,
+    _i2.DeviceStatus? status,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -52,6 +60,7 @@ abstract class Device implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'type': type.toJson(),
       'macAddress': macAddress,
+      if (status != null) 'status': status?.toJson(),
     };
   }
 
@@ -68,10 +77,12 @@ class _DeviceImpl extends Device {
     int? id,
     required _i2.DeviceType type,
     required String macAddress,
+    _i2.DeviceStatus? status,
   }) : super._(
           id: id,
           type: type,
           macAddress: macAddress,
+          status: status,
         );
 
   @override
@@ -79,11 +90,13 @@ class _DeviceImpl extends Device {
     Object? id = _Undefined,
     _i2.DeviceType? type,
     String? macAddress,
+    Object? status = _Undefined,
   }) {
     return Device(
       id: id is int? ? id : this.id,
       type: type ?? this.type,
       macAddress: macAddress ?? this.macAddress,
+      status: status is _i2.DeviceStatus? ? status : this.status,
     );
   }
 }

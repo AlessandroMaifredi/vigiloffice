@@ -3,12 +3,12 @@ import 'package:serverpod/relic.dart';
 import '../../generated/protocol.dart';
 
 class DevicesPageWidget extends Widget {
-  DevicesPageWidget({required List<Device> devices, DeviceType? type})
+  DevicesPageWidget({required List<Map<String,dynamic>> devices, DeviceType? type})
       : super(name: 'devices_page') {
     values = {
       "filter": type?.name ?? "all",
       "types": DeviceType.values.map((e) => e.name).toList(),
-      'devices': devices.map((device) => device.toJson()).toList(),
+      'devices': devices
     };
   }
 }

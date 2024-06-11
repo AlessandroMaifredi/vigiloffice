@@ -10,6 +10,11 @@ class DevicesEndpoint extends Endpoint {
   /// Returns the created device.
   Future<Device> createDevice(Session session, Device device) async {
     Device? existingDevice = await readDevice(session, device);
+    if (existingDevice != null) {
+      existingDevice.status = DeviceStatus.connected;
+    } else {
+      device.status = DeviceStatus.connected;
+    }
     return existingDevice ?? await Device.db.insertRow(session, device);
   }
 
@@ -51,6 +56,7 @@ class DevicesEndpoint extends Endpoint {
       return createDevice(session, device);
     }
     device.id = oldDevice.id;
+    device.status = DeviceStatus.connected;
     return Device.db.updateRow(session, device);
   }
 

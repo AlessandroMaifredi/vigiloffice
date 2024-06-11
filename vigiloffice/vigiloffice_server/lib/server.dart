@@ -18,6 +18,7 @@ import 'src/web/routes/mtm/mtm_single_parking_route.dart';
 import 'src/web/routes/mtm/mtm_status_route.dart';
 import 'src/web/routes/parkings_route.dart';
 import 'src/web/routes/root.dart';
+import 'src/web/routes/single_device_route.dart';
 import 'src/web/routes/single_hvac_route.dart';
 import 'src/web/routes/single_lamp_route.dart';
 import 'src/web/routes/single_parking_route.dart';
@@ -73,6 +74,7 @@ void run(List<String> args) async {
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s');
     pod.webServer.addRoute(
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s/');
+    //TODO: pod.webServer.addRoute(JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
   }
 
   // Human to machine (HTM) routes.
@@ -104,6 +106,7 @@ void run(List<String> args) async {
     pod.webServer.addRoute(singleRoute, '/status/${type.name}s/*');
     pod.webServer.addRoute(DevicesRoute(type: type), '/devices/${type.name}s');
     pod.webServer.addRoute(DevicesRoute(type: type), '/devices/${type.name}s/');
+    pod.webServer.addRoute(SingleDeviceRoute(), '/devices/${type.name}s/*');
   }
   // Serve all files in the /static directory.
   pod.webServer.addRoute(
@@ -114,13 +117,13 @@ void run(List<String> args) async {
   try {
     await mqttManager.connect(
         pod.getPassword('mqttUsername')!, pod.getPassword('mqttPassword')!);
-    try{
-    await influxDBManager.connect(InfluxDBConnectionParameters(
-      url: pod.getPassword('influxDbUrl')!,
-      token: pod.getPassword('influxDbToken')!,
-      org: pod.getPassword('influxDbOrg')!,
-      bucket: pod.getPassword('influxDbBucket')!,
-    ));
+    try {
+      await influxDBManager.connect(InfluxDBConnectionParameters(
+        url: pod.getPassword('influxDbUrl')!,
+        token: pod.getPassword('influxDbToken')!,
+        org: pod.getPassword('influxDbOrg')!,
+        bucket: pod.getPassword('influxDbBucket')!,
+      ));
     } catch (e, s) {
       pod.createSession().then((value) async {
         value.log('Failed to connect to InfluxDB: $e',

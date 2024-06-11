@@ -3,17 +3,20 @@ import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
 
-
 import '../../endpoints/parkings_endpoint.dart';
 import '../../generated/protocol.dart';
 import '../widgets/default_page_widget.dart';
-import '../widgets/device_not_found_page_widget.dart';
+import '../widgets/status_not_found_page_widget.dart';
 import '../widgets/single_parking_page_widget.dart';
 
 class SingleParkingRoute extends WidgetRoute {
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
-    String macAddress = request.uri.toString().split("/").last;
+    String uri = request.uri.toString();
+    if (uri.endsWith('/')) {
+      uri = uri.substring(0, uri.length - 1);
+    }
+    String macAddress = uri.split("/").last;
     Parking? parking = await Parking.db
         .findFirstRow(session, where: (o) => o.macAddress.equals(macAddress));
     if (parking == null) {
@@ -21,16 +24,15 @@ class SingleParkingRoute extends WidgetRoute {
       request.response.headers.contentType = ContentType.html;
       request.response.statusCode = HttpStatus.notFound;
       setHeaders(request.response.headers);
-      return DeviceNotFoundPageWidget(
+      return StatusNotFoundPageWidget(
           type: DeviceType.parking, macAddress: macAddress);
     }
-    if(request.method == 'OPTIONS'){
-          request.response.statusCode = HttpStatus.ok;
-    request.response.headers.contentType = ContentType.html;
-    request.response.headers.set('Allow', 'GET, PUT, DELETE, OPTIONS');
-    setHeaders(request.response.headers);
-    }
-    else if (request.method == 'PUT') {
+    if (request.method == 'OPTIONS') {
+      request.response.statusCode = HttpStatus.ok;
+      request.response.headers.contentType = ContentType.html;
+      request.response.headers.set('Allow', 'GET, PUT, DELETE, OPTIONS');
+      setHeaders(request.response.headers);
+    } else if (request.method == 'PUT') {
       String content = await utf8.decoder.bind(request).join();
       session.log('Received POST request with body: $content',
           level: LogLevel.debug);
@@ -65,7 +67,7 @@ class SingleParkingRoute extends WidgetRoute {
         request.response.headers.contentType = ContentType.html;
         setHeaders(request.response.headers);
       }
-    }else if (request.method == 'GET') {
+    } else if (request.method == 'GET') {
       request.response.headers.contentType = ContentType.html;
       request.response.statusCode = HttpStatus.ok;
       setHeaders(request.response.headers);

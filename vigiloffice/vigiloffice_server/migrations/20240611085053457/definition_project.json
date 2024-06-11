@@ -1,0 +1,278 @@
+{
+  "moduleName": "vigiloffice",
+  "tables": [
+    {
+      "name": "devices",
+      "dartName": "Device",
+      "module": "vigiloffice",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('devices_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "type",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "protocol:DeviceType"
+        },
+        {
+          "name": "macAddress",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "status",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "protocol:DeviceStatus"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "devices_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        }
+      ],
+      "managed": true
+    },
+    {
+      "name": "hvacs",
+      "dartName": "Hvac",
+      "module": "vigiloffice",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('hvacs_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "macAddress",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "flameSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:FlameSensor"
+        },
+        {
+          "name": "tempSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:TempSensor"
+        },
+        {
+          "name": "ventActuator",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:VentActuator"
+        },
+        {
+          "name": "alarm",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:Alarm"
+        },
+        {
+          "name": "lastUpdate",
+          "columnType": 4,
+          "isNullable": true,
+          "dartType": "DateTime?"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "hvacs_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        }
+      ],
+      "managed": true
+    },
+    {
+      "name": "lamps",
+      "dartName": "Lamp",
+      "module": "vigiloffice",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('lamps_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "macAddress",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "lightSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:LightSensor"
+        },
+        {
+          "name": "motionSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:MotionSensor"
+        },
+        {
+          "name": "flameSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:FlameSensor"
+        },
+        {
+          "name": "rgbLed",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:RGBLed"
+        },
+        {
+          "name": "alarm",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:Alarm"
+        },
+        {
+          "name": "lastUpdate",
+          "columnType": 4,
+          "isNullable": true,
+          "dartType": "DateTime?"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "lamps_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        }
+      ],
+      "managed": true
+    },
+    {
+      "name": "parkings",
+      "dartName": "Parking",
+      "module": "vigiloffice",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('parkings_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "macAddress",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "floodingSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:FloodingSensor"
+        },
+        {
+          "name": "flameSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:FlameSensor"
+        },
+        {
+          "name": "avoidanceSensor",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:AvoidanceSensor"
+        },
+        {
+          "name": "rgbLed",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:RGBLed"
+        },
+        {
+          "name": "alarm",
+          "columnType": 8,
+          "isNullable": false,
+          "dartType": "protocol:Alarm"
+        },
+        {
+          "name": "lastUpdate",
+          "columnType": 4,
+          "isNullable": true,
+          "dartType": "DateTime?"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "parkings_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        }
+      ],
+      "managed": true
+    }
+  ],
+  "installedModules": [
+    {
+      "module": "vigiloffice",
+      "version": "20240610093009770"
+    },
+    {
+      "module": "serverpod",
+      "version": "20240516151843329"
+    }
+  ],
+  "migrationApiVersion": 1
+}

@@ -5,3 +5,4 @@ table: devices
 fields:
   type: DeviceType
   macAddress: String
+  status: DeviceStatus?

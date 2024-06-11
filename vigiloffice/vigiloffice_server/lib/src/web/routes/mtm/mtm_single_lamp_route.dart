@@ -114,11 +114,21 @@ class JsonSingleLampRoute extends WidgetRoute {
   Future<WidgetJson> _delete(
       Session session, HttpRequest request, Lamp lamp) async {
     try {
-      lamp = await LampsEndpoint().deleteLamp(session, lamp);
+      Lamp? deletedLamp = await LampsEndpoint().deleteLamp(session, lamp);
+      if (deletedLamp == null) {
+        session.log('Failed to delete lamp ${lamp.macAddress}: not found',
+            level: LogLevel.warning);
+        request.response.statusCode = HttpStatus.badRequest;
+        request.response.reasonPhrase = 'Lamp ${lamp.macAddress} not found';
+        request.response.headers.contentType = ContentType.json;
+        setHeaders(request.response.headers);
+        return WidgetJson(
+            object: {'error': 'Lamp ${lamp.macAddress} not found'});
+      }
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
-      return WidgetJson(object: lamp.toJson());
+      return WidgetJson(object: deletedLamp.toJson());
     } catch (e, s) {
       session.log('Failed to delete lamp: ${lamp.macAddress}',
           level: LogLevel.error, exception: e, stackTrace: s);

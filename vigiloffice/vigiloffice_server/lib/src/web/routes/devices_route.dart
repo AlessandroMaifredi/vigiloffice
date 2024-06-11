@@ -26,6 +26,30 @@ class DevicesRoute extends WidgetRoute {
       if (type == null) return o.macAddress.notEquals("");
       return o.type.equals(type);
     });
-    return DevicesPageWidget(devices: devices, type: type);
+    List<Map<String, dynamic>> devicesMap = [];
+    for (var device in devices) {
+      bool statusAvailable = false;
+      switch (device.type) {
+        case DeviceType.lamp:
+          statusAvailable = (await Lamp.db.findFirstRow(session,
+                  where: (o) => o.macAddress.equals(device.macAddress))) !=
+              null;
+          break;
+        case DeviceType.hvac:
+          statusAvailable = (await Hvac.db.findFirstRow(session,
+                  where: (o) => o.macAddress.equals(device.macAddress))) !=
+              null;
+          break;
+        case DeviceType.parking:
+          statusAvailable = (await Parking.db.findFirstRow(session,
+                  where: (o) => o.macAddress.equals(device.macAddress))) !=
+              null;
+          break;
+      }
+      Map<String, dynamic> deviceMap = device.toJson();
+      deviceMap['statusAvailable'] = statusAvailable;
+      devicesMap.add(deviceMap);
+    }
+    return DevicesPageWidget(devices: devicesMap, type: type);
   }
 }

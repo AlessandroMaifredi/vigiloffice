@@ -114,7 +114,19 @@ class JsonSingleParkingRoute extends WidgetRoute {
   Future<WidgetJson> _delete(
       Session session, HttpRequest request, Parking parking) async {
     try {
-      parking = await ParkingsEndpoint().deleteParking(session, parking);
+      Parking? deletedParking =
+          await ParkingsEndpoint().deleteParking(session, parking);
+      if (deletedParking == null) {
+        session.log('Failed to delete parking ${parking.macAddress}: not found',
+            level: LogLevel.warning);
+        request.response.statusCode = HttpStatus.notFound;
+        request.response.reasonPhrase =
+            'Parking ${parking.macAddress} not found';
+        request.response.headers.contentType = ContentType.json;
+        setHeaders(request.response.headers);
+        return WidgetJson(
+            object: {'error': 'Parking ${parking.macAddress} not found'});
+      }
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);

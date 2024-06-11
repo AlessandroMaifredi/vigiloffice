@@ -65,8 +65,20 @@ class LampsEndpoint extends Endpoint {
   /// Deletes a lamp.
   ///
   /// Returns the deleted lamp.
-  Future<Lamp> deleteLamp(Session session, Lamp lamp) async {
-    session.caches.local.invalidateKey('$lampCacheKeyPrefix${lamp.macAddress}');
+  Future<Lamp?> deleteLamp(Session session, Lamp lamp) async {
+    var id = (await session.caches.local.get(
+      '$deviceCacheKeyPrefix${lamp.macAddress}',
+      CacheMissHandler(
+        () async => Lamp.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(lamp.macAddress)),
+        lifetime: Duration(minutes: 5),
+      ),
+    ))
+        ?.id;
+    if (id == null) return null;
+    lamp.id = id;
+    session.caches.local
+        .invalidateKey('$deviceCacheKeyPrefix${lamp.macAddress}');
     return await Lamp.db.deleteRow(session, lamp);
   }
 
