@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/web/widgets/status_page_widget.dart';
 
 import '../../../generated/protocol.dart';
+import '../../widgets/status_page_widget.dart';
 
 class JsonStatusRoute extends WidgetRoute {
   final DeviceType? type;

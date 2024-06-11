@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/endpoints/lamps_endpoint.dart';
 
+import '../../../endpoints/lamps_endpoint.dart';
 import '../../../generated/protocol.dart';
 
 class JsonSingleLampRoute extends WidgetRoute {

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
-import 'package:vigiloffice_server/src/endpoints/parkings_endpoint.dart';
 
+import '../../../endpoints/parkings_endpoint.dart';
 import '../../../generated/protocol.dart';
 
 class JsonSingleParkingRoute extends WidgetRoute {
