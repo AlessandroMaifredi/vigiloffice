@@ -12,6 +12,7 @@ import 'src/web/routes/mtm/mtm_devices_route.dart';
 import 'src/web/routes/mtm/mtm_hvacs_route.dart';
 import 'src/web/routes/mtm/mtm_lamps_route.dart';
 import 'src/web/routes/mtm/mtm_parkings_route.dart';
+import 'src/web/routes/mtm/mtm_single_device_route.dart';
 import 'src/web/routes/mtm/mtm_single_hvac_route.dart';
 import 'src/web/routes/mtm/mtm_single_lamp_route.dart';
 import 'src/web/routes/mtm/mtm_single_parking_route.dart';
@@ -74,7 +75,7 @@ void run(List<String> args) async {
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s');
     pod.webServer.addRoute(
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s/');
-    //TODO: pod.webServer.addRoute(JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
+    pod.webServer.addRoute(JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
   }
 
   // Human to machine (HTM) routes.
