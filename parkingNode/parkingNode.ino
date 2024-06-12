@@ -272,6 +272,7 @@ String settingsTopic = "";
 JsonDocument statusDoc;
 
 void updateStatusDoc() {
+  statusDoc[F("type")] = DEVICE_TYPE;
   statusDoc[F("macAddress")] = macAddress;
 
   JsonObject floodingSensor = statusDoc.createNestedObject(FLOODING_SENSOR_JSON_NAME);

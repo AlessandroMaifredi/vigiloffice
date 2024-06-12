@@ -9,18 +9,15 @@
         "lowThreshold": 350
     },
     "motionSensor": {
-        "value": 0,
         "status": 2,
         "enabled": false
     },
     "flameSensor": {
-        "value": 0,
         "status": 0,
         "enabled": true,
         "interval": 1000
     },
     "rgbLed": {
-        "value": 0,
         "status": 0,
         "enabled": true
     },

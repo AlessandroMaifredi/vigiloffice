@@ -225,6 +225,7 @@ JsonDocument statusDoc;
 volatile bool applyChanges = false;
 
 void updateStatusDoc() {
+  statusDoc[F("type")] = DEVICE_TYPE;
   statusDoc[F("macAddress")] = macAddress;
 
   JsonObject tempSensor = statusDoc.createNestedObject(TEMP_SENSOR_JSON_NAME);
@@ -241,7 +242,6 @@ void updateStatusDoc() {
   hvacSensor[SENSOR_STATUS_JSON_NAME] = hvacSensorStatus == HVAC_SENSOR_ENABLED ? true : false;
 
   JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
-  flameSensor[SENSOR_TEMP_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
   flameSensor[STATUS_JSON_NAME] = flameStatus;
   flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
   flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;

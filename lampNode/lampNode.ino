@@ -327,6 +327,7 @@ JsonDocument statusDoc;
 volatile bool applyChanges = false;
 
 void updateStatusDoc() {
+  statusDoc[F("type")] = DEVICE_TYPE;
   statusDoc[F("macAddress")] = macAddress;
 
   JsonObject lightSensor = statusDoc.createNestedObject(LIGHT_SENSOR_JSON_NAME);
@@ -337,23 +338,20 @@ void updateStatusDoc() {
   lightSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowLightTreshold;
 
   JsonObject motionSensor = statusDoc.createNestedObject(MOTION_SENSOR_JSON_NAME);
-  motionSensor[SENSOR_VALUE_JSON_NAME] = motionStatus == MOTION_INIT || motionStatus == MOTION_NORMAL ? 0 : 1;
   motionSensor[STATUS_JSON_NAME] = motionStatus;
   motionSensor[SENSOR_STATUS_JSON_NAME] = motionSensorStatus == MOTION_SENSOR_ENABLED ? true : false;
 
   JsonObject flameSensor = statusDoc.createNestedObject(FLAME_SENSOR_JSON_NAME);
-  flameSensor[SENSOR_VALUE_JSON_NAME] = flameStatus == FLAME_PRESENT ? 1 : 0;
   flameSensor[STATUS_JSON_NAME] = flameStatus;
   flameSensor[SENSOR_STATUS_JSON_NAME] = flameSensorStatus == FLAME_SENSOR_ENABLED ? true : false;
   flameSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
 
   JsonObject rgbLed = statusDoc.createNestedObject(RGB_ACTUATOR_JSON_NAME);
-  rgbLed[SENSOR_VALUE_JSON_NAME] = rgbStatus;
   rgbLed[STATUS_JSON_NAME] = rgbStatus;
   rgbLed[SENSOR_STATUS_JSON_NAME] = rgbSensorStatus == RGB_SENSOR_ENABLED ? true : false;
 
   JsonObject alarm = statusDoc.createNestedObject(F("alarm"));
-  alarm[SENSOR_VALUE_JSON_NAME] = alarmStatus == ALARM_NORMAL ? false : true;
+  alarm[STATUS_JSON_NAME] = alarmStatus == ALARM_NORMAL ? false : true;
   alarm[SENSOR_STATUS_JSON_NAME] = alarmSystemStatus == ALARM_ENABLED ? true : false;
 
   statusDoc.shrinkToFit();
