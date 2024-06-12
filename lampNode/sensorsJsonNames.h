@@ -5,6 +5,7 @@
 #define RGB_ACTUATOR_JSON_NAME "rgbLed"
 
 #define SENSOR_STATUS_JSON_NAME "enabled"
+#define SENSOR_VALUE_JSON_NAME "value"
 #define STATUS_JSON_NAME "status"
 #define SENSOR_READING_INTERVAL_JSON_NAME "interval"
 #define SENSOR_LOW_THRESHOLD_JSON_NAME "lowThreshold"

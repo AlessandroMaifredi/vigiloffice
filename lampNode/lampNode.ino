@@ -475,7 +475,7 @@ void setTopics(JsonDocument topicsDoc) {
   mqttClient.subscribe(controlTopic.c_str());
 #ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
-    Serial.print(F("Status topic set to: "));alarmStatus
+    Serial.print(F("Status topic set to: "));
     Serial.println(statusTopic);
     Serial.print(F("Control topic set to: "));
     Serial.println(controlTopic);
