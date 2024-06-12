@@ -151,48 +151,6 @@ void readFlooding() {
   }
 }
 
-// === AVOIDANCE ===
-#define AVOIDANCE_SENSOR_PIN D5
-
-enum AVOIDANCE_SENSOR_STATUS {
-  AVOIDANCE_SENSOR_ENABLED,
-  AVOIDANCE_SENSOR_DISABLED
-};
-
-enum AVOIDANCE_STATUS {
-  AVOIDANCE_PRESENT,
-  AVOIDANCE_ABSENT
-};
-
-AVOIDANCE_SENSOR_STATUS avoidanceSensorStatus = AVOIDANCE_SENSOR_ENABLED;
-volatile AVOIDANCE_STATUS avoidanceStatus = AVOIDANCE_ABSENT;
-unsigned long avoidanceReadingInterval = 1000;
-
-void readAvoidance() {
-  static unsigned long lastAvoidanceReading = millis();
-  if (avoidanceSensorStatus == AVOIDANCE_SENSOR_ENABLED) {
-    if (millis() - lastAvoidanceReading >= avoidanceReadingInterval) {
-      avoidanceStatus = analogRead(AVOIDANCE_SENSOR_PIN) == LOW ? AVOIDANCE_PRESENT : AVOIDANCE_ABSENT;
-      if (avoidanceStatus == AVOIDANCE_PRESENT) {
-        setRGBOccupied();
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("Set AVOIDANCE to AVOIDANCE_PRESENT"));
-        }
-#endif
-      } else {
-        setRGBAvailable();
-#ifdef ENABLE_LOGS
-        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
-          Serial.println(F("Set AVOIDANCE to AVOIDANCE_ABSENT"));
-        }
-#endif
-      }
-      lastAvoidanceReading = millis();
-    }
-  }
-}
-
 // === RGB ===
 #define RGB_RED_PIN D2
 #define RGB_GREEN_PIN D1
@@ -253,6 +211,48 @@ void updateRGB() {
     case RGB_RESERVED:
       setRGBReserved();
       break;
+  }
+}
+
+// === AVOIDANCE ===
+#define AVOIDANCE_SENSOR_PIN D5
+
+enum AVOIDANCE_SENSOR_STATUS {
+  AVOIDANCE_SENSOR_ENABLED,
+  AVOIDANCE_SENSOR_DISABLED
+};
+
+enum AVOIDANCE_STATUS {
+  AVOIDANCE_PRESENT,
+  AVOIDANCE_ABSENT
+};
+
+AVOIDANCE_SENSOR_STATUS avoidanceSensorStatus = AVOIDANCE_SENSOR_ENABLED;
+volatile AVOIDANCE_STATUS avoidanceStatus = AVOIDANCE_ABSENT;
+unsigned long avoidanceReadingInterval = 1000;
+
+void readAvoidance() {
+  static unsigned long lastAvoidanceReading = millis();
+  if (avoidanceSensorStatus == AVOIDANCE_SENSOR_ENABLED) {
+    if (millis() - lastAvoidanceReading >= avoidanceReadingInterval) {
+      avoidanceStatus = analogRead(AVOIDANCE_SENSOR_PIN) == LOW ? AVOIDANCE_PRESENT : AVOIDANCE_ABSENT;
+      if (avoidanceStatus == AVOIDANCE_PRESENT) {
+        setRGBOccupied();
+#ifdef ENABLE_LOGS
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set AVOIDANCE to AVOIDANCE_PRESENT"));
+        }
+#endif
+      } else {
+        setRGBAvailable();
+#ifdef ENABLE_LOGS
+        if (logLevel == LOG_ALL || logLevel == LOG_SENSORS) {
+          Serial.println(F("Set AVOIDANCE to AVOIDANCE_ABSENT"));
+        }
+#endif
+      }
+      lastAvoidanceReading = millis();
+    }
   }
 }
 

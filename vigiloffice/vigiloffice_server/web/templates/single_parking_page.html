@@ -138,8 +138,8 @@
                         <div class='form-group'>
                             <label for='avoidanceDropdown'>State</label>
                             <select class='form-control' id='avoidanceDropdown' name='avoidanceDropdown'>
-                                <option value='0' {{#avoidanceStatus0}} selected {{/avoidanceStatus0}}>FREE</option>
-                                <option value='1' {{^avoidanceStatus1}} selected {{/avoidanceStatus1}}>OCCUPIED</option>
+                                <option value='0' {{#avoidanceStatus0}} selected {{/avoidanceStatus0}}>OCCUPIED</option>
+                                <option value='1' {{^avoidanceStatus1}} selected {{/avoidanceStatus1}}>FREE</option>
                             </select>
                             <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
                         </div>
@@ -191,8 +191,8 @@
                         <div class='form-group'>
                             <label for='floodingDropdown'>State</label>
                             <select class='form-control' id='floodingDropdown' name='floodingDropdown'>
-                                <option value='0' {{#floodingStatus0}} selected {{/floodingStatus0}}>ABSENT</option>
-                                <option value='1' {{#floodingStatus1}} selected {{/floodingStatus1}}>PRESENT</option>
+                                <option value='0' {{#floodingStatus0}} selected {{/floodingStatus0}}>PRESENT</option>
+                                <option value='1' {{#floodingStatus1}} selected {{/floodingStatus1}}>ABSENT</option>
                             </select>
                             <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
                         </div>
@@ -219,9 +219,10 @@
                         <div class='form-group'>
                             <label for='rgbDropdown'>RGB State</label>
                             <select class='form-control' id='rgbDropdown' name='rgbDropdown'>
-                                <option value='0' {{#rgbStatus0}} selected {{/rgbStatus0}}>GREEN</option>
-                                <option value='1' {{#rgbStatus1}} selected {{/rgbStatus1}}>BLUE</option>
-                                <option value='2' {{#rgbStatus2}} selected {{/rgbStatus2}}>RED</option>
+                                <option value='0' {{#rgbStatus0}} selected {{/rgbStatus0}}>OFF</option>
+                                <option value='1' {{#rgbStatus1}} selected {{/rgbStatus1}}>RED</option>
+                                <option value='2' {{#rgbStatus2}} selected {{/rgbStatus2}}>GREEN</option>
+                                <option value='3' {{#rgbStatus3}} selected {{/rgbStatus3}}>BLUE</option>
                             </select>
                             <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
                         </div>

@@ -222,9 +222,11 @@
                         <div class='form-group'>
                             <label for='rgbDropdown'>RGB State</label>
                             <select class='form-control' id='rgbDropdown' name='rgbDropdown'>
-                                <option value='0' {{#rgbStatus0}} selected {{/rgbStatus0}}>AUTO</option>
-                                <option value='3' {{#rgbStatus3}} selected {{/rgbStatus3}}>MANUAL ON</option>
-                                <option value='4' {{#rgbStatus4}} selected {{/rgbStatus4}}>MANUAL OFF</option>
+                                <option value='0' {{#rgbStatus0}} selected {{/rgbStatus0}}>OFF</option>
+                                <option value='1' {{#rgbStatus1}} selected {{/rgbStatus1}}>ON</option>
+                                <option value='2' {{#rgbStatus2}} selected {{/rgbStatus2}}>ALARM</option>
+                                <option value='3' {{#rgbStatus3}} selected {{/rgbStatus3}}>CUSTOM ON</option>
+                                <option value='4' {{#rgbStatus4}} selected {{/rgbStatus4}}>CUSTOM OFF</option>
                             </select>
                             <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
                         </div>
