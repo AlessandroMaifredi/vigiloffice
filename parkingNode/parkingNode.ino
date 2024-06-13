@@ -4,6 +4,10 @@
 #include <ArduinoJson.h>
 #include "secrets.h"
 #include "sensorJsonNames.h"
+#include <time.h>
+extern "C" {
+#include "user_interface.h"
+}
 
 #define ENABLE_LOGS true
 
@@ -20,6 +24,9 @@ enum LOG_LEVEL {
 
 LOG_LEVEL logLevel = LOG_COMM;
 #endif
+
+// === TIME ===
+unsigned long checkSleepInterval = 300000;
 
 // === ALARM ===
 enum ALARM_SYSTEM_STATUS {
@@ -476,10 +483,52 @@ void commLoop() {
   mqttClient.loop();      // MQTT client loop
 }
 
+void wakeUpCallback() {
+  Serial.println(F("Woke from Light Sleep"));
+  Serial.flush();
+}
+
+void checkForSleep() {
+  static unsigned long lastSleepCheck = millis();
+  if (millis() - lastSleepCheck > checkSleepInterval) {
+    lastSleepCheck = millis();
+    time_t now = time(nullptr);
+    struct tm* timeInfo = localtime(&now);
+
+    int currentHour = timeInfo->tm_hour;
+
+    if (currentHour == 21) {
+      int sleepTimeSeconds;
+      sleepTimeSeconds = (24 - currentHour + 7) * 3600 - (timeInfo->tm_min * 60 + timeInfo->tm_sec);
+
+      timed_light_sleep(sleepTimeSeconds * 1000);
+    }
+  }
+}
+
+void timed_light_sleep(unsigned int sleep_time_ms) {
+  Serial.print(F("Parking is closed from 21:00 to 8:00"));
+  Serial.print(sleep_time_ms);
+  Serial.println(F(" ms..."));
+  Serial.flush();
+
+  wifi_set_opmode_current(NULL_MODE);
+  extern os_timer_t* timer_list;
+  timer_list = nullptr;
+  wifi_fpm_set_sleep_type(LIGHT_SLEEP_T);
+  wifi_fpm_open();
+  wifi_fpm_set_wakeup_cb(wakeUpCallback);
+  wifi_fpm_do_sleep(sleep_time_ms * 1000);
+  esp_delay(sleep_time_ms + 1);
+  Serial.println(F("Woke up!"));
+}
+
 void setup() {
 #ifdef ENABLE_LOGS
   Serial.begin(115200);
 #endif
+
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
 
   pinMode(RGB_RED_PIN, OUTPUT);
   pinMode(RGB_GREEN_PIN, OUTPUT);
@@ -493,6 +542,7 @@ void setup() {
 }
 
 void loop() {
+  checkForSleep();
   readFlame();
   readFlooding();
   readAvoidance();
