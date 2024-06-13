@@ -104,11 +104,17 @@ class MqttManager {
 
   void _handleLampStatus(String macAddress, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
-    Map<String, dynamic> data = jsonDecode(payload);
-    Lamp lamp = Lamp.fromJson(data);
-    lamp.lastUpdate = DateTime.now();
-    await _lampsEndpoint.updateLamp(session, lamp);
-    session.close();
+    try {
+      Map<String, dynamic> data = jsonDecode(payload);
+      Lamp lamp = Lamp.fromJson(data);
+      lamp.lastUpdate = DateTime.now();
+      await _lampsEndpoint.updateLamp(session, lamp);
+    } catch (e, s) {
+      session.log('Error while handling lamp status: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+    } finally {
+      session.close();
+    }
   }
 
 //=== END LAMP ===
@@ -131,11 +137,17 @@ class MqttManager {
 
   void _handleHvacStatus(String macAddress, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
-    Map<String, dynamic> data = jsonDecode(payload);
-    Hvac hvac = Hvac.fromJson(data);
-    hvac.lastUpdate = DateTime.now();
-    await _hvacEndpoint.updateHvac(session, hvac);
-    session.close();
+    try {
+      Map<String, dynamic> data = jsonDecode(payload);
+      Hvac hvac = Hvac.fromJson(data);
+      hvac.lastUpdate = DateTime.now();
+      await _hvacEndpoint.updateHvac(session, hvac);
+    } catch (e, s) {
+      session.log('Error while handling hvac status: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+    } finally {
+      session.close();
+    }
   }
 
 // === END HVAC ===
@@ -169,23 +181,27 @@ class MqttManager {
 
   void _handleRegisterMessage(String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
-    Map<String, dynamic> data = jsonDecode(payload);
-    Device device =
-        await _deviceEndpoint.updateDevice(session, Device.fromJson(data));
-    session.log("Device registered: ${device.id} (${device.macAddress})");
+    try {
+      Map<String, dynamic> data = jsonDecode(payload);
+      Device device =
+          await _deviceEndpoint.updateDevice(session, Device.fromJson(data));
+      session.log("Device registered: ${device.id} (${device.macAddress})");
+      session.close();
+      String msg = jsonEncode({
+        "statusTopic":
+            "vigiloffice/${device.type}s/${device.macAddress}/status",
+        "controlTopic":
+            "vigiloffice/${device.type}s/${device.macAddress}/control"
+      });
+      MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+      builder.addString(msg);
+      _client!.publishMessage("vigiloffice/register/${device.macAddress}",
+          MqttQos.atLeastOnce, builder.payload!);
+    } catch (e, s) {
+      session.log('Error while handling register message: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+    }
     session.close();
-    String msg = jsonEncode({
-      "statusTopic": "vigiloffice/${device.type}s/${device.macAddress}/status",
-      "controlTopic": "vigiloffice/${device.type}s/${device.macAddress}/control"
-    });
-    MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
-    builder.addString(msg);
-    _client!.publishMessage("vigiloffice/register/${device.macAddress}",
-        MqttQos.atLeastOnce, builder.payload!);
-    /* _client!.subscribe(
-        "vigiloffice/${device.type}s/${device.macAddress}/status",
-        MqttQos.atLeastOnce);
-        */
   }
 
   void _handleLwtMessage(String payload) async {
