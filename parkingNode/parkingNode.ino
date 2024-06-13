@@ -484,7 +484,7 @@ void commLoop() {
 }
 
 void wakeUpCallback() {
-  Serial.println(F("Woke from Light Sleep"));
+  Serial.println(F("Parking is opened from 7:00 to 21:00"));
   Serial.flush();
 }
 
@@ -507,7 +507,7 @@ void checkForSleep() {
 }
 
 void timed_light_sleep(unsigned int sleep_time_ms) {
-  Serial.print(F("Parking is closed from 21:00 to 8:00"));
+  Serial.print(F("Parking is closed from 21:00 to 7:00"));
   Serial.print(sleep_time_ms);
   Serial.println(F(" ms..."));
   Serial.flush();
