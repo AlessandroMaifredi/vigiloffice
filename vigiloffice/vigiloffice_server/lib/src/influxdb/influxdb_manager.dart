@@ -125,7 +125,7 @@ class InfluxDBManager {
 
 extension on Lamp {
   Point toPoint() {
-    return Point('lamp')
+    return Point('lamps')
       ..addTag('macAddress', macAddress)
       ..addField('lightValue', lightSensor.value)
       ..addField('lightStatus', lightSensor.status)
@@ -147,7 +147,7 @@ extension on Lamp {
 
 extension on Hvac{
   Point toPoint(){
-    return Point('hvac')
+    return Point('hvacs')
       ..addTag('macAddress', macAddress)
       ..addField('flameValue', flameSensor.value)
       ..addField('flameStatus', flameSensor.status)
@@ -167,7 +167,7 @@ extension on Hvac{
 
 extension on Parking{
   Point toPoint(){
-    return Point('parking')
+    return Point('parkings')
       ..addTag('macAddress', macAddress)
       ..addField('flameValue', flameSensor.value)
       ..addField('flameStatus', flameSensor.status)
