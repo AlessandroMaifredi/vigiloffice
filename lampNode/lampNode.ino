@@ -505,7 +505,7 @@ void applyControlChanges(JsonDocument controlDoc) {
 
   JsonObject rgbActuator = controlDoc[RGB_ACTUATOR_JSON_NAME].as<JsonObject>();
   rgbStatus = rgbActuator[STATUS_JSON_NAME];
-  rgbSensorStatus = rgbActuator[RGB_ACTUATOR_JSON_NAME] == true ? RGB_SENSOR_ENABLED : RGB_SENSOR_DISABLED;
+  rgbSensorStatus = rgbActuator[SENSOR_STATUS_JSON_NAME] == true ? RGB_SENSOR_ENABLED : RGB_SENSOR_DISABLED;
 }
 
 void commSetup() {
