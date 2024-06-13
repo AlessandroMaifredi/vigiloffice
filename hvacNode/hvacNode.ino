@@ -8,7 +8,7 @@
 #include "secrets.h"
 #include "sensorsJsonNames.h"
 
-
+#define ENABLE_LOGS true
 
 // === LOGGING ===
 #ifdef ENABLE_LOGS
@@ -20,7 +20,7 @@ enum LOG_LEVEL {
   LOG_OFF,
 };
 
-LOG_LEVEL logLevel = LOG_ALL;
+LOG_LEVEL logLevel = LOG_COMM;
 #endif
 
 // === ALARM ===
@@ -348,7 +348,7 @@ void setRegisterTopic(JsonDocument doc) {
   }
 #endif
   JsonDocument settingsDoc;
-  settingsDoc[F("mac-address")] = macAddress;
+  settingsDoc[F("macAddress")] = macAddress;
   settingsDoc[F("type")] = DEVICE_TYPE;
   char buffer[512];
   size_t n = serializeJson(settingsDoc, buffer);
@@ -420,13 +420,6 @@ void setup() {
 #ifdef ENABLE_LOGS
   Serial.begin(115200);
 #endif
-  /*
-  pinMode(RGB_RED_PIN, OUTPUT);
-  pinMode(RGB_GREEN_PIN, OUTPUT);
-  pinMode(RGB_BLUE_PIN, OUTPUT);
-
-  setRGBOff();
-  */
 
   dht.begin();
 
