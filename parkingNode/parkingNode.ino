@@ -276,7 +276,7 @@ void updateStatusDoc() {
   statusDoc[F("macAddress")] = macAddress;
 
   JsonObject floodingSensor = statusDoc.createNestedObject(FLOODING_SENSOR_JSON_NAME);
-  floodingSensor[STATUS_JSON_NAME] = flameStatus;
+  floodingSensor[STATUS_JSON_NAME] = floodingStatus;
   floodingSensor[SENSOR_STATUS_JSON_NAME] = floodingSensorStatus == FLOODING_SENSOR_ENABLED ? true : false;
   floodingSensor[SENSOR_HIGH_THRESHOLD_JSON_NAME] = floodingHighThreshold;
   floodingSensor[SENSOR_READING_INTERVAL_JSON_NAME] = flameReadingInterval;
