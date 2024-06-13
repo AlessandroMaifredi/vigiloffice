@@ -18,7 +18,7 @@ enum LOG_LEVEL {
   LOG_OFF,
 };
 
-LOG_LEVEL logLevel = LOG_ALL;
+LOG_LEVEL logLevel = LOG_COMM;
 #endif
 
 // === ALARM ===
