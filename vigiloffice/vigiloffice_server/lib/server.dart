@@ -5,6 +5,7 @@ import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
 import 'src/influxdb/influxdb_manager.dart';
 import 'src/mqtt/mqtt_manager.dart';
+import 'src/telegram/telegram_manager.dart';
 import 'src/web/routes/devices_route.dart';
 import 'src/web/routes/hvacs_route.dart';
 import 'src/web/routes/lamps_route.dart';
@@ -41,6 +42,8 @@ void run(List<String> args) async {
 
   final InfluxDBManager influxDBManager = InfluxDBManager();
 
+  final TelegramManager telegramManager = TelegramManager();
+
   // If you are using any future calls, they need to be registered here.
   // pod.registerFutureCall(ExampleFutureCall(), 'exampleFutureCall');
 
@@ -75,7 +78,8 @@ void run(List<String> args) async {
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s');
     pod.webServer.addRoute(
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s/');
-    pod.webServer.addRoute(JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
+    pod.webServer.addRoute(
+        JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
   }
 
   // Human to machine (HTM) routes.
@@ -128,6 +132,15 @@ void run(List<String> args) async {
     } catch (e, s) {
       pod.createSession().then((value) async {
         value.log('Failed to connect to InfluxDB: $e',
+            level: LogLevel.error, exception: e, stackTrace: s);
+        await value.close();
+      });
+    }
+    try {
+      telegramManager.init(pod.getPassword('telegramBotToken')!);
+    } catch (e, s) {
+      pod.createSession().then((value) async {
+        value.log('Failed to init Telegram bot: $e',
             level: LogLevel.error, exception: e, stackTrace: s);
         await value.close();
       });

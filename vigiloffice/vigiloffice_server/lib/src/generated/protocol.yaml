@@ -18,6 +18,7 @@ lamps:
 parkings:
   - createParking:
   - readParking:
+  - getFreeParkings:
   - updateParking:
   - deleteParking:
   - controlParking:

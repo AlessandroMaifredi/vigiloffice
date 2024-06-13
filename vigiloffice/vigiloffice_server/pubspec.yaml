@@ -10,6 +10,7 @@ dependencies:
   serverpod: 2.0.0
   mqtt_client: ^10.2.1
   influxdb_client: ^2.9.0
+  teledart: ^0.6.1
 
 dev_dependencies:
   lints: '>=3.0.0 <5.0.0'
