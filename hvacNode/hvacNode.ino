@@ -89,7 +89,7 @@ enum TEMP_STATUS {
 volatile TEMP_STATUS tempStatus = TEMP_NORM;
 
 
-unsigned long tempReadingInterval = 60000;
+unsigned long tempReadingInterval = 1000;
 
 int lowTempThreshold = 18;
 
@@ -97,15 +97,18 @@ int highTempThreshold = 24;
 
 int tempTarget = 21;
 
-int temp;
-int hum;
+float temp;
+float hum;
+bool simulatedTemp = false;
 
 void readTemp() {
   static unsigned long lastTempReading = millis();
   if (tempSensorStatus == TEMP_SENSOR_ENABLED) {
     if (millis() - lastTempReading > tempReadingInterval) {
-      temp = dht.readTemperature();
-      hum = dht.readHumidity();
+      if (!simulatedTemp) {
+        temp = dht.readTemperature();
+        hum = dht.readHumidity();
+      }
       simulateHVAC();
       if (temp >= highTempThreshold) {
         tempStatus = TEMP_HIGH;
@@ -147,6 +150,7 @@ HVAC_SENSOR_STATUS hvacSensorStatus = HVAC_SENSOR_DISABLED;
 
 void simulateHVAC() {
   if (hvacSensorStatus == HVAC_SENSOR_ENABLED) {
+    simulatedTemp = true;
     if (tempStatus == TEMP_LOW) {
       temp += 2;
     } else if (tempStatus == TEMP_HIGH) {
@@ -157,8 +161,12 @@ void simulateHVAC() {
         temp += 1;
       } else if (targetDiff < 0) {
         temp -= 1;
+      } else {
+        simulatedTemp = false;
       }
     }
+  } else {
+    simulatedTemp = false;
   }
 }
 
@@ -236,7 +244,7 @@ void updateStatusDoc() {
   tempSensor[SENSOR_READING_INTERVAL_JSON_NAME] = tempReadingInterval;
   tempSensor[SENSOR_HIGH_THRESHOLD_JSON_NAME] = highTempThreshold;
   tempSensor[SENSOR_LOW_THRESHOLD_JSON_NAME] = lowTempThreshold;
-  tempSensor[SENSOR_TEMP_TARGET_JSON_NAME] = highTempThreshold;
+  tempSensor[SENSOR_TEMP_TARGET_JSON_NAME] = tempTarget;
 
   JsonObject hvacSensor = statusDoc.createNestedObject(VENT_ACTUATOR_JSON_NAME);
   hvacSensor[SENSOR_STATUS_JSON_NAME] = hvacSensorStatus == HVAC_SENSOR_ENABLED ? true : false;

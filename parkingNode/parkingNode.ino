@@ -123,7 +123,7 @@ enum FLOODING_STATUS {
 
 FLOODING_SENSOR_STATUS floodingSensorStatus = FLOODING_SENSOR_ENABLED;
 volatile FLOODING_STATUS floodingStatus = FLOODING_ABSENT;
-unsigned int floodingHighThreshold = 90;
+unsigned int floodingHighThreshold = 100;
 unsigned long floodingReadingInterval = 1000;
 
 void readFlooding() {
