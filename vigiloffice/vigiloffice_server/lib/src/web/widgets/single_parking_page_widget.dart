@@ -3,7 +3,8 @@ import 'package:serverpod/relic.dart';
 import '../../generated/protocol.dart';
 
 class SingleParkingPageWidget extends Widget {
-  SingleParkingPageWidget({required Parking parking}) : super(name: 'single_parking_page') {
+  SingleParkingPageWidget({required Parking parking})
+      : super(name: 'single_parking_page') {
     Map<String, dynamic> parkingValues = parking.toJson();
     if (parking.lastUpdate != null) {
       final difference = DateTime.now().difference(parking.lastUpdate!);
@@ -40,17 +41,24 @@ class SingleParkingPageWidget extends Widget {
       if (parking.avoidanceSensor.status == 0) "avoidanceStatus1": false,
       if (parking.avoidanceSensor.status == 1) "avoidanceStatus1": true,
       if (parking.avoidanceSensor.status == 1) "avoidanceStatus0": false,
-      if(parking.rgbLed.enabled) "rgbIsEnabled": true,
-      if(!parking.rgbLed.enabled) "rgbIsEnabled": false,
-      if(parking.rgbLed.status == 0) "rgbStatus0": true,
-      if(parking.rgbLed.status == 0) "rgbStatus1": false,
-      if(parking.rgbLed.status == 0) "rgbStatus2": false,
-      if(parking.rgbLed.status == 1) "rgbStatus1": true,
-      if(parking.rgbLed.status == 1) "rgbStatus0": false,
-      if(parking.rgbLed.status == 1) "rgbStatus2": false,
-      if(parking.rgbLed.status == 2) "rgbStatus2": true,
-      if(parking.rgbLed.status == 2) "rgbStatus0": false,
-      if(parking.rgbLed.status == 2) "rgbStatus1": false,
+      if (parking.rgbLed.enabled) "rgbIsEnabled": true,
+      if (!parking.rgbLed.enabled) "rgbIsEnabled": false,
+      if (parking.rgbLed.status == 0) "rgbStatus0": true,
+      if (parking.rgbLed.status == 0) "rgbStatus1": false,
+      if (parking.rgbLed.status == 0) "rgbStatus2": false,
+      if (parking.rgbLed.status == 0) "rgbStatus3": false,
+      if (parking.rgbLed.status == 1) "rgbStatus1": true,
+      if (parking.rgbLed.status == 1) "rgbStatus0": false,
+      if (parking.rgbLed.status == 1) "rgbStatus2": false,
+      if (parking.rgbLed.status == 1) "rgbStatus3": false,
+      if (parking.rgbLed.status == 2) "rgbStatus2": true,
+      if (parking.rgbLed.status == 2) "rgbStatus0": false,
+      if (parking.rgbLed.status == 2) "rgbStatus1": false,
+      if (parking.rgbLed.status == 2) "rgbStatus3": false,
+      if (parking.rgbLed.status == 3) "rgbStatus3": true,
+      if (parking.rgbLed.status == 3) "rgbStatus0": false,
+      if (parking.rgbLed.status == 3) "rgbStatus1": false,
+      if (parking.rgbLed.status == 3) "rgbStatus2": false,
       if (parking.alarm.enabled) "alarmIsEnabled": true,
       if (!parking.alarm.enabled) "alarmIsEnabled": false,
       if (parking.alarm.status) "alarmIsActive": true,

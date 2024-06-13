@@ -147,11 +147,11 @@ class MqttManager {
   /// Throws an [Exception] if the MQTT client is not initialized.
   void controlParking(Parking parking) {
     ensureInitialized();
-    // Handle the logic to control the hvac
+    // Handle the logic to control the parking
     MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(jsonEncode(parking.toJson()));
     _client!.publishMessage(
-        "vigiloffice/${DeviceType.hvac}s/${parking.macAddress}/control",
+        "vigiloffice/${DeviceType.parking}s/${parking.macAddress}/control",
         MqttQos.atLeastOnce,
         builder.payload!);
   }

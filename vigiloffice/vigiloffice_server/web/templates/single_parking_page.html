@@ -139,7 +139,7 @@
                             <label for='avoidanceDropdown'>State</label>
                             <select class='form-control' id='avoidanceDropdown' name='avoidanceDropdown'>
                                 <option value='0' {{#avoidanceStatus0}} selected {{/avoidanceStatus0}}>OCCUPIED</option>
-                                <option value='1' {{^avoidanceStatus1}} selected {{/avoidanceStatus1}}>FREE</option>
+                                <option value='1' {{#avoidanceStatus1}} selected {{/avoidanceStatus1}}>FREE</option>
                             </select>
                             <div class='invalid-feedback'>Please select a choice from the dropdown.</div>
                         </div>
@@ -266,7 +266,7 @@
         crossorigin='anonymous'></script>
     <script>
         $(document).ready(function () {
-            $('#floodingHighThresholdSlider, #floodingHighThresholdSliderInput').on('input', function () {
+            $('#floodingSlider, #floodingSliderInput').on('input', function () {
                 var value = this.value;
                 $('#' + this.id).val(value);
                 $('#' + this.id + 'Input').val(value);
