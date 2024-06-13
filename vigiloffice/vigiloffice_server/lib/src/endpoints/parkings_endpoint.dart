@@ -29,7 +29,7 @@ class ParkingsEndpoint extends Endpoint {
             return Parking.db.findById(session, parking.id!);
           }
           return Parking.db.findFirstRow(session,
-            where: (o) => o.macAddress.equals(parking.macAddress));
+              where: (o) => o.macAddress.equals(parking.macAddress));
         },
         lifetime: Duration(minutes: 5),
       ),
@@ -38,25 +38,32 @@ class ParkingsEndpoint extends Endpoint {
     return res;
   }
 
+  Future<List<Parking>> getFreeParkings(Session session) async {
+    return (await Parking.db.find(session))
+        .where((element) => element.rgbLed.status == 2)
+        .toList();
+  }
+
   /// Updates an existing parking on the database.
   ///
   /// Does not update the parking on the MQTT broker. See [MqttManager.controlParking] for that.
   ///
   /// Returns the updated parking.
   Future<Parking> updateParking(Session session, Parking parking) async {
-    if (parking.id == null) {
-      var oldParking = await session.caches.local.get(
-        '$parkingCacheKeyPrefix${parking.macAddress}',
-        CacheMissHandler(
-          () async => Parking.db.findFirstRow(session,
-              where: (o) => o.macAddress.equals(parking.macAddress)),
-          lifetime: Duration(minutes: 5),
-        ),
-      );
-      if (oldParking == null) {
-        return createParking(session, parking);
-      }
-      parking.id = oldParking.id;
+    var oldParking = await session.caches.local.get(
+      '$parkingCacheKeyPrefix${parking.macAddress}',
+      CacheMissHandler(
+        () async => Parking.db.findFirstRow(session,
+            where: (o) => o.macAddress.equals(parking.macAddress)),
+        lifetime: Duration(minutes: 5),
+      ),
+    );
+    if (oldParking == null) {
+      return createParking(session, parking);
+    }
+    parking.id = oldParking.id;
+    if (parking.rgbLed.status == 3) {
+      parking.renterId = oldParking.renterId;
     }
     InfluxDBManager().writeStatus(data: parking, type: DeviceType.parking);
     return Parking.db.updateRow(session, parking);

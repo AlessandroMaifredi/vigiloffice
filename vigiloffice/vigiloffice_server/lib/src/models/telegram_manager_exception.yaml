@@ -1,0 +1,3 @@
+exception: TelegramManagerException
+fields:
+  message: String

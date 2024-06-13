@@ -25,8 +25,10 @@ import 'motion_sensor.dart' as _i13;
 import 'mqtt_manager_exception.dart' as _i14;
 import 'parking.dart' as _i15;
 import 'rgb_led.dart' as _i16;
-import 'temp_sensor.dart' as _i17;
-import 'vent_actuator.dart' as _i18;
+import 'telegram_manager_exception.dart' as _i17;
+import 'temp_sensor.dart' as _i18;
+import 'vent_actuator.dart' as _i19;
+import 'package:vigiloffice_server/src/generated/parking.dart' as _i20;
 export 'alarm.dart';
 export 'avoidance.dart';
 export 'device.dart';
@@ -41,6 +43,7 @@ export 'motion_sensor.dart';
 export 'mqtt_manager_exception.dart';
 export 'parking.dart';
 export 'rgb_led.dart';
+export 'telegram_manager_exception.dart';
 export 'temp_sensor.dart';
 export 'vent_actuator.dart';
 
@@ -299,6 +302,12 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: true,
           dartType: 'DateTime?',
         ),
+        _i2.ColumnDefinition(
+          name: 'renterId',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
       ],
       foreignKeys: [],
       indexes: [
@@ -369,11 +378,14 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i16.RGBLed) {
       return _i16.RGBLed.fromJson(data) as T;
     }
-    if (t == _i17.TempSensor) {
-      return _i17.TempSensor.fromJson(data) as T;
+    if (t == _i17.TelegramManagerException) {
+      return _i17.TelegramManagerException.fromJson(data) as T;
     }
-    if (t == _i18.VentActuator) {
-      return _i18.VentActuator.fromJson(data) as T;
+    if (t == _i18.TempSensor) {
+      return _i18.TempSensor.fromJson(data) as T;
+    }
+    if (t == _i19.VentActuator) {
+      return _i19.VentActuator.fromJson(data) as T;
     }
     if (t == _i1.getType<_i3.Alarm?>()) {
       return (data != null ? _i3.Alarm.fromJson(data) : null) as T;
@@ -418,11 +430,20 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i16.RGBLed?>()) {
       return (data != null ? _i16.RGBLed.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i17.TempSensor?>()) {
-      return (data != null ? _i17.TempSensor.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i17.TelegramManagerException?>()) {
+      return (data != null
+          ? _i17.TelegramManagerException.fromJson(data)
+          : null) as T;
     }
-    if (t == _i1.getType<_i18.VentActuator?>()) {
-      return (data != null ? _i18.VentActuator.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i18.TempSensor?>()) {
+      return (data != null ? _i18.TempSensor.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i19.VentActuator?>()) {
+      return (data != null ? _i19.VentActuator.fromJson(data) : null) as T;
+    }
+    if (t == List<_i20.Parking>) {
+      return (data as List).map((e) => deserialize<_i20.Parking>(e)).toList()
+          as dynamic;
     }
     try {
       return _i2.Protocol().deserialize<T>(data, t);
@@ -474,10 +495,13 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i16.RGBLed) {
       return 'RGBLed';
     }
-    if (data is _i17.TempSensor) {
+    if (data is _i17.TelegramManagerException) {
+      return 'TelegramManagerException';
+    }
+    if (data is _i18.TempSensor) {
       return 'TempSensor';
     }
-    if (data is _i18.VentActuator) {
+    if (data is _i19.VentActuator) {
       return 'VentActuator';
     }
     return super.getClassNameForObject(data);
@@ -527,11 +551,14 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data['className'] == 'RGBLed') {
       return deserialize<_i16.RGBLed>(data['data']);
     }
+    if (data['className'] == 'TelegramManagerException') {
+      return deserialize<_i17.TelegramManagerException>(data['data']);
+    }
     if (data['className'] == 'TempSensor') {
-      return deserialize<_i17.TempSensor>(data['data']);
+      return deserialize<_i18.TempSensor>(data['data']);
     }
     if (data['className'] == 'VentActuator') {
-      return deserialize<_i18.VentActuator>(data['data']);
+      return deserialize<_i19.VentActuator>(data['data']);
     }
     return super.deserializeByClassName(data);
   }

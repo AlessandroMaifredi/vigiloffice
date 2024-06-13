@@ -219,6 +219,13 @@ class EndpointParkings extends _i1.EndpointRef {
         {'parking': parking},
       );
 
+  _i2.Future<List<_i6.Parking>> getFreeParkings() =>
+      caller.callServerEndpoint<List<_i6.Parking>>(
+        'parkings',
+        'getFreeParkings',
+        {},
+      );
+
   /// Updates an existing parking on the database.
   ///
   /// Does not update the parking on the MQTT broker. See [MqttManager.controlParking] for that.

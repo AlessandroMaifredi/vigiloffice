@@ -23,6 +23,7 @@ abstract class Parking extends _i1.TableRow
     required this.rgbLed,
     required this.alarm,
     this.lastUpdate,
+    this.renterId,
   }) : super(id);
 
   factory Parking({
@@ -34,6 +35,7 @@ abstract class Parking extends _i1.TableRow
     required _i2.RGBLed rgbLed,
     required _i2.Alarm alarm,
     DateTime? lastUpdate,
+    String? renterId,
   }) = _ParkingImpl;
 
   factory Parking.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -53,6 +55,7 @@ abstract class Parking extends _i1.TableRow
       lastUpdate: jsonSerialization['lastUpdate'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastUpdate']),
+      renterId: jsonSerialization['renterId'] as String?,
     );
   }
 
@@ -74,6 +77,8 @@ abstract class Parking extends _i1.TableRow
 
   DateTime? lastUpdate;
 
+  String? renterId;
+
   @override
   _i1.Table get table => t;
 
@@ -86,6 +91,7 @@ abstract class Parking extends _i1.TableRow
     _i2.RGBLed? rgbLed,
     _i2.Alarm? alarm,
     DateTime? lastUpdate,
+    String? renterId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -98,6 +104,7 @@ abstract class Parking extends _i1.TableRow
       'rgbLed': rgbLed.toJson(),
       'alarm': alarm.toJson(),
       if (lastUpdate != null) 'lastUpdate': lastUpdate?.toJson(),
+      if (renterId != null) 'renterId': renterId,
     };
   }
 
@@ -157,6 +164,7 @@ class _ParkingImpl extends Parking {
     required _i2.RGBLed rgbLed,
     required _i2.Alarm alarm,
     DateTime? lastUpdate,
+    String? renterId,
   }) : super._(
           id: id,
           macAddress: macAddress,
@@ -166,6 +174,7 @@ class _ParkingImpl extends Parking {
           rgbLed: rgbLed,
           alarm: alarm,
           lastUpdate: lastUpdate,
+          renterId: renterId,
         );
 
   @override
@@ -178,6 +187,7 @@ class _ParkingImpl extends Parking {
     _i2.RGBLed? rgbLed,
     _i2.Alarm? alarm,
     Object? lastUpdate = _Undefined,
+    Object? renterId = _Undefined,
   }) {
     return Parking(
       id: id is int? ? id : this.id,
@@ -188,6 +198,7 @@ class _ParkingImpl extends Parking {
       rgbLed: rgbLed ?? this.rgbLed.copyWith(),
       alarm: alarm ?? this.alarm.copyWith(),
       lastUpdate: lastUpdate is DateTime? ? lastUpdate : this.lastUpdate,
+      renterId: renterId is String? ? renterId : this.renterId,
     );
   }
 }
@@ -222,6 +233,10 @@ class ParkingTable extends _i1.Table {
       'lastUpdate',
       this,
     );
+    renterId = _i1.ColumnString(
+      'renterId',
+      this,
+    );
   }
 
   late final _i1.ColumnString macAddress;
@@ -238,6 +253,8 @@ class ParkingTable extends _i1.Table {
 
   late final _i1.ColumnDateTime lastUpdate;
 
+  late final _i1.ColumnString renterId;
+
   @override
   List<_i1.Column> get columns => [
         id,
@@ -248,6 +265,7 @@ class ParkingTable extends _i1.Table {
         rgbLed,
         alarm,
         lastUpdate,
+        renterId,
       ];
 }
 
