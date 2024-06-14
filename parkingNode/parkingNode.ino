@@ -5,6 +5,7 @@
 #include "secrets.h"
 #include "sensorJsonNames.h"
 #include <time.h>
+#include <ArduinoOTA.h>
 extern "C" {
 #include "user_interface.h"
 }
@@ -379,7 +380,7 @@ void connectToMQTTBroker() {
   }
 }
 
-void mqttMessageReceived(String &topic, String &payload) {
+void mqttMessageReceived(String& topic, String& payload) {
 #ifdef ENABLE_LOGS
   if (logLevel == LOG_ALL || logLevel == LOG_COMM) {
     Serial.println(F("Incoming MQTT message: ") + topic + F(" - ") + payload);
@@ -523,6 +524,27 @@ void timed_light_sleep(unsigned int sleep_time_ms) {
   Serial.println(F("Woke up!"));
 }
 
+void otaSetup() {
+  ArduinoOTA.setHostname(AP_NAME);
+  ArduinoOTA.onStart([]() {  // switch off all the PWMs during upgrade
+#ifdef ENABLE_LOGS
+    Serial.println(F("Starting OTA."));
+#endif
+  });
+  ArduinoOTA.onEnd([]() {  // do a fancy thing with our board led at end
+#ifdef ENABLE_LOGS
+    Serial.println(F("OTA finished."));
+#endif
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    (void)error;
+    ESP.restart();
+  });
+  ArduinoOTA.begin();
+}
+
+
 void setup() {
 #ifdef ENABLE_LOGS
   Serial.begin(115200);
@@ -533,15 +555,14 @@ void setup() {
   pinMode(RGB_RED_PIN, OUTPUT);
   pinMode(RGB_GREEN_PIN, OUTPUT);
   pinMode(RGB_BLUE_PIN, OUTPUT);
-
   setRGBAvailable();
-
   pinMode(FLAME_SENSOR_PIN, INPUT);
-
   commSetup();
+  otaSetup();
 }
 
 void loop() {
+  ArduinoOTA.handle();
   checkForSleep();
   readFlame();
   readFlooding();

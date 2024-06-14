@@ -7,6 +7,7 @@
 #include <DHT.h>
 #include "secrets.h"
 #include "sensorsJsonNames.h"
+#include <ArduinoOTA.h>
 
 #define ENABLE_LOGS true
 
@@ -423,6 +424,26 @@ void commLoop() {
   mqttClient.loop();      // MQTT client loop
 }
 
+void otaSetup() {
+  ArduinoOTA.setHostname(AP_NAME);
+  ArduinoOTA.onStart([]() {  // switch off all the PWMs during upgrade
+#ifdef ENABLE_LOGS
+    Serial.println(F("Starting OTA."));
+#endif
+  });
+  ArduinoOTA.onEnd([]() {  // do a fancy thing with our board led at end
+#ifdef ENABLE_LOGS
+    Serial.println(F("OTA finished."));
+#endif
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    (void)error;
+    ESP.restart();
+  });
+  ArduinoOTA.begin();
+}
+
 
 void setup() {
 #ifdef ENABLE_LOGS
@@ -434,9 +455,11 @@ void setup() {
   pinMode(FLAME_SENSOR_PIN, INPUT);
 
   commSetup();
+  otaSetup();
 }
 
 void loop() {
+  ArduinoOTA.handle();
   readFlame();
   readTemp();
   commLoop();
