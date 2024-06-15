@@ -109,7 +109,7 @@ void run(List<String> args) async {
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s/');
     pod.webServer.addRoute(JsonDevicesRoute(type: type, isSemantic: true),
         '$wotPrefix/devices/${type.name}s/');
-        
+
     pod.webServer.addRoute(
         JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
     pod.webServer.addRoute(JsonSingleDeviceRoute(isSemantic: true),
@@ -164,29 +164,26 @@ void run(List<String> args) async {
         bucket: pod.getPassword('influxDbBucket')!,
       ));
     } catch (e, s) {
-      pod.createSession().then((value) async {
-        value.log('Failed to connect to InfluxDB: $e',
-            level: LogLevel.error, exception: e, stackTrace: s);
-        await value.close();
-      });
+      Session session = await pod.createSession();
+      session.log('Failed to connect to InfluxDB: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+      await session.close();
     }
     try {
       telegramManager.init(pod.getPassword('telegramBotToken')!);
     } catch (e, s) {
-      pod.createSession().then((value) async {
-        value.log('Failed to init Telegram bot: $e',
-            level: LogLevel.error, exception: e, stackTrace: s);
-        await value.close();
-      });
+      Session session = await pod.createSession();
+      session.log('Failed to init Telegram bot: $e',
+          level: LogLevel.error, exception: e, stackTrace: s);
+      await session.close();
     }
     // Start the server.
     await pod.start();
   } catch (e, s) {
-    pod.createSession().then((value) async {
-      value.log("MQTT connection failed",
-          exception: e, level: LogLevel.fatal, stackTrace: s);
-      await value.close();
-      await pod.shutdown();
-    });
+    Session session = await pod.createSession();
+    session.log("MQTT connection failed",
+        exception: e, level: LogLevel.fatal, stackTrace: s);
+    await session.close();
+    await pod.shutdown();
   }
 }
