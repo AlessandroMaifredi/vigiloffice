@@ -4,7 +4,7 @@ table: hvacs
 
 fields:
   macAddress: String
-
+  type: DeviceType
   flameSensor: FlameSensor
   tempSensor: TempSensor
   ventActuator: VentActuator

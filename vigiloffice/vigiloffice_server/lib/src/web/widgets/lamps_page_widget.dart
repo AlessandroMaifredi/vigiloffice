@@ -1,6 +1,7 @@
 import 'package:serverpod/relic.dart';
 
 import '../../generated/protocol.dart';
+import '../routes/mtm/semantic_helper.dart';
 
 class LampsPageWidget extends Widget {
   LampsPageWidget({required List<Lamp> lamps}) : super(name: 'status_page') {
@@ -31,6 +32,11 @@ class LampsPageWidget extends Widget {
 
 
 class JsonLampsWidget extends WidgetJson {
-  JsonLampsWidget({required List<Lamp> lamps})
-      : super(object: lamps.map((e) => e.toJson()).toList());
+  JsonLampsWidget({required List<Lamp> lamps, bool isSemantic = false})
+      : super(object: lamps.map((e) {
+        if (isSemantic) {
+          return transformStatusJsonToWoT(e.toJson());
+        }
+        return e.toJson();
+      }).toList());
 }

@@ -96,6 +96,7 @@ extension HvacUrlParser on Hvac {
   Hvac fromUrlEncodedParams(String unparsedParams) {
     Map<String, dynamic> params = _paramsMapFromEncodedUrl(unparsedParams);
     return Hvac(
+      type: DeviceType.hvac,
       macAddress: params['macAddress'],
       id: int.tryParse(params['id'] ?? ""),
       lastUpdate: params['lastUpdate'] != "null"

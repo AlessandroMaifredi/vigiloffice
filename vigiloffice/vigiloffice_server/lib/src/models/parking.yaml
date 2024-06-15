@@ -4,6 +4,7 @@ table: parkings
 
 fields:
   macAddress: String
+  type: DeviceType
   floodingSensor: FloodingSensor
   flameSensor: FlameSensor
   avoidanceSensor: AvoidanceSensor

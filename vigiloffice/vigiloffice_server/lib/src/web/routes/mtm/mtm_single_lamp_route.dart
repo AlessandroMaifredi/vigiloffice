@@ -5,8 +5,13 @@ import 'package:serverpod/serverpod.dart';
 
 import '../../../endpoints/lamps_endpoint.dart';
 import '../../../generated/protocol.dart';
+import 'semantic_helper.dart';
 
 class JsonSingleLampRoute extends WidgetRoute {
+  final bool isSemantic;
+
+  JsonSingleLampRoute({this.isSemantic = false}) : super();
+
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -79,6 +84,9 @@ class JsonSingleLampRoute extends WidgetRoute {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.json;
     setHeaders(request.response.headers);
+    if (isSemantic) {
+      return WidgetJson(object: transformStatusJsonToWoT(lamp.toJson()));
+    }
     return WidgetJson(object: lamp.toJson());
   }
 
@@ -99,6 +107,9 @@ class JsonSingleLampRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformStatusJsonToWoT(lamp.toJson()));
+      }
       return WidgetJson(object: lamp.toJson());
     } catch (e, s) {
       session.log('Failed to update lamp: ${lamp.macAddress}',
@@ -128,6 +139,9 @@ class JsonSingleLampRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformStatusJsonToWoT(lamp.toJson()));
+      }
       return WidgetJson(object: deletedLamp.toJson());
     } catch (e, s) {
       session.log('Failed to delete lamp: ${lamp.macAddress}',

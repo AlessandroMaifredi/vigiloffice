@@ -1,0 +1,1028 @@
+openapi: 3.1.0
+info:
+  title: Machine to Machine API
+  description: "This API allows you to read the system status and change it using JSON files. All endpoints check the value of the “Accept” header provided by the client: if it is defined, it must be “application/json” or accept any type of response; otherwise, the server will always respond with a 400 Bad Request error. In all cases of a response other than 200 OK, the server provides both a “Reason phrase” for the error and a JSON that contains the error, in this way it is possible to optimize the management of client-side errors."
+  version: 1.0.0-oas3.1
+servers:
+  - url: /api/v1/
+tags:
+  - name: Devices
+  - name: Status
+paths:
+  /devices/:
+    options:
+      tags:
+        - Devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, POST, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewDevice'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /devices/{type}/:
+    parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+    options:
+      tags:
+        - Devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, POST, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewDevice'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /devices/{type}/{mac}/:
+    parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: mac
+        in: path
+        required: true
+        schema:
+          type: string
+    options:
+      tags:
+        - Devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, PUT, DELETE, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status/:
+    options:
+      tags:
+        - Status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LampStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status/lamps/:
+    options:
+      tags:
+        - Status > lamps
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, POST, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status > lamps
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LampStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Status > lamps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LampStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LampStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status/lamps/{mac}/:
+    parameters:
+      - name: mac
+        in: path
+        required: true
+        schema:
+          type: string
+    options:
+      tags:
+        - Status > lamps
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, PUT, DELETE, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status > lamps
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LampStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Status > lamps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LampStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LampStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Status > lamps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LampStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LampStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /status/hvacs/:
+    options:
+      tags:
+        - Status > hvacs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, POST, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status > hvacs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HvacStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Status > hvacs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HvacStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HvacStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status/hvacs/{mac}/:
+    parameters:
+      - name: mac
+        in: path
+        required: true
+        schema:
+          type: string
+    options:
+      tags:
+        - Status > hvacs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, PUT, DELETE, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status > hvacs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HvacStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Status > hvacs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HvacStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HvacStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Status > hvacs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HvacStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HvacStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found  
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status/parkings/:
+    options:
+      tags:
+        - Status > parkings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, POST, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status > parkings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Status > parkings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status/parkings/{mac}/:
+    parameters:
+      - name: mac
+        in: path
+        required: true
+        schema:
+          type: string
+    options:
+      tags:
+        - Status > parkings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: string
+                    example: GET, PUT, DELETE, OPTIONS
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Status > parkings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Status > parkings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Status > parkings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "This endpoint only supports application/json."
+    DeviceConnectionStatus:
+      type: string
+      enum:
+        - connected
+        - disconnected
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        macAddress:
+          type: string
+        type:
+          type: string
+        status:
+          $ref: '#/components/schemas/DeviceConnectionStatus'
+    NewDevice:
+      type: object
+      properties:
+        macAddress:
+          type: string
+        type:
+          type: string
+    LightSensor:
+      type: object
+      properties:
+        value:
+          type: integer
+          example: 123
+        status:
+          type: integer
+          example: 0
+        enabled:
+          type: boolean
+          example: true
+        interval:
+          type: integer
+          example: 5000
+        lowThreshold:
+          type: integer
+          example: 350
+    MotionSensor:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 2
+        enabled:
+          type: boolean
+          example: false
+    FlameSensor:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 0
+        enabled:
+          type: boolean
+          example: true
+        interval:
+          type: integer
+          example: 1000
+    RgbLed:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 0
+        enabled:
+          type: boolean
+          example: true
+    Alarm:
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: false
+        enabled:
+          type: boolean
+          example: true
+    LampStatus:
+      type: object
+      properties:
+        type:
+          type: string
+          example: lamp
+        macAddress:
+          type: string
+          example: 1a:2b:3c:4d:5e:6f
+        lightSensor:
+          $ref: '#/components/schemas/LightSensor'
+        motionSensor:
+          $ref: '#/components/schemas/MotionSensor'
+        flameSensor:
+          $ref: '#/components/schemas/FlameSensor'
+        rgbLed:
+          $ref: '#/components/schemas/RgbLed'
+        alarm:
+          $ref: '#/components/schemas/Alarm'
+    FloodingSensor:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 0
+        enabled:
+          type: boolean
+          example: true
+        highThreshold:
+          type: integer
+          example: 100
+        interval:
+          type: integer
+          example: 1000
+    AvoidanceSensor:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 0
+        enabled:
+          type: boolean
+          example: true
+    ParkingStatus:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "parking"
+        macAddress:
+          type: string
+          example: "2a:2b:2c:3d:3e:3f"
+        floodingSensor:
+          $ref: '#/components/schemas/FloodingSensor'
+        flameSensor:
+          $ref: '#/components/schemas/FlameSensor'
+        avoidanceSensor:
+          $ref: '#/components/schemas/AvoidanceSensor'
+        rgbLed:
+          $ref: '#/components/schemas/RgbLed'
+        alarm:
+          $ref: '#/components/schemas/Alarm'
+    TempSensor:
+      type: object
+      properties:
+        tempValue:
+          type: integer
+          example: 22
+        humValue:
+          type: integer
+          example: 22
+        status:
+          type: integer
+          example: 1
+        enabled:
+          type: boolean
+          example: true
+        interval:
+          type: integer
+          example: 5000
+        highThreshold:
+          type: integer
+          example: 24
+        lowThreshold:
+          type: integer
+          example: 18
+        target:
+          type: integer
+          example: 22
+    VentActuator:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: true
+    HvacStatus:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "hvac"
+        macAddress:
+          type: string
+          example: "6f:5e:4d:3c:2b:1a"
+        tempSensor:
+          $ref: '#/components/schemas/TempSensor'
+        ventActuator:
+          $ref: '#/components/schemas/VentActuator'
+        flameSensor:
+          $ref: '#/components/schemas/FlameSensor'
+        alarm:
+          $ref: '#/components/schemas/Alarm'

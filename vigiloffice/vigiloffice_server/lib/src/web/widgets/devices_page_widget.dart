@@ -1,6 +1,7 @@
 import 'package:serverpod/relic.dart';
 
 import '../../generated/protocol.dart';
+import '../routes/mtm/semantic_helper.dart';
 
 class DevicesPageWidget extends Widget {
   DevicesPageWidget({required List<Map<String,dynamic>> devices, DeviceType? type})
@@ -14,6 +15,11 @@ class DevicesPageWidget extends Widget {
 }
 
 class JsonDevicesWidget extends WidgetJson {
-  JsonDevicesWidget({required List<Device> devices})
-      : super(object: devices.map((e) => e.toJson()).toList());
+  JsonDevicesWidget({required List<Device> devices, bool isSemantic = false})
+      : super(object: devices.map((e) {
+        if (isSemantic) {
+          return transformBasicInfoJsonToWoT(e.toJson());
+        }
+        return e.toJson();
+      }).toList());
 }

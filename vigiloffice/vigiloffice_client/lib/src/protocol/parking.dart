@@ -15,6 +15,7 @@ abstract class Parking implements _i1.SerializableModel {
   Parking._({
     this.id,
     required this.macAddress,
+    required this.type,
     required this.floodingSensor,
     required this.flameSensor,
     required this.avoidanceSensor,
@@ -26,6 +27,7 @@ abstract class Parking implements _i1.SerializableModel {
   factory Parking({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.FloodingSensor floodingSensor,
     required _i2.FlameSensor flameSensor,
     required _i2.AvoidanceSensor avoidanceSensor,
@@ -38,6 +40,7 @@ abstract class Parking implements _i1.SerializableModel {
     return Parking(
       id: jsonSerialization['id'] as int?,
       macAddress: jsonSerialization['macAddress'] as String,
+      type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       floodingSensor: _i2.FloodingSensor.fromJson(
           (jsonSerialization['floodingSensor'] as Map<String, dynamic>)),
       flameSensor: _i2.FlameSensor.fromJson(
@@ -61,6 +64,8 @@ abstract class Parking implements _i1.SerializableModel {
 
   String macAddress;
 
+  _i2.DeviceType type;
+
   _i2.FloodingSensor floodingSensor;
 
   _i2.FlameSensor flameSensor;
@@ -76,6 +81,7 @@ abstract class Parking implements _i1.SerializableModel {
   Parking copyWith({
     int? id,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.FloodingSensor? floodingSensor,
     _i2.FlameSensor? flameSensor,
     _i2.AvoidanceSensor? avoidanceSensor,
@@ -88,6 +94,7 @@ abstract class Parking implements _i1.SerializableModel {
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'floodingSensor': floodingSensor.toJson(),
       'flameSensor': flameSensor.toJson(),
       'avoidanceSensor': avoidanceSensor.toJson(),
@@ -109,6 +116,7 @@ class _ParkingImpl extends Parking {
   _ParkingImpl({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.FloodingSensor floodingSensor,
     required _i2.FlameSensor flameSensor,
     required _i2.AvoidanceSensor avoidanceSensor,
@@ -118,6 +126,7 @@ class _ParkingImpl extends Parking {
   }) : super._(
           id: id,
           macAddress: macAddress,
+          type: type,
           floodingSensor: floodingSensor,
           flameSensor: flameSensor,
           avoidanceSensor: avoidanceSensor,
@@ -130,6 +139,7 @@ class _ParkingImpl extends Parking {
   Parking copyWith({
     Object? id = _Undefined,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.FloodingSensor? floodingSensor,
     _i2.FlameSensor? flameSensor,
     _i2.AvoidanceSensor? avoidanceSensor,
@@ -140,6 +150,7 @@ class _ParkingImpl extends Parking {
     return Parking(
       id: id is int? ? id : this.id,
       macAddress: macAddress ?? this.macAddress,
+      type: type ?? this.type,
       floodingSensor: floodingSensor ?? this.floodingSensor.copyWith(),
       flameSensor: flameSensor ?? this.flameSensor.copyWith(),
       avoidanceSensor: avoidanceSensor ?? this.avoidanceSensor.copyWith(),

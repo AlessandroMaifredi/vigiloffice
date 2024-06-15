@@ -6,8 +6,14 @@ import 'package:serverpod/serverpod.dart';
 import '../../../endpoints/parkings_endpoint.dart';
 import '../../../generated/protocol.dart';
 import '../../widgets/parkings_page_widget.dart';
+import 'semantic_helper.dart';
 
 class JsonParkingsRoute extends WidgetRoute {
+
+  final bool isSemantic;
+
+  JsonParkingsRoute({this.isSemantic = false}) : super();
+
   @override
   Future<WidgetJson> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -53,7 +59,7 @@ class JsonParkingsRoute extends WidgetRoute {
     request.response.headers.contentType = ContentType.json;
     request.response.statusCode = HttpStatus.ok;
     setHeaders(request.response.headers);
-    return JsonParkingsWidget(parkings: parkings);
+    return JsonParkingsWidget(parkings: parkings, isSemantic: isSemantic);
   }
 
   Future<WidgetJson> _post(Session session, HttpRequest request) async {
@@ -91,6 +97,9 @@ class JsonParkingsRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if(isSemantic){
+        return WidgetJson(object: transformStatusJsonToWoT(parking.toJson()));
+      }
       return WidgetJson(object: parking.toJson());
     } catch (e, s) {
       session.log('MTM | Failed to create parking',

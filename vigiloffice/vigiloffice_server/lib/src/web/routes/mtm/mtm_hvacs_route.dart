@@ -6,8 +6,14 @@ import 'package:serverpod/serverpod.dart';
 import '../../../endpoints/hvacs_endpoint.dart';
 import '../../../generated/protocol.dart';
 import '../../widgets/hvacs_page_widget.dart';
+import 'semantic_helper.dart';
 
 class JsonHvacsRoute extends WidgetRoute {
+
+  final bool isSemantic;
+
+  JsonHvacsRoute({this.isSemantic = false}) : super();
+
   @override
   Future<WidgetJson> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -44,7 +50,7 @@ class JsonHvacsRoute extends WidgetRoute {
     request.response.headers.contentType = ContentType.json;
     request.response.headers.set('Allow', 'GET, POST, OPTIONS');
     setHeaders(request.response.headers);
-    return WidgetJson(object: {});
+    return WidgetJson(object: {'options': 'GET, POST, OPTIONS'});
   }
 
   Future<WidgetJson> _get(Session session, HttpRequest request) async {
@@ -53,7 +59,7 @@ class JsonHvacsRoute extends WidgetRoute {
     request.response.headers.contentType = ContentType.json;
     request.response.statusCode = HttpStatus.ok;
     setHeaders(request.response.headers);
-    return JsonHvacsWidget(hvacs: hvacs);
+    return JsonHvacsWidget(hvacs: hvacs, isSemantic: isSemantic);
   }
 
   Future<WidgetJson> _post(Session session, HttpRequest request) async {
@@ -91,6 +97,9 @@ class JsonHvacsRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if(isSemantic){
+        return WidgetJson(object: transformStatusJsonToWoT(hvac.toJson()));
+      }
       return WidgetJson(object: hvac.toJson());
     } catch (e, s) {
       session.log('MTM | Failed to create hvac',

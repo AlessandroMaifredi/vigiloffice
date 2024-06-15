@@ -94,6 +94,7 @@ extension LampUrlParser on Lamp {
   Lamp fromUrlEncodedParams(String unparsedParams) {
     Map<String, dynamic> params = _paramsMapFromEncodedUrl(unparsedParams);
     return Lamp(
+      type: DeviceType.lamp,
       macAddress: params['macAddress'],
       id: int.tryParse(params['id'] ?? ""),
       lastUpdate: params['lastUpdate'] != "null"

@@ -4,6 +4,7 @@ table: lamps
 
 fields:
   macAddress: String
+  type: DeviceType
   lightSensor: LightSensor
   motionSensor: MotionSensor
   flameSensor: FlameSensor

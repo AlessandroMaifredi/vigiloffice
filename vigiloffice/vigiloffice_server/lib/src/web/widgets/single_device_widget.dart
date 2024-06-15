@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/web/routes/mtm/semantic_helper.dart';
 
 import '../../generated/protocol.dart';
 
@@ -15,6 +16,6 @@ class SingleDevicePageWidget extends Widget {
 }
 
 class JsonSingleDeviceWidget extends WidgetJson {
-  JsonSingleDeviceWidget({required Device device})
-      : super(object: device.toJson());
+  JsonSingleDeviceWidget({required Device device, bool isSemantic = false})
+      : super(object: isSemantic ? transformBasicInfoJsonToWoT(device.toJson()) : device.toJson());
 }

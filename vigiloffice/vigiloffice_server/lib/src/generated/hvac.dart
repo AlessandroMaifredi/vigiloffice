@@ -16,6 +16,7 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
   Hvac._({
     int? id,
     required this.macAddress,
+    required this.type,
     required this.flameSensor,
     required this.tempSensor,
     required this.ventActuator,
@@ -26,6 +27,7 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
   factory Hvac({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.FlameSensor flameSensor,
     required _i2.TempSensor tempSensor,
     required _i2.VentActuator ventActuator,
@@ -37,6 +39,7 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
     return Hvac(
       id: jsonSerialization['id'] as int?,
       macAddress: jsonSerialization['macAddress'] as String,
+      type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       flameSensor: _i2.FlameSensor.fromJson(
           (jsonSerialization['flameSensor'] as Map<String, dynamic>)),
       tempSensor: _i2.TempSensor.fromJson(
@@ -57,6 +60,8 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
 
   String macAddress;
 
+  _i2.DeviceType type;
+
   _i2.FlameSensor flameSensor;
 
   _i2.TempSensor tempSensor;
@@ -73,6 +78,7 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
   Hvac copyWith({
     int? id,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.FlameSensor? flameSensor,
     _i2.TempSensor? tempSensor,
     _i2.VentActuator? ventActuator,
@@ -84,6 +90,7 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'flameSensor': flameSensor.toJson(),
       'tempSensor': tempSensor.toJson(),
       'ventActuator': ventActuator.toJson(),
@@ -97,6 +104,7 @@ abstract class Hvac extends _i1.TableRow implements _i1.ProtocolSerialization {
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'flameSensor': flameSensor.toJsonForProtocol(),
       'tempSensor': tempSensor.toJsonForProtocol(),
       'ventActuator': ventActuator.toJsonForProtocol(),
@@ -141,6 +149,7 @@ class _HvacImpl extends Hvac {
   _HvacImpl({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.FlameSensor flameSensor,
     required _i2.TempSensor tempSensor,
     required _i2.VentActuator ventActuator,
@@ -149,6 +158,7 @@ class _HvacImpl extends Hvac {
   }) : super._(
           id: id,
           macAddress: macAddress,
+          type: type,
           flameSensor: flameSensor,
           tempSensor: tempSensor,
           ventActuator: ventActuator,
@@ -160,6 +170,7 @@ class _HvacImpl extends Hvac {
   Hvac copyWith({
     Object? id = _Undefined,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.FlameSensor? flameSensor,
     _i2.TempSensor? tempSensor,
     _i2.VentActuator? ventActuator,
@@ -169,6 +180,7 @@ class _HvacImpl extends Hvac {
     return Hvac(
       id: id is int? ? id : this.id,
       macAddress: macAddress ?? this.macAddress,
+      type: type ?? this.type,
       flameSensor: flameSensor ?? this.flameSensor.copyWith(),
       tempSensor: tempSensor ?? this.tempSensor.copyWith(),
       ventActuator: ventActuator ?? this.ventActuator.copyWith(),
@@ -183,6 +195,11 @@ class HvacTable extends _i1.Table {
     macAddress = _i1.ColumnString(
       'macAddress',
       this,
+    );
+    type = _i1.ColumnEnum(
+      'type',
+      this,
+      _i1.EnumSerialization.byName,
     );
     flameSensor = _i1.ColumnSerializable(
       'flameSensor',
@@ -208,6 +225,8 @@ class HvacTable extends _i1.Table {
 
   late final _i1.ColumnString macAddress;
 
+  late final _i1.ColumnEnum<_i2.DeviceType> type;
+
   late final _i1.ColumnSerializable flameSensor;
 
   late final _i1.ColumnSerializable tempSensor;
@@ -222,6 +241,7 @@ class HvacTable extends _i1.Table {
   List<_i1.Column> get columns => [
         id,
         macAddress,
+        type,
         flameSensor,
         tempSensor,
         ventActuator,

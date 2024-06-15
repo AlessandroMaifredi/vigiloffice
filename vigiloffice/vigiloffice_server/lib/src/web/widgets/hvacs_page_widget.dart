@@ -1,6 +1,7 @@
 import 'package:serverpod/relic.dart';
 
 import '../../generated/protocol.dart';
+import '../routes/mtm/semantic_helper.dart';
 
 class HvacsPageWidget extends Widget {
   HvacsPageWidget({required List<Hvac> hvacs})
@@ -33,6 +34,11 @@ class HvacsPageWidget extends Widget {
 
 
 class JsonHvacsWidget extends WidgetJson {
-  JsonHvacsWidget({required List<Hvac> hvacs})
-      : super(object: hvacs.map((e) => e.toJson()).toList());
+  JsonHvacsWidget({required List<Hvac> hvacs, bool isSemantic = false})
+      : super(object: hvacs.map((e) {
+        if (isSemantic) {
+          return transformStatusJsonToWoT(e.toJson());
+        }
+        return e.toJson();
+      }).toList());
 }

@@ -95,6 +95,7 @@ extension ParkingUrlParser on Parking {
   Parking fromUrlEncodedParams(String unparsedParams) {
     Map<String, dynamic> params = _paramsMapFromEncodedUrl(unparsedParams);
     return Parking(
+      type: DeviceType.parking,
       macAddress: params['macAddress'],
       id: int.tryParse(params['id'] ?? ""),
       lastUpdate: params['lastUpdate'] != "null"

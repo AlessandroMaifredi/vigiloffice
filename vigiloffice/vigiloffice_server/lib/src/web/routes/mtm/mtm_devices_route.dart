@@ -6,11 +6,14 @@ import 'package:serverpod/serverpod.dart';
 import '../../../endpoints/device_endpoint.dart';
 import '../../../generated/protocol.dart';
 import '../../widgets/devices_page_widget.dart';
+import 'semantic_helper.dart';
 
 class JsonDevicesRoute extends WidgetRoute {
   final DeviceType? type;
 
-  JsonDevicesRoute({this.type}) : super();
+  final bool isSemantic;
+
+  JsonDevicesRoute({this.type, this.isSemantic = false}) : super();
 
   @override
   Future<WidgetJson> build(Session session, HttpRequest request) async {
@@ -60,7 +63,7 @@ class JsonDevicesRoute extends WidgetRoute {
     request.response.headers.contentType = ContentType.json;
     request.response.statusCode = HttpStatus.ok;
     setHeaders(request.response.headers);
-    return JsonDevicesWidget(devices: devices);
+    return JsonDevicesWidget(devices: devices, isSemantic: isSemantic);
   }
 
   Future<WidgetJson> _post(Session session, HttpRequest request) async {
@@ -98,6 +101,7 @@ class JsonDevicesRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if(isSemantic) return WidgetJson(object: transformBasicInfoJsonToWoT(device.toJson()));
       return WidgetJson(object: device.toJson());
     } catch (e, s) {
       session.log('MTM | Failed to create device',

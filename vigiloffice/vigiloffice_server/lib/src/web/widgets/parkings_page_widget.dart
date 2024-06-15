@@ -1,6 +1,7 @@
 import 'package:serverpod/relic.dart';
 
 import '../../generated/protocol.dart';
+import '../routes/mtm/semantic_helper.dart';
 
 class ParkingsPageWidget extends Widget {
   ParkingsPageWidget({required List<Parking> parkings})
@@ -32,6 +33,11 @@ class ParkingsPageWidget extends Widget {
 }
 
 class JsonParkingsWidget extends WidgetJson {
-  JsonParkingsWidget({required List<Parking> parkings})
-      : super(object: parkings.map((e) => e.toJson()).toList());
+  JsonParkingsWidget({required List<Parking> parkings, bool isSemantic = false})
+      : super(object: parkings.map((e) {
+        if (isSemantic) {
+          return transformStatusJsonToWoT(e.toJson());
+        }
+        return e.toJson();
+      }).toList());
 }

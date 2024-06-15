@@ -1,4 +1,5 @@
 import 'package:serverpod/relic.dart';
+import 'package:vigiloffice_server/src/web/routes/mtm/semantic_helper.dart';
 
 import '../../generated/protocol.dart';
 
@@ -31,6 +32,6 @@ class StatusPageWidget extends Widget {
 }
 
 class JsonStatusWidget extends WidgetJson {
-  JsonStatusWidget({required List<Map<String, dynamic>> nodes})
-      : super(object: nodes);
+  JsonStatusWidget({required List<Map<String, dynamic>> nodes, bool isSemantic = false})
+      : super(object: isSemantic ? nodes.map((n) => transformStatusJsonToWoT(n)).toList() : nodes);
 }

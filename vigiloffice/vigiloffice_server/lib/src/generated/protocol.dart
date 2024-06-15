@@ -125,6 +125,12 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'String',
         ),
         _i2.ColumnDefinition(
+          name: 'type',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:DeviceType',
+        ),
+        _i2.ColumnDefinition(
           name: 'flameSensor',
           columnType: _i2.ColumnType.json,
           isNullable: false,
@@ -191,6 +197,12 @@ class Protocol extends _i1.SerializationManagerServer {
           columnType: _i2.ColumnType.text,
           isNullable: false,
           dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'type',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:DeviceType',
         ),
         _i2.ColumnDefinition(
           name: 'lightSensor',
@@ -265,6 +277,12 @@ class Protocol extends _i1.SerializationManagerServer {
           columnType: _i2.ColumnType.text,
           isNullable: false,
           dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'type',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:DeviceType',
         ),
         _i2.ColumnDefinition(
           name: 'floodingSensor',

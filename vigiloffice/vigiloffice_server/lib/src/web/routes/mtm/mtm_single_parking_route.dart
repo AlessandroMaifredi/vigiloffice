@@ -5,8 +5,13 @@ import 'package:serverpod/serverpod.dart';
 
 import '../../../endpoints/parkings_endpoint.dart';
 import '../../../generated/protocol.dart';
+import 'semantic_helper.dart';
 
 class JsonSingleParkingRoute extends WidgetRoute {
+  final bool isSemantic;
+
+  JsonSingleParkingRoute({this.isSemantic = false}) : super();
+
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -79,6 +84,9 @@ class JsonSingleParkingRoute extends WidgetRoute {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.json;
     setHeaders(request.response.headers);
+    if (isSemantic) {
+      return WidgetJson(object: transformStatusJsonToWoT(parking.toJson()));
+    }
     return WidgetJson(object: parking.toJson());
   }
 
@@ -99,6 +107,9 @@ class JsonSingleParkingRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformStatusJsonToWoT(parking.toJson()));
+      }
       return WidgetJson(object: parking.toJson());
     } catch (e, s) {
       session.log('Failed to update parking: ${parking.macAddress}',
@@ -130,6 +141,9 @@ class JsonSingleParkingRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformStatusJsonToWoT(parking.toJson()));
+      }
       return WidgetJson(object: parking.toJson());
     } catch (e, s) {
       session.log('Failed to delete parking: ${parking.macAddress}',

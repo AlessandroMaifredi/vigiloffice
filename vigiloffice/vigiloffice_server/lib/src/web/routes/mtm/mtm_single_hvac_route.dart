@@ -3,10 +3,15 @@ import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:vigiloffice_server/src/endpoints/hvacs_endpoint.dart';
+import 'package:vigiloffice_server/src/web/routes/mtm/semantic_helper.dart';
 
 import '../../../generated/protocol.dart';
 
 class JsonSingleHvacRoute extends WidgetRoute {
+  final bool isSemantic;
+
+  JsonSingleHvacRoute({this.isSemantic = false}) : super();
+
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -79,6 +84,9 @@ class JsonSingleHvacRoute extends WidgetRoute {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.json;
     setHeaders(request.response.headers);
+    if (isSemantic) {
+      return WidgetJson(object: transformStatusJsonToWoT(hvac.toJson()));
+    }
     return WidgetJson(object: hvac.toJson());
   }
 
@@ -98,6 +106,9 @@ class JsonSingleHvacRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformStatusJsonToWoT(hvac.toJson()));
+      }
       return WidgetJson(object: hvac.toJson());
     } catch (e, s) {
       session.log('Failed to update hvac: ${hvac.macAddress}',
@@ -127,6 +138,9 @@ class JsonSingleHvacRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformStatusJsonToWoT(hvac.toJson()));
+      }
       return WidgetJson(object: deletedHvac.toJson());
     } catch (e, s) {
       session.log('Failed to delete hvac: ${hvac.macAddress}',

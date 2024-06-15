@@ -54,32 +54,66 @@ void run(List<String> args) async {
   pod.webServer.addRoute(JsonDevicesRoute(), '$mtmPrefix/devices/');
   pod.webServer.addRoute(JsonStatusRoute(), '$mtmPrefix/status');
   pod.webServer.addRoute(JsonStatusRoute(), '$mtmPrefix/status/');
+
+  pod.webServer
+      .addRoute(JsonDevicesRoute(isSemantic: true), '$wotPrefix/devices');
+  pod.webServer
+      .addRoute(JsonDevicesRoute(isSemantic: true), '$wotPrefix/devices/');
+  pod.webServer
+      .addRoute(JsonStatusRoute(isSemantic: true), '$wotPrefix/status');
+  pod.webServer
+      .addRoute(JsonStatusRoute(isSemantic: true), '$wotPrefix/status/');
+
   for (DeviceType type in DeviceType.values) {
     WidgetRoute statusListRoute = JsonDevicesRoute();
     WidgetRoute singleRoute = JsonDevicesRoute();
+    WidgetRoute wotStatusListRoute = JsonDevicesRoute(isSemantic: true);
+    WidgetRoute wotSingleRoute = JsonDevicesRoute(isSemantic: true);
     switch (type) {
       case DeviceType.lamp:
         singleRoute = JsonSingleLampRoute();
         statusListRoute = JsonLampsRoute();
+        wotSingleRoute = JsonSingleLampRoute(isSemantic: true);
+        wotStatusListRoute = JsonLampsRoute(isSemantic: true);
         break;
       case DeviceType.hvac:
         singleRoute = JsonSingleHvacRoute();
         statusListRoute = JsonHvacsRoute();
+        wotSingleRoute = JsonSingleHvacRoute(isSemantic: true);
+        wotStatusListRoute = JsonHvacsRoute(isSemantic: true);
         break;
       case DeviceType.parking:
         singleRoute = JsonSingleParkingRoute();
         statusListRoute = JsonParkingsRoute();
+        wotSingleRoute = JsonSingleParkingRoute(isSemantic: true);
+        wotStatusListRoute = JsonParkingsRoute(isSemantic: true);
         break;
     }
     pod.webServer.addRoute(statusListRoute, '$mtmPrefix/status/${type.name}s');
+    pod.webServer
+        .addRoute(wotStatusListRoute, '$wotPrefix/status/${type.name}s');
+
     pod.webServer.addRoute(statusListRoute, '$mtmPrefix/status/${type.name}s/');
+    pod.webServer
+        .addRoute(wotStatusListRoute, '$wotPrefix/status/${type.name}s/');
+
     pod.webServer.addRoute(singleRoute, '$mtmPrefix/status/${type.name}s/*');
+    pod.webServer.addRoute(wotSingleRoute, '$wotPrefix/status/${type.name}s/*');
+
     pod.webServer.addRoute(
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s');
+    pod.webServer.addRoute(JsonDevicesRoute(type: type, isSemantic: true),
+        '$wotPrefix/devices/${type.name}s');
+
     pod.webServer.addRoute(
         JsonDevicesRoute(type: type), '$mtmPrefix/devices/${type.name}s/');
+    pod.webServer.addRoute(JsonDevicesRoute(type: type, isSemantic: true),
+        '$wotPrefix/devices/${type.name}s/');
+        
     pod.webServer.addRoute(
         JsonSingleDeviceRoute(), '$mtmPrefix/devices/${type.name}s/*');
+    pod.webServer.addRoute(JsonSingleDeviceRoute(isSemantic: true),
+        '$wotPrefix/devices/${type.name}s/*');
   }
 
   // Human to machine (HTM) routes.

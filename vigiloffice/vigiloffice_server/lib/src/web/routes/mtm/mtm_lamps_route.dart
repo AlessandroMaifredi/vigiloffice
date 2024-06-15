@@ -6,8 +6,14 @@ import 'package:serverpod/serverpod.dart';
 import '../../../endpoints/lamps_endpoint.dart';
 import '../../../generated/protocol.dart';
 import '../../widgets/lamps_page_widget.dart';
+import 'semantic_helper.dart';
 
 class JsonLampsRoute extends WidgetRoute {
+
+  final bool isSemantic;
+
+  JsonLampsRoute({this.isSemantic = false}) : super();
+
   @override
   Future<WidgetJson> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -53,7 +59,7 @@ class JsonLampsRoute extends WidgetRoute {
     request.response.headers.contentType = ContentType.json;
     request.response.statusCode = HttpStatus.ok;
     setHeaders(request.response.headers);
-    return JsonLampsWidget(lamps: lamps);
+    return JsonLampsWidget(lamps: lamps, isSemantic: isSemantic);
   }
 
   Future<WidgetJson> _post(Session session, HttpRequest request) async {
@@ -91,6 +97,9 @@ class JsonLampsRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if(isSemantic){
+        return WidgetJson(object: transformStatusJsonToWoT(lamp.toJson()));
+      }
       return WidgetJson(object: lamp.toJson());
     } catch (e, s) {
       session.log('MTM | Failed to create lamp',

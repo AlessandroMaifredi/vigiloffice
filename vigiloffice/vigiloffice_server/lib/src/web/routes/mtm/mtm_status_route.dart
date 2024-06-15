@@ -8,7 +8,9 @@ import '../../widgets/status_page_widget.dart';
 class JsonStatusRoute extends WidgetRoute {
   final DeviceType? type;
 
-  JsonStatusRoute({this.type}) : super();
+  final bool isSemantic;
+
+  JsonStatusRoute({this.type, this.isSemantic = false}) : super();
 
   @override
   Future<WidgetJson> build(Session session, HttpRequest request) async {
@@ -55,6 +57,6 @@ class JsonStatusRoute extends WidgetRoute {
     request.response.headers.contentType = ContentType.json;
     request.response.statusCode = HttpStatus.ok;
     setHeaders(request.response.headers);
-    return JsonStatusWidget(nodes: devices);
+    return JsonStatusWidget(nodes: devices, isSemantic: isSemantic);
   }
 }

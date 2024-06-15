@@ -2,11 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:serverpod/serverpod.dart';
+import 'package:vigiloffice_server/src/web/routes/mtm/semantic_helper.dart';
 
 import '../../../endpoints/device_endpoint.dart';
 import '../../../generated/protocol.dart';
 
 class JsonSingleDeviceRoute extends WidgetRoute {
+  final bool isSemantic;
+
+  JsonSingleDeviceRoute({this.isSemantic = false}) : super();
+
   @override
   Future<AbstractWidget> build(Session session, HttpRequest request) async {
     if (request.headers.value('Accept') != null) {
@@ -79,6 +84,9 @@ class JsonSingleDeviceRoute extends WidgetRoute {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.json;
     setHeaders(request.response.headers);
+    if (isSemantic) {
+      return WidgetJson(object: transformBasicInfoJsonToWoT(device.toJson()));
+    }
     return WidgetJson(object: device.toJson());
   }
 
@@ -96,6 +104,9 @@ class JsonSingleDeviceRoute extends WidgetRoute {
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformBasicInfoJsonToWoT(device.toJson()));
+      }
       return WidgetJson(object: device.toJson());
     } catch (e, s) {
       session.log('Failed to update device: ${device.macAddress}',
@@ -111,18 +122,24 @@ class JsonSingleDeviceRoute extends WidgetRoute {
   Future<WidgetJson> _delete(
       Session session, HttpRequest request, Device device) async {
     try {
-      Device? deletedDevice = await DevicesEndpoint().deleteDevice(session, device);
-      if(deletedDevice == null){
-        session.log('Failed to delete device ${device.macAddress}: not found', level: LogLevel.warning);
+      Device? deletedDevice =
+          await DevicesEndpoint().deleteDevice(session, device);
+      if (deletedDevice == null) {
+        session.log('Failed to delete device ${device.macAddress}: not found',
+            level: LogLevel.warning);
         request.response.statusCode = HttpStatus.notFound;
         request.response.reasonPhrase = 'Device ${device.macAddress} not found';
         request.response.headers.contentType = ContentType.json;
         setHeaders(request.response.headers);
-        return WidgetJson(object: {'error': 'Device ${device.macAddress} not found'});
+        return WidgetJson(
+            object: {'error': 'Device ${device.macAddress} not found'});
       }
       request.response.statusCode = HttpStatus.ok;
       request.response.headers.contentType = ContentType.json;
       setHeaders(request.response.headers);
+      if (isSemantic) {
+        return WidgetJson(object: transformBasicInfoJsonToWoT(device.toJson()));
+      }
       return WidgetJson(object: device.toJson());
     } catch (e, s) {
       session.log('Failed to delete device: ${device.macAddress}',

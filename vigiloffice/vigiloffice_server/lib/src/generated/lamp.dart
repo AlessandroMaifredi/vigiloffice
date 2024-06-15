@@ -16,6 +16,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
   Lamp._({
     int? id,
     required this.macAddress,
+    required this.type,
     required this.lightSensor,
     required this.motionSensor,
     required this.flameSensor,
@@ -27,6 +28,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
   factory Lamp({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.LightSensor lightSensor,
     required _i2.MotionSensor motionSensor,
     required _i2.FlameSensor flameSensor,
@@ -39,6 +41,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
     return Lamp(
       id: jsonSerialization['id'] as int?,
       macAddress: jsonSerialization['macAddress'] as String,
+      type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       lightSensor: _i2.LightSensor.fromJson(
           (jsonSerialization['lightSensor'] as Map<String, dynamic>)),
       motionSensor: _i2.MotionSensor.fromJson(
@@ -61,6 +64,8 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
 
   String macAddress;
 
+  _i2.DeviceType type;
+
   _i2.LightSensor lightSensor;
 
   _i2.MotionSensor motionSensor;
@@ -79,6 +84,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
   Lamp copyWith({
     int? id,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.LightSensor? lightSensor,
     _i2.MotionSensor? motionSensor,
     _i2.FlameSensor? flameSensor,
@@ -91,6 +97,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'lightSensor': lightSensor.toJson(),
       'motionSensor': motionSensor.toJson(),
       'flameSensor': flameSensor.toJson(),
@@ -105,6 +112,7 @@ abstract class Lamp extends _i1.TableRow implements _i1.ProtocolSerialization {
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'lightSensor': lightSensor.toJsonForProtocol(),
       'motionSensor': motionSensor.toJsonForProtocol(),
       'flameSensor': flameSensor.toJsonForProtocol(),
@@ -150,6 +158,7 @@ class _LampImpl extends Lamp {
   _LampImpl({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.LightSensor lightSensor,
     required _i2.MotionSensor motionSensor,
     required _i2.FlameSensor flameSensor,
@@ -159,6 +168,7 @@ class _LampImpl extends Lamp {
   }) : super._(
           id: id,
           macAddress: macAddress,
+          type: type,
           lightSensor: lightSensor,
           motionSensor: motionSensor,
           flameSensor: flameSensor,
@@ -171,6 +181,7 @@ class _LampImpl extends Lamp {
   Lamp copyWith({
     Object? id = _Undefined,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.LightSensor? lightSensor,
     _i2.MotionSensor? motionSensor,
     _i2.FlameSensor? flameSensor,
@@ -181,6 +192,7 @@ class _LampImpl extends Lamp {
     return Lamp(
       id: id is int? ? id : this.id,
       macAddress: macAddress ?? this.macAddress,
+      type: type ?? this.type,
       lightSensor: lightSensor ?? this.lightSensor.copyWith(),
       motionSensor: motionSensor ?? this.motionSensor.copyWith(),
       flameSensor: flameSensor ?? this.flameSensor.copyWith(),
@@ -196,6 +208,11 @@ class LampTable extends _i1.Table {
     macAddress = _i1.ColumnString(
       'macAddress',
       this,
+    );
+    type = _i1.ColumnEnum(
+      'type',
+      this,
+      _i1.EnumSerialization.byName,
     );
     lightSensor = _i1.ColumnSerializable(
       'lightSensor',
@@ -225,6 +242,8 @@ class LampTable extends _i1.Table {
 
   late final _i1.ColumnString macAddress;
 
+  late final _i1.ColumnEnum<_i2.DeviceType> type;
+
   late final _i1.ColumnSerializable lightSensor;
 
   late final _i1.ColumnSerializable motionSensor;
@@ -241,6 +260,7 @@ class LampTable extends _i1.Table {
   List<_i1.Column> get columns => [
         id,
         macAddress,
+        type,
         lightSensor,
         motionSensor,
         flameSensor,

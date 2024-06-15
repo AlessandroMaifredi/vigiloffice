@@ -17,6 +17,7 @@ abstract class Parking extends _i1.TableRow
   Parking._({
     int? id,
     required this.macAddress,
+    required this.type,
     required this.floodingSensor,
     required this.flameSensor,
     required this.avoidanceSensor,
@@ -29,6 +30,7 @@ abstract class Parking extends _i1.TableRow
   factory Parking({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.FloodingSensor floodingSensor,
     required _i2.FlameSensor flameSensor,
     required _i2.AvoidanceSensor avoidanceSensor,
@@ -42,6 +44,7 @@ abstract class Parking extends _i1.TableRow
     return Parking(
       id: jsonSerialization['id'] as int?,
       macAddress: jsonSerialization['macAddress'] as String,
+      type: _i2.DeviceType.fromJson((jsonSerialization['type'] as String)),
       floodingSensor: _i2.FloodingSensor.fromJson(
           (jsonSerialization['floodingSensor'] as Map<String, dynamic>)),
       flameSensor: _i2.FlameSensor.fromJson(
@@ -65,6 +68,8 @@ abstract class Parking extends _i1.TableRow
 
   String macAddress;
 
+  _i2.DeviceType type;
+
   _i2.FloodingSensor floodingSensor;
 
   _i2.FlameSensor flameSensor;
@@ -85,6 +90,7 @@ abstract class Parking extends _i1.TableRow
   Parking copyWith({
     int? id,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.FloodingSensor? floodingSensor,
     _i2.FlameSensor? flameSensor,
     _i2.AvoidanceSensor? avoidanceSensor,
@@ -98,6 +104,7 @@ abstract class Parking extends _i1.TableRow
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'floodingSensor': floodingSensor.toJson(),
       'flameSensor': flameSensor.toJson(),
       'avoidanceSensor': avoidanceSensor.toJson(),
@@ -113,6 +120,7 @@ abstract class Parking extends _i1.TableRow
     return {
       if (id != null) 'id': id,
       'macAddress': macAddress,
+      'type': type.toJson(),
       'floodingSensor': floodingSensor.toJsonForProtocol(),
       'flameSensor': flameSensor.toJsonForProtocol(),
       'avoidanceSensor': avoidanceSensor.toJsonForProtocol(),
@@ -158,6 +166,7 @@ class _ParkingImpl extends Parking {
   _ParkingImpl({
     int? id,
     required String macAddress,
+    required _i2.DeviceType type,
     required _i2.FloodingSensor floodingSensor,
     required _i2.FlameSensor flameSensor,
     required _i2.AvoidanceSensor avoidanceSensor,
@@ -168,6 +177,7 @@ class _ParkingImpl extends Parking {
   }) : super._(
           id: id,
           macAddress: macAddress,
+          type: type,
           floodingSensor: floodingSensor,
           flameSensor: flameSensor,
           avoidanceSensor: avoidanceSensor,
@@ -181,6 +191,7 @@ class _ParkingImpl extends Parking {
   Parking copyWith({
     Object? id = _Undefined,
     String? macAddress,
+    _i2.DeviceType? type,
     _i2.FloodingSensor? floodingSensor,
     _i2.FlameSensor? flameSensor,
     _i2.AvoidanceSensor? avoidanceSensor,
@@ -192,6 +203,7 @@ class _ParkingImpl extends Parking {
     return Parking(
       id: id is int? ? id : this.id,
       macAddress: macAddress ?? this.macAddress,
+      type: type ?? this.type,
       floodingSensor: floodingSensor ?? this.floodingSensor.copyWith(),
       flameSensor: flameSensor ?? this.flameSensor.copyWith(),
       avoidanceSensor: avoidanceSensor ?? this.avoidanceSensor.copyWith(),
@@ -208,6 +220,11 @@ class ParkingTable extends _i1.Table {
     macAddress = _i1.ColumnString(
       'macAddress',
       this,
+    );
+    type = _i1.ColumnEnum(
+      'type',
+      this,
+      _i1.EnumSerialization.byName,
     );
     floodingSensor = _i1.ColumnSerializable(
       'floodingSensor',
@@ -241,6 +258,8 @@ class ParkingTable extends _i1.Table {
 
   late final _i1.ColumnString macAddress;
 
+  late final _i1.ColumnEnum<_i2.DeviceType> type;
+
   late final _i1.ColumnSerializable floodingSensor;
 
   late final _i1.ColumnSerializable flameSensor;
@@ -259,6 +278,7 @@ class ParkingTable extends _i1.Table {
   List<_i1.Column> get columns => [
         id,
         macAddress,
+        type,
         floodingSensor,
         flameSensor,
         avoidanceSensor,

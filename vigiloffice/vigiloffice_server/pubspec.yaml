@@ -7,7 +7,7 @@ environment:
   sdk: '>=3.1.0 <4.0.0'
 
 dependencies:
-  serverpod: 2.0.0
+  serverpod: 2.0.1
   mqtt_client: ^10.2.1
   influxdb_client: ^2.9.0
   teledart: ^0.6.1
