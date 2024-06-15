@@ -27,10 +27,31 @@
         }
     </style>
     <title>Node: {{hvac.macAddress}}</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const htmlElement = document.documentElement;
+            const switchElement = document.getElementById('darkModeSwitch');
+
+            // Set the default theme to dark if no setting is found in local storage
+            const currentTheme = localStorage.getItem('bsTheme') || 'dark';
+            htmlElement.setAttribute('data-bs-theme', currentTheme);
+            switchElement.checked = currentTheme === 'dark';
+
+            switchElement.addEventListener('change', function () {
+                if (this.checked) {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('bsTheme', 'dark');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('bsTheme', 'light');
+                }
+            });
+        });
+    </script>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg border-bottom border-body">
         <div class="container">
             <a class="navbar-brand" href="/">VigilOffice</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -63,12 +84,15 @@
                             {{/types}}
                         </ul>
                     </li>
-
                 </ul>
+                <div class="ms-auto form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="darkModeSwitch" checked>
+                    <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+                </div>
             </div>
         </div>
     </nav>
-    <div class='container py-5'>
+    <div class='container py-5 mt-4'>
         <h1 class='mb-5 text-center'>Hvac {{hvac.macAddress}}</h1>
         <p class="lead">Last update: {{hvac.lastUpdateString}} | Device status:
             <strong>{{#deviceConnected}}Connected{{/deviceConnected}}{{^deviceConnected}}Disconnected{{/deviceConnected}}</strong>
@@ -344,6 +368,11 @@
             });
         });
     </script>
+    <footer id="bottom" class="row text-center fixed-bottom mb-1">
+        <div class="col-12">
+            Copyright © 2024 Alessandro Maifredi - Quazim Toska
+        </div>
+    </footer>
 </body>
 
 </html>
