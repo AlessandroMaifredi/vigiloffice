@@ -76,7 +76,12 @@ class SingleParkingRoute extends WidgetRoute {
       request.response.headers.contentType = ContentType.html;
       setHeaders(request.response.headers);
     }
-    return SingleParkingPageWidget(parking: parking);
+    DeviceStatus deviceStatus = (await Device.db.findFirstRow(session,
+                where: (o) => o.macAddress.equals(parking.macAddress)))
+            ?.status ??
+        DeviceStatus.disconnected;
+    return SingleParkingPageWidget(
+        parking: parking, deviceStatus: deviceStatus);
   }
 }
 

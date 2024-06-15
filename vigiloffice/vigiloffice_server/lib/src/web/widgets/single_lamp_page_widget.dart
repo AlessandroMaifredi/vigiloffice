@@ -3,7 +3,8 @@ import 'package:serverpod/relic.dart';
 import '../../generated/protocol.dart';
 
 class SingleLampPageWidget extends Widget {
-  SingleLampPageWidget({required Lamp lamp}) : super(name: 'single_lamp_page') {
+  SingleLampPageWidget({required Lamp lamp, required DeviceStatus deviceStatus})
+      : super(name: 'single_lamp_page') {
     Map<String, dynamic> lampValues = lamp.toJson();
     if (lamp.lastUpdate != null) {
       final difference = DateTime.now().difference(lamp.lastUpdate!);
@@ -21,6 +22,7 @@ class SingleLampPageWidget extends Widget {
 
     values = {
       "types": DeviceType.values.map((e) => e.name).toList(),
+      "deviceConnected": deviceStatus == DeviceStatus.connected ? true : false,
       "lamp": lampValues,
       if (lamp.flameSensor.enabled) "flameIsEnabled": true,
       if (!lamp.flameSensor.enabled) "flameIsEnabled": false,

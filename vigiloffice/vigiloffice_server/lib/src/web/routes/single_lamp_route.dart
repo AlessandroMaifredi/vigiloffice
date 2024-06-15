@@ -75,7 +75,11 @@ class SingleLampRoute extends WidgetRoute {
       request.response.headers.contentType = ContentType.html;
       setHeaders(request.response.headers);
     }
-    return SingleLampPageWidget(lamp: lamp);
+    DeviceStatus deviceStatus = (await Device.db.findFirstRow(session,
+                where: (o) => o.macAddress.equals(lamp.macAddress)))
+            ?.status ??
+        DeviceStatus.disconnected;
+    return SingleLampPageWidget(lamp: lamp, deviceStatus: deviceStatus);
   }
 }
 

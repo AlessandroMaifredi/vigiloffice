@@ -74,6 +74,8 @@ class SingleDeviceRoute extends WidgetRoute {
             null;
         break;
     }
+    statusAvailable =
+        statusAvailable && device.status != DeviceStatus.disconnected;
     return SingleDevicePageWidget(
         device: device, statusAvailable: statusAvailable);
   }

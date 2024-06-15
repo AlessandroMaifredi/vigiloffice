@@ -27,13 +27,12 @@ class SingleHvacRoute extends WidgetRoute {
       return StatusNotFoundPageWidget(
           type: DeviceType.hvac, macAddress: macAddress);
     }
-    if(request.method == 'OPTIONS'){
-          request.response.statusCode = HttpStatus.ok;
-    request.response.headers.contentType = ContentType.html;
-    request.response.headers.set('Allow', 'GET, PUT, DELETE, OPTIONS');
-    setHeaders(request.response.headers);
-    }
-    else if (request.method == 'PUT') {
+    if (request.method == 'OPTIONS') {
+      request.response.statusCode = HttpStatus.ok;
+      request.response.headers.contentType = ContentType.html;
+      request.response.headers.set('Allow', 'GET, PUT, DELETE, OPTIONS');
+      setHeaders(request.response.headers);
+    } else if (request.method == 'PUT') {
       String content = await utf8.decoder.bind(request).join();
       session.log('Received POST request with body: $content',
           level: LogLevel.debug);
@@ -54,8 +53,7 @@ class SingleHvacRoute extends WidgetRoute {
     } else if (request.method == 'DELETE') {
       try {
         await HvacsEndpoint().deleteHvac(session, hvac);
-        session.log('Deleted hvac: ${hvac.macAddress}',
-            level: LogLevel.info);
+        session.log('Deleted hvac: ${hvac.macAddress}', level: LogLevel.info);
         request.response.statusCode = HttpStatus.ok;
         request.response.headers.contentType = ContentType.html;
         setHeaders(request.response.headers);
@@ -68,7 +66,7 @@ class SingleHvacRoute extends WidgetRoute {
         request.response.headers.contentType = ContentType.html;
         setHeaders(request.response.headers);
       }
-    }else if (request.method == 'GET') {
+    } else if (request.method == 'GET') {
       request.response.headers.contentType = ContentType.html;
       request.response.statusCode = HttpStatus.ok;
       setHeaders(request.response.headers);
@@ -77,7 +75,11 @@ class SingleHvacRoute extends WidgetRoute {
       request.response.headers.contentType = ContentType.html;
       setHeaders(request.response.headers);
     }
-    return SingleHvacPageWidget(hvac: hvac);
+    DeviceStatus deviceStatus = (await Device.db.findFirstRow(session,
+                where: (o) => o.macAddress.equals(hvac.macAddress)))
+            ?.status ??
+        DeviceStatus.disconnected;
+    return SingleHvacPageWidget(hvac: hvac, deviceStatus: deviceStatus);
   }
 }
 

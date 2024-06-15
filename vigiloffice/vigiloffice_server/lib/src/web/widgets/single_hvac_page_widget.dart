@@ -3,7 +3,8 @@ import 'package:serverpod/relic.dart';
 import '../../generated/protocol.dart';
 
 class SingleHvacPageWidget extends Widget {
-  SingleHvacPageWidget({required Hvac hvac}) : super(name: 'single_hvac_page') {
+  SingleHvacPageWidget({required Hvac hvac, required DeviceStatus deviceStatus})
+      : super(name: 'single_hvac_page') {
     Map<String, dynamic> hvacValues = hvac.toJson();
     if (hvac.lastUpdate != null) {
       final difference = DateTime.now().difference(hvac.lastUpdate!);
@@ -21,6 +22,7 @@ class SingleHvacPageWidget extends Widget {
 
     values = {
       "types": DeviceType.values.map((e) => e.name).toList(),
+      "deviceConnected": deviceStatus == DeviceStatus.connected ? true : false,
       "hvac": hvacValues,
       if (hvac.flameSensor.enabled) "flameIsEnabled": true,
       if (!hvac.flameSensor.enabled) "flameIsEnabled": false,

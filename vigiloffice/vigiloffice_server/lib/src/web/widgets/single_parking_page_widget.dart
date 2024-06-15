@@ -3,7 +3,8 @@ import 'package:serverpod/relic.dart';
 import '../../generated/protocol.dart';
 
 class SingleParkingPageWidget extends Widget {
-  SingleParkingPageWidget({required Parking parking})
+  SingleParkingPageWidget(
+      {required Parking parking, required DeviceStatus deviceStatus})
       : super(name: 'single_parking_page') {
     Map<String, dynamic> parkingValues = parking.toJson();
     if (parking.lastUpdate != null) {
@@ -22,6 +23,7 @@ class SingleParkingPageWidget extends Widget {
 
     values = {
       "types": DeviceType.values.map((e) => e.name).toList(),
+      "deviceConnected": deviceStatus == DeviceStatus.connected ? true : false,
       "parking": parkingValues,
       if (parking.flameSensor.enabled) "flameIsEnabled": true,
       if (!parking.flameSensor.enabled) "flameIsEnabled": false,

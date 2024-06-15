@@ -46,6 +46,8 @@ class DevicesRoute extends WidgetRoute {
               null;
           break;
       }
+      statusAvailable =
+          statusAvailable && device.status != DeviceStatus.disconnected;
       Map<String, dynamic> deviceMap = device.toJson();
       deviceMap['statusAvailable'] = statusAvailable;
       devicesMap.add(deviceMap);
