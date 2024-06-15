@@ -1,0 +1,155 @@
+{
+    "@context": "https://www.w3.org/2019/wot/td/v1",
+    "@type": "Thing",
+    "title": "hvac",
+    "id": "urn:dev:mac:BC:DD:C2:B6:77:2B",
+    "lastUpdate": "2024-06-15T09:19:23.622856Z",
+    "forms": [
+        {
+            "name": "Semantic status",
+            "href": "/api/wot/v1/status/hvacs/BC:DD:C2:B6:77:2B",
+            "contentType": "application/json",
+            "op": [
+                "readproperty"
+            ]
+        },
+        {
+            "name": "Semantic informations of the device",
+            "href": "/api/wot/v1/devices/hvacs/BC:DD:C2:B6:77:2B",
+            "contentType": "application/json",
+            "op": [
+                "readproperty"
+            ]
+        },
+        {
+            "name": "Semantic status list",
+            "href": "/api/wot/v1/status/hvacs",
+            "contentType": "application/json",
+            "op": [
+                "readproperty"
+            ]
+        },
+        {
+            "name": "Semantic device list",
+            "href": "/api/wot/v1/devices/hvacs",
+            "contentType": "application/json",
+            "op": [
+                "readproperty"
+            ]
+        },
+        {
+            "name": "MTM status",
+            "href": "/api/v1/status/hvacs/BC:DD:C2:B6:77:2B",
+            "contentType": "application/json",
+            "op": [
+                "readproperty",
+                "writeproperty"
+            ]
+        },
+        {
+            "name": "MTM informations of the device",
+            "href": "/api/v1/devices/hvacs/BC:DD:C2:B6:77:2B",
+            "contentType": "application/json",
+            "op": [
+                "readproperty",
+                "writeproperty"
+            ]
+        },
+        {
+            "name": "MTM status list",
+            "href": "/api/v1/status/hvacs",
+            "contentType": "application/json",
+            "op": [
+                "readproperty",
+                "writeproperty"
+            ]
+        },
+        {
+            "name": "MTM device list",
+            "href": "/api/v1/devices/hvacs",
+            "contentType": "application/json",
+            "op": [
+                "readproperty",
+                "writeproperty"
+            ]
+        }
+    ],
+    "properties": {
+        "flameSensor": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "int",
+                    "value": 1
+                },
+                "enabled": {
+                    "type": "bool",
+                    "value": true
+                },
+                "interval": {
+                    "type": "int",
+                    "value": 1000
+                }
+            }
+        },
+        "tempSensor": {
+            "type": "object",
+            "properties": {
+                "tempValue": {
+                    "type": "int",
+                    "value": 0
+                },
+                "humValue": {
+                    "type": "int",
+                    "value": 0
+                },
+                "status": {
+                    "type": "int",
+                    "value": 1
+                },
+                "enabled": {
+                    "type": "bool",
+                    "value": true
+                },
+                "interval": {
+                    "type": "int",
+                    "value": 1000
+                },
+                "lowThreshold": {
+                    "type": "int",
+                    "value": 18
+                },
+                "highThreshold": {
+                    "type": "int",
+                    "value": 24
+                },
+                "target": {
+                    "type": "int",
+                    "value": 21
+                }
+            }
+        },
+        "ventActuator": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "bool",
+                    "value": false
+                }
+            }
+        },
+        "alarm": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "bool",
+                    "value": false
+                },
+                "enabled": {
+                    "type": "bool",
+                    "value": true
+                }
+            }
+        }
+    }
+}
