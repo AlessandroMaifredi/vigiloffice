@@ -62,6 +62,10 @@ Map<String, dynamic> transformStatusJsonToWoT(Map<String, dynamic> json) {
   json.remove("macAddress");
   json.remove("id");
   json.remove("lastUpdate");
+  if (json.containsKey("renterId")) {
+    jsonLD["renterId"] = json["renterId"];
+    json.remove("renterId");
+  }
 
   for (var e in json.entries) {
     jsonLD["properties"][e.key] = {"type": "object", "properties": {}};
