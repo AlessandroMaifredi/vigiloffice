@@ -59,6 +59,9 @@ class HvacsEndpoint extends Endpoint {
       hvac.id = oldHvac.id;
     }
     InfluxDBManager().writeStatus(data: hvac, type: DeviceType.hvac);
+    await session.caches.local.put(
+        '$hvacCacheKeyPrefix${hvac.macAddress}', hvac,
+        lifetime: Duration(minutes: 5));
     return Hvac.db.updateRow(session, hvac);
   }
 

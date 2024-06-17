@@ -57,6 +57,9 @@ class DevicesEndpoint extends Endpoint {
     }
     device.id = oldDevice.id;
     device.status = device.status ?? DeviceStatus.connected;
+    await session.caches.local.put(
+        '$deviceCacheKeyPrefix${device.macAddress}', device,
+        lifetime: Duration(minutes: 5));
     return Device.db.updateRow(session, device);
   }
 

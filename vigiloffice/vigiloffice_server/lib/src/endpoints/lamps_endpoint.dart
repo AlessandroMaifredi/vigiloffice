@@ -59,6 +59,9 @@ class LampsEndpoint extends Endpoint {
       lamp.id = oldLamp.id;
     }
     InfluxDBManager().writeStatus(data: lamp, type: DeviceType.lamp);
+    await session.caches.local.put(
+        '$lampCacheKeyPrefix${lamp.macAddress}', lamp,
+        lifetime: Duration(minutes: 5));
     return Lamp.db.updateRow(session, lamp);
   }
 

@@ -61,11 +61,19 @@ class ParkingsEndpoint extends Endpoint {
     if (oldParking == null) {
       return createParking(session, parking);
     }
-    parking.id = oldParking.id;
-    if (parking.rgbLed.status == 3) {
-      parking.renterId = oldParking.renterId;
+
+    parking = parking.copyWith(id: oldParking.id);
+    if (parking.rgbLed.status == 2) {
+      parking.renterId = null;
+    } else {
+      parking.renterId ??= oldParking.renterId;
     }
+    print(
+        "Last renter ID: ${oldParking.renterId} - New renter ID: ${parking.renterId}");
     InfluxDBManager().writeStatus(data: parking, type: DeviceType.parking);
+    await session.caches.local.put(
+        '$parkingCacheKeyPrefix${parking.macAddress}', parking,
+        lifetime: Duration(minutes: 5));
     return Parking.db.updateRow(session, parking);
   }
 

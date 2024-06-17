@@ -156,7 +156,7 @@ class TelegramManager {
             rgbLed: parkings.first.rgbLed.copyWith(status: 3));
         await _parkingsEndpoint.controlParking(session, reserved);
         message.reply(
-            'Parking #${reserved.id} (${reserved.macAddress}) reserved!',
+            'Parking #${reserved.id} (${reserved.macAddress}) reserved! Reserver: $userId.',
             replyMarkup: ReplyKeyboardRemove(removeKeyboard: true));
       });
       // === End of Parking commands ===
