@@ -68,8 +68,6 @@ class ParkingsEndpoint extends Endpoint {
     } else {
       parking.renterId ??= oldParking.renterId;
     }
-    print(
-        "Last renter ID: ${oldParking.renterId} - New renter ID: ${parking.renterId}");
     InfluxDBManager().writeStatus(data: parking, type: DeviceType.parking);
     await session.caches.local.put(
         '$parkingCacheKeyPrefix${parking.macAddress}', parking,
