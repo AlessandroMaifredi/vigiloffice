@@ -29,7 +29,7 @@ class TelegramManager {
       session.log('TelegramManager initialized with username: $username');
       String helpMessage = "Available commands for VigilOfficeBot:"
           "\n\nParking commands:"
-          "\n/listFree shows available parking spots"
+          "\n/availables shows available parking spots"
           "\n/list shows all parking spots"
           "\n/reserve reserves a parking spot"
           "\n/cancel cancels a parking reservation"
@@ -45,7 +45,9 @@ class TelegramManager {
           "\n/help shows this message\n/start starts the bot";
       await _teledart!.setMyCommands([
         BotCommand(command: 'start', description: 'Start the bot'),
-        BotCommand(command: 'list', description: 'List free parkings'),
+        BotCommand(command: 'list', description: 'List all parkings'),
+        BotCommand(
+            command: 'availables', description: 'List available parkings'),
         BotCommand(command: 'reserve', description: 'Reserve a parking'),
         BotCommand(command: 'help', description: 'Show help'),
         BotCommand(
@@ -91,7 +93,7 @@ class TelegramManager {
             "Reservation for parking #${reserved.id} (${reserved.macAddress}) canceled.",
             replyMarkup: ReplyKeyboardRemove(removeKeyboard: true));
       });
-      _teledart!.onCommand('listFree').listen((message) async {
+      _teledart!.onCommand('availables').listen((message) async {
         final List<Parking> parkings =
             await _parkingsEndpoint.getFreeParkings(session);
         if (parkings.isEmpty) {
@@ -103,7 +105,7 @@ class TelegramManager {
               [
                 KeyboardButton(text: '/reserve'),
                 KeyboardButton(text: '/cancel'),
-                KeyboardButton(text: '/listFree')
+                KeyboardButton(text: '/availables')
               ]
             ], inputFieldPlaceholder: "Reserve Parking"));
       });
@@ -127,7 +129,7 @@ class TelegramManager {
               [
                 KeyboardButton(text: '/reserve'),
                 KeyboardButton(text: '/cancel'),
-                KeyboardButton(text: '/listFree')
+                KeyboardButton(text: '/availables')
               ]
             ], inputFieldPlaceholder: "Reserve Parking"));
       });
@@ -355,8 +357,9 @@ class TelegramManager {
           exception: e, stackTrace: s);
       session.close();
       throw TelegramManagerException(message: e.toString());
+    } finally {
+      session.close();
     }
-    session.close();
   }
 }
 

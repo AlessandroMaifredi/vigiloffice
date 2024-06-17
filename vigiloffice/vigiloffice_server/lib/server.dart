@@ -171,6 +171,11 @@ void run(List<String> args) async {
     }
     try {
       telegramManager.init(pod.getPassword('telegramBotToken')!);
+    } on TelegramManagerException catch (e, s) {
+      Session session = await pod.createSession();
+      session.log('Failed to init Telegram bot: ${e.message}',
+          stackTrace: s, level: LogLevel.error);
+      await session.close();
     } catch (e, s) {
       Session session = await pod.createSession();
       session.log('Failed to init Telegram bot: $e',
