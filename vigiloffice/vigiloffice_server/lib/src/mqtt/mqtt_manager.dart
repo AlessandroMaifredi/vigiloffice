@@ -102,7 +102,7 @@ class MqttManager {
         builder.payload!);
   }
 
-  void _handleLampStatus(String macAddress, String payload) async {
+  Future<void> _handleLampStatus(String macAddress, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
     try {
       Map<String, dynamic> data = jsonDecode(payload);
@@ -135,7 +135,7 @@ class MqttManager {
         builder.payload!);
   }
 
-  void _handleHvacStatus(String macAddress, String payload) async {
+  Future<void> _handleHvacStatus(String macAddress, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
     try {
       Map<String, dynamic> data = jsonDecode(payload);
@@ -168,7 +168,7 @@ class MqttManager {
         builder.payload!);
   }
 
-  void _handleParkingStatus(String macAddress, String payload) async {
+  Future<void> _handleParkingStatus(String macAddress, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
     Map<String, dynamic> data = jsonDecode(payload);
     Parking parking = Parking.fromJson(data);
@@ -179,7 +179,7 @@ class MqttManager {
 
 // === END PARKING ===
 
-  void _handleRegisterMessage(String payload) async {
+  Future<void> _handleRegisterMessage(String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
     try {
       Map<String, dynamic> data = jsonDecode(payload);
@@ -204,7 +204,7 @@ class MqttManager {
     session.close();
   }
 
-  void _handleLwtMessage(String payload) async {
+  Future<void> _handleLwtMessage(String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
     try {
       Map<String, dynamic> data = jsonDecode(payload);
@@ -215,13 +215,13 @@ class MqttManager {
           status: DeviceStatus.disconnected);
       switch (type) {
         case DeviceType.lamp:
-          _handleLampStatus(data['macAddress'], payload);
+          await _handleLampStatus(data['macAddress'], payload);
           break;
         case DeviceType.hvac:
-          _handleHvacStatus(data['macAddress'], payload);
+          await _handleHvacStatus(data['macAddress'], payload);
           break;
         case DeviceType.parking:
-          _handleParkingStatus(data['macAddress'], payload);
+          await _handleParkingStatus(data['macAddress'], payload);
           break;
       }
       device = await _deviceEndpoint.updateDevice(session, device);
@@ -294,14 +294,14 @@ class MqttManager {
             msgSession.log('Received welcome message: $payload');
           } else if (topic == "vigiloffice/register") {
             msgSession.log('Received generic register message: $payload');
-            _handleRegisterMessage(payload);
+            await _handleRegisterMessage(payload);
           } else if (topic.startsWith("vigiloffice/register/")) {
             final String macAddress = paths[2];
             msgSession.log(
                 'Received device ($macAddress) register message: $payload');
           } else if (topic.startsWith("vigiloffice/lwt/")) {
             msgSession.log('Received LWT message: $payload');
-            _handleLwtMessage(payload);
+            await _handleLwtMessage(payload);
           } else if (topic.endsWith("/status")) {
             msgSession.log('Received status message: $payload');
             DeviceType type =
@@ -309,13 +309,13 @@ class MqttManager {
             String macAddress = paths[2];
             switch (type) {
               case DeviceType.lamp:
-                _handleLampStatus(macAddress, payload);
+                await _handleLampStatus(macAddress, payload);
                 break;
               case DeviceType.hvac:
-                _handleHvacStatus(macAddress, payload);
+                await _handleHvacStatus(macAddress, payload);
                 break;
               case DeviceType.parking:
-                _handleParkingStatus(macAddress, payload);
+                await _handleParkingStatus(macAddress, payload);
             }
           } else {
             // Handle unknown topic
