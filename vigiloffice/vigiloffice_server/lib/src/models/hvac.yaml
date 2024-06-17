@@ -10,3 +10,7 @@ fields:
   ventActuator: VentActuator
   alarm: Alarm
   lastUpdate: DateTime?
+indexes:
+  hvac_mac_idx:
+    fields: macAddress
+    unique: true

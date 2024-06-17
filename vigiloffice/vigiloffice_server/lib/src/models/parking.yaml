@@ -12,3 +12,7 @@ fields:
   alarm: Alarm
   lastUpdate: DateTime?
   renterId: String?, scope=serverOnly
+indexes:
+  parking_mac_idx:
+    fields: macAddress
+    unique: true

@@ -1,0 +1,315 @@
+{
+  "actions": [
+    {
+      "type": "alterTable",
+      "alterTable": {
+        "name": "devices",
+        "schema": "public",
+        "addColumns": [],
+        "deleteColumns": [],
+        "modifyColumns": [],
+        "addIndexes": [
+          {
+            "indexName": "device_mac_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "macAddress"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          },
+          {
+            "indexName": "type_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "type"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "deleteIndexes": [],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": [
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"device_mac_idx\" is added to table \"devices\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "devices",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"hvac_mac_idx\" is added to table \"hvacs\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "hvacs",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"lamp_mac_idx\" is added to table \"lamps\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "lamps",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"parking_mac_idx\" is added to table \"parkings\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "parkings",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "alterTable",
+      "alterTable": {
+        "name": "hvacs",
+        "schema": "public",
+        "addColumns": [],
+        "deleteColumns": [],
+        "modifyColumns": [],
+        "addIndexes": [
+          {
+            "indexName": "hvac_mac_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "macAddress"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          }
+        ],
+        "deleteIndexes": [],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": [
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"device_mac_idx\" is added to table \"devices\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "devices",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"hvac_mac_idx\" is added to table \"hvacs\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "hvacs",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"lamp_mac_idx\" is added to table \"lamps\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "lamps",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"parking_mac_idx\" is added to table \"parkings\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "parkings",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "alterTable",
+      "alterTable": {
+        "name": "lamps",
+        "schema": "public",
+        "addColumns": [],
+        "deleteColumns": [],
+        "modifyColumns": [],
+        "addIndexes": [
+          {
+            "indexName": "lamp_mac_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "macAddress"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          }
+        ],
+        "deleteIndexes": [],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": [
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"device_mac_idx\" is added to table \"devices\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "devices",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"hvac_mac_idx\" is added to table \"hvacs\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "hvacs",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"lamp_mac_idx\" is added to table \"lamps\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "lamps",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"parking_mac_idx\" is added to table \"parkings\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "parkings",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "alterTable",
+      "alterTable": {
+        "name": "parkings",
+        "schema": "public",
+        "addColumns": [],
+        "deleteColumns": [],
+        "modifyColumns": [],
+        "addIndexes": [
+          {
+            "indexName": "parking_mac_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "macAddress"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          }
+        ],
+        "deleteIndexes": [],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": [
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"device_mac_idx\" is added to table \"devices\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "devices",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"hvac_mac_idx\" is added to table \"hvacs\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "hvacs",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"lamp_mac_idx\" is added to table \"lamps\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "lamps",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          },
+          {
+            "type": "uniqueIndexCreated",
+            "message": "Unique index \"parking_mac_idx\" is added to table \"parkings\". If there are existing rows with duplicate values, this migration will fail.",
+            "table": "parkings",
+            "columns": [
+              "macAddress"
+            ],
+            "destrucive": false
+          }
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "type": "uniqueIndexCreated",
+      "message": "Unique index \"device_mac_idx\" is added to table \"devices\". If there are existing rows with duplicate values, this migration will fail.",
+      "table": "devices",
+      "columns": [
+        "macAddress"
+      ],
+      "destrucive": false
+    },
+    {
+      "type": "uniqueIndexCreated",
+      "message": "Unique index \"hvac_mac_idx\" is added to table \"hvacs\". If there are existing rows with duplicate values, this migration will fail.",
+      "table": "hvacs",
+      "columns": [
+        "macAddress"
+      ],
+      "destrucive": false
+    },
+    {
+      "type": "uniqueIndexCreated",
+      "message": "Unique index \"lamp_mac_idx\" is added to table \"lamps\". If there are existing rows with duplicate values, this migration will fail.",
+      "table": "lamps",
+      "columns": [
+        "macAddress"
+      ],
+      "destrucive": false
+    },
+    {
+      "type": "uniqueIndexCreated",
+      "message": "Unique index \"parking_mac_idx\" is added to table \"parkings\". If there are existing rows with duplicate values, this migration will fail.",
+      "table": "parkings",
+      "columns": [
+        "macAddress"
+      ],
+      "destrucive": false
+    }
+  ],
+  "migrationApiVersion": 1
+}

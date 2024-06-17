@@ -6,3 +6,9 @@ fields:
   type: DeviceType
   macAddress: String
   status: DeviceStatus?
+indexes:
+  device_mac_idx:
+    fields: macAddress
+    unique: true
+  type_idx:
+    fields: type

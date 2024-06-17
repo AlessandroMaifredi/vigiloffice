@@ -11,3 +11,7 @@ fields:
   rgbLed: RGBLed
   alarm: Alarm
   lastUpdate: DateTime?
+indexes:
+  lamp_mac_idx:
+    fields: macAddress
+    unique: true
