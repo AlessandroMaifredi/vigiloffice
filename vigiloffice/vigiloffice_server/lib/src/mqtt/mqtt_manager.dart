@@ -21,6 +21,7 @@ import '../generated/protocol.dart';
 /// mqttManager.connect();
 /// ```
 class MqttManager {
+  static String homeTopic = 'vigiloffice';
   static final MqttManager _instance = MqttManager._internal();
   factory MqttManager() => _instance;
 
@@ -97,7 +98,7 @@ class MqttManager {
     MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(jsonEncode(lamp.toJson()));
     _client!.publishMessage(
-        "vigiloffice/${DeviceType.lamp}s/${lamp.macAddress}/control",
+        "$homeTopic/${DeviceType.lamp}s/${lamp.macAddress}/control",
         MqttQos.atLeastOnce,
         builder.payload!);
   }
@@ -130,7 +131,7 @@ class MqttManager {
     MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(jsonEncode(hvac.toJson()));
     _client!.publishMessage(
-        "vigiloffice/${DeviceType.hvac}s/${hvac.macAddress}/control",
+        "$homeTopic/${DeviceType.hvac}s/${hvac.macAddress}/control",
         MqttQos.atLeastOnce,
         builder.payload!);
   }
@@ -163,7 +164,7 @@ class MqttManager {
     MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(jsonEncode(parking.toJson()));
     _client!.publishMessage(
-        "vigiloffice/${DeviceType.parking}s/${parking.macAddress}/control",
+        "$homeTopic/${DeviceType.parking}s/${parking.macAddress}/control",
         MqttQos.atLeastOnce,
         builder.payload!);
   }
@@ -187,14 +188,13 @@ class MqttManager {
           await _deviceEndpoint.updateDevice(session, Device.fromJson(data));
       session.log("Device registered: ${device.id} (${device.macAddress})");
       String msg = jsonEncode({
-        "statusTopic":
-            "vigiloffice/${device.type}s/${device.macAddress}/status",
+        "statusTopic": "$homeTopic/${device.type}s/${device.macAddress}/status",
         "controlTopic":
-            "vigiloffice/${device.type}s/${device.macAddress}/control"
+            "$homeTopic/${device.type}s/${device.macAddress}/control"
       });
       MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
       builder.addString(msg);
-      _client!.publishMessage("vigiloffice/register/${device.macAddress}",
+      _client!.publishMessage("$homeTopic/register/${device.macAddress}",
           MqttQos.exactlyOnce, builder.payload!);
     } catch (e, s) {
       session.log('Error while handling register message: $e',
@@ -266,12 +266,12 @@ class MqttManager {
             "${Serverpod.instance.config.apiServer.publicHost}:${Serverpod.instance.config.apiServer.publicPort}",
         "webServer":
             "${Serverpod.instance.config.webServer!.publicHost}:${Serverpod.instance.config.webServer!.publicPort}",
-        "registerTopic": "vigiloffice/register",
+        "registerTopic": "$homeTopic/register",
       };
       final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
       builder.addString(jsonEncode(welcomeMessage));
       _client!.publishMessage(
-          "vigiloffice/welcome", MqttQos.atLeastOnce, builder.payload!,
+          "$homeTopic/welcome", MqttQos.atLeastOnce, builder.payload!,
           retain: true);
 
       session.log("Welcome message published.");
@@ -285,13 +285,13 @@ class MqttManager {
   }
 
   void _setupConnection() {
-    _client!.subscribe("vigiloffice/register", MqttQos.atLeastOnce);
-    _client!.subscribe("vigiloffice/register/#", MqttQos.atLeastOnce);
-    _client!.subscribe("vigiloffice/lwt/#", MqttQos.atLeastOnce);
+    _client!.subscribe("$homeTopic/register", MqttQos.atLeastOnce);
+    _client!.subscribe("$homeTopic/register/#", MqttQos.atLeastOnce);
+    _client!.subscribe("$homeTopic/lwt/#", MqttQos.atLeastOnce);
 
     for (DeviceType type in DeviceType.values) {
       _client!
-          .subscribe("vigiloffice/${type.name}s/+/status", MqttQos.atMostOnce);
+          .subscribe("$homeTopic/${type.name}s/+/status", MqttQos.atMostOnce);
     }
 
     _client!.updates!
@@ -307,16 +307,16 @@ class MqttManager {
           final List<String> paths = topic.split('/');
 
           // Handle the incoming message logic here
-          if (topic == 'vigiloffice/welcome') {
+          if (topic == '$homeTopic/welcome') {
             msgSession.log('Received welcome message: $payload');
-          } else if (topic == "vigiloffice/register") {
+          } else if (topic == "$homeTopic/register") {
             msgSession.log('Received generic register message: $payload');
             await _handleRegisterMessage(payload);
-          } else if (topic.startsWith("vigiloffice/register/")) {
+          } else if (topic.startsWith("$homeTopic/register/")) {
             final String macAddress = paths[2];
             msgSession.log(
                 'Received device ($macAddress) register message: $payload');
-          } else if (topic.startsWith("vigiloffice/lwt/")) {
+          } else if (topic.startsWith("$homeTopic/lwt/")) {
             msgSession.log('Received LWT message: $payload');
             await _handleLwtMessage(topic, payload);
           } else if (topic.endsWith("/status")) {
