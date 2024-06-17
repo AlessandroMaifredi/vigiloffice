@@ -96,6 +96,19 @@ class TelegramManager {
       _teledart!.onCommand('availables').listen((message) async {
         final List<Parking> parkings =
             await _parkingsEndpoint.getFreeParkings(session);
+        Set<String> parkingsMacAddresses =
+            parkings.map((e) => e.macAddress).toSet();
+        final Set<String> devices = (await Device.db.find(
+          session,
+          where: (p0) =>
+              p0.macAddress.inSet(parkingsMacAddresses) &
+              p0.status.equals(DeviceStatus.connected),
+        ))
+            .map((e) => e.macAddress)
+            .toSet();
+        parkingsMacAddresses = parkingsMacAddresses.intersection(devices);
+        parkings.retainWhere(
+            (element) => parkingsMacAddresses.contains(element.macAddress));
         if (parkings.isEmpty) {
           message.reply("No free parkings");
           return;
@@ -148,6 +161,19 @@ class TelegramManager {
         }
         parkings =
             parkings.where((element) => element.rgbLed.status == 2).toList();
+        Set<String> parkingsMacAddresses =
+            parkings.map((e) => e.macAddress).toSet();
+        final Set<String> devices = (await Device.db.find(
+          session,
+          where: (p0) =>
+              p0.macAddress.inSet(parkingsMacAddresses) &
+              p0.status.equals(DeviceStatus.connected),
+        ))
+            .map((e) => e.macAddress)
+            .toSet();
+        parkingsMacAddresses = parkingsMacAddresses.intersection(devices);
+        parkings.retainWhere(
+            (element) => parkingsMacAddresses.contains(element.macAddress));
         if (parkings.isEmpty) {
           message
               .reply("Unable to reserve parking. No free parkings available.");
