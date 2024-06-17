@@ -113,7 +113,7 @@ class MqttManager {
       session.log('Error while handling lamp status: $e',
           level: LogLevel.error, exception: e, stackTrace: s);
     } finally {
-      session.close();
+      await session.close();
     }
   }
 
@@ -146,7 +146,7 @@ class MqttManager {
       session.log('Error while handling hvac status: $e',
           level: LogLevel.error, exception: e, stackTrace: s);
     } finally {
-      session.close();
+      await session.close();
     }
   }
 
@@ -174,7 +174,7 @@ class MqttManager {
     Parking parking = Parking.fromJson(data);
     parking.lastUpdate = DateTime.now();
     await _parkingEndopoint.updateParking(session, parking);
-    session.close();
+    await session.close();
   }
 
 // === END PARKING ===
@@ -186,7 +186,6 @@ class MqttManager {
       Device device =
           await _deviceEndpoint.updateDevice(session, Device.fromJson(data));
       session.log("Device registered: ${device.id} (${device.macAddress})");
-      session.close();
       String msg = jsonEncode({
         "statusTopic":
             "vigiloffice/${device.type}s/${device.macAddress}/status",
@@ -200,12 +199,18 @@ class MqttManager {
     } catch (e, s) {
       session.log('Error while handling register message: $e',
           level: LogLevel.error, exception: e, stackTrace: s);
+    } finally {
+      await session.close();
     }
-    session.close();
   }
 
-  Future<void> _handleLwtMessage(String payload) async {
+  Future<void> _handleLwtMessage(String topic, String payload) async {
     InternalSession session = await Serverpod.instance.createSession();
+    if (payload.isEmpty) {
+      session.log("LWT from $topic skipped.", level: LogLevel.info);
+      await session.close();
+      return;
+    }
     try {
       Map<String, dynamic> data = jsonDecode(payload);
       DeviceType type = DeviceType.fromJson(data['type']);
@@ -226,11 +231,23 @@ class MqttManager {
       }
       device = await _deviceEndpoint.updateDevice(session, device);
       session.log("Device LWT: ${device.id} (${device.macAddress})");
+      final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+      builder.addString("");
+      try {
+        _client!.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!,
+            retain: true);
+      } catch (e) {
+        session.log(
+          "Retain message removed for topic: $topic.",
+          level: LogLevel.info,
+        );
+      }
     } catch (e, s) {
       session.log('Error while handling LWT message: $e',
           level: LogLevel.error, exception: e, stackTrace: s);
+    } finally {
+      await session.close();
     }
-    session.close();
   }
 
   /// Handles the logic when the connection to the broker is established.
@@ -258,12 +275,12 @@ class MqttManager {
           retain: true);
 
       session.log("Welcome message published.");
-
-      session.close();
     } catch (e, s) {
       session.log('Error: $e',
           level: LogLevel.error, exception: e, stackTrace: s);
       throw MqttManagerException(message: e.toString());
+    } finally {
+      await session.close();
     }
   }
 
@@ -301,7 +318,7 @@ class MqttManager {
                 'Received device ($macAddress) register message: $payload');
           } else if (topic.startsWith("vigiloffice/lwt/")) {
             msgSession.log('Received LWT message: $payload');
-            await _handleLwtMessage(payload);
+            await _handleLwtMessage(topic, payload);
           } else if (topic.endsWith("/status")) {
             msgSession.log('Received status message: $payload');
             DeviceType type =
@@ -322,21 +339,21 @@ class MqttManager {
             print('Unknown topic: $topic');
           }
         }
-        msgSession.close();
       } catch (e, s) {
         msgSession.log('Error: $e',
             level: LogLevel.error, exception: e, stackTrace: s);
         throw MqttManagerException(message: e.toString());
+      } finally {
+        await msgSession.close();
       }
     });
   }
 
   /// Handles the logic when a subscription fails.
   void _onSubscribeFail(String topic) async {
-    Serverpod.instance.createSession().then((session) {
-      session.log("Failed to subscribe to topic: $topic");
-      session.close();
-    });
+    Session session = await Serverpod.instance.createSession();
+    session.log("Failed to subscribe to topic: $topic");
+    await session.close();
   }
 
   /// Handles the logic when the client successfully reconnects.
