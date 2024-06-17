@@ -196,7 +196,7 @@ class MqttManager {
       MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
       builder.addString(msg);
       _client!.publishMessage("vigiloffice/register/${device.macAddress}",
-          MqttQos.atLeastOnce, builder.payload!);
+          MqttQos.exactlyOnce, builder.payload!);
     } catch (e, s) {
       session.log('Error while handling register message: $e',
           level: LogLevel.error, exception: e, stackTrace: s);
@@ -274,7 +274,7 @@ class MqttManager {
 
     for (DeviceType type in DeviceType.values) {
       _client!
-          .subscribe("vigiloffice/${type.name}s/+/status", MqttQos.atLeastOnce);
+          .subscribe("vigiloffice/${type.name}s/+/status", MqttQos.atMostOnce);
     }
 
     _client!.updates!
